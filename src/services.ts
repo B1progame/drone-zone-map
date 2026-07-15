@@ -13,4 +13,11 @@ export async function getWeather(location:Location):Promise<Weather> {
  const wind=c.wind_speed_10m??0,gusts=c.wind_gusts_10m??0,rain=c.precipitation??0,rainProbability=c.precipitation_probability??0,cloud=c.cloud_cover??0,visibility=c.visibility??10000,temperature=c.temperature_2m??0;
  return {temperature:Math.round(temperature),wind:Math.round(wind),gusts:Math.round(gusts),rain,rainProbability,cloud,visibility:Math.round(visibility),score:scoreFor(wind,gusts,rain,rainProbability,cloud,visibility,temperature),hourly,timezone:data.timezone??'Local'};
 }
+export async function searchLocation(input:string):Promise<Location|null>{
+ const coordinates=parseCoordinates(input);if(coordinates)return coordinates;
+ const query=input.trim();if(query.length<2)return null;
+ const response=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=${encodeURIComponent(navigator.language.split('-')[0]||'en')}&format=json`);
+ if(!response.ok)throw new Error('Location search unavailable');const item=(await response.json()).results?.[0];
+ return item?{lat:item.latitude,lng:item.longitude,name:[item.name,item.admin1,item.country].filter(Boolean).join(', ')}:null;
+}
 export function quality(score:number){ return score>=90?'Great flying weather':score>=70?'Good conditions':score>=50?'Okay, be careful':score>=30?'Bad for small drones':'Do not fly'; }

@@ -9,3 +9,9 @@ export async function createOfflinePack(location:Location,weather?:Weather,zoneI
  return pack;
 }
 export function getOfflinePacks():OfflinePack[]{return JSON.parse(localStorage.getItem('dzm-offline-packs')||'[]')}
+export function downloadGeoJson(pack:OfflinePack){
+ const properties={name:pack.name,checkedAt:pack.savedAt,weather:pack.weather?{score:pack.weather.score,windKmh:pack.weather.wind,gustsKmh:pack.weather.gusts,rainProbability:pack.weather.rainProbability}:undefined,officialSource:pack.zoneInfo?.sourceName,officialSourceUrl:pack.zoneInfo?.sourceUrl,warning:pack.notice};
+ const features=[{type:'Feature',id:pack.id,geometry:{type:'Point',coordinates:[pack.location.lng,pack.location.lat]},properties},...(pack.zoneInfo?.zones??[]).map(zone=>({type:'Feature',id:zone.id,geometry:{type:'Point',coordinates:[pack.location.lng,pack.location.lat]},properties:{...zone,geometryNotice:'Point-query result only; this feature does not represent the full zone boundary.'}}))];
+ const blob=new Blob([JSON.stringify({type:'FeatureCollection',name:`Aeris flight check - ${pack.name}`,features},null,2)],{type:'application/geo+json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+ link.href=url;link.download=`aeris-${pack.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'flight-check'}.geojson`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
