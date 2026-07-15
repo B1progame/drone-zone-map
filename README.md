@@ -26,6 +26,10 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 
 The current MVP deliberately bundles **no drone-zone geometry**. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and is designed to become the single traceable record of verified public services, freshness, attribution, capability, warnings, and terms notes.
 
+### Expanded coverage directory
+
+The registry now links to official planners or aviation authorities for 38 countries: Germany, Spain, France, Ireland, the UK, Benelux, the Nordics, central/eastern/southern Europe, plus the United States, Canada, Australia, New Zealand, Japan, Brazil, India, Singapore, and South Africa. Only Germany is currently marked `wms_only`; every other entry remains `official_link_only` or `needs_endpoint_discovery` until its public endpoint, licence, update model, and caching permissions have been verified.
+
 ## Run locally
 
 ```bash

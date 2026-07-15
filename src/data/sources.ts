@@ -1,4 +1,4 @@
-export type Source = { code:string; country:string; name:string; status:'WMS only'|'Endpoint discovery'|'Official link only'; updated:string; url:string; detail:string };
+export type Source = { code:string; country:string; name:string; status:string; updated?:string; url:string; detail?:string };
 export const sources: Source[] = [
  { code:'DE', country:'Germany', name:'DIPUL', status:'WMS only', updated:'Configured', url:'https://dipul.de/', detail:'Official WMS overlay configured. Online check required.' },
  { code:'ES', country:'Spain', name:'ENAIRE Drones', status:'Endpoint discovery', updated:'Pending', url:'https://drones.enaire.es/', detail:'Official source registered; no geometry is shipped until reuse is verified.' },
