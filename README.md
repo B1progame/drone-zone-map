@@ -24,7 +24,7 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 | France | Géoportail | Official-link-only fallback | None |
 | Luxembourg | DAC Geoportal | Normalized official CC0 vector zones | Offline pack supported |
 
-The current MVP deliberately bundles **no drone-zone geometry**. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and is designed to become the single traceable record of verified public services, freshness, attribution, capability, warnings, and terms notes.
+The app bundles only Luxembourg's verified CC0 geometry. Germany stays live WMS and Spain uses live viewport-bounded GeoJSON queries. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and is the traceable record of verified services, freshness, attribution, capabilities, warnings, and terms notes.
 
 ### Expanded coverage directory
 
@@ -57,7 +57,19 @@ If you name the repository differently, update `base` in `vite.config.ts`.
 4. Normalize verified features into the project zone schema with source URL, timestamp, warnings, and attribution.
 5. Never infer polygons from pixels, bypass access controls, or silently replace missing data.
 
-The scheduled workflow currently validates metadata only, so it cannot accidentally scrape or publish unverified data. Add a verified adapter and exporter before enabling retrieval.
+The scheduled workflow validates metadata and refreshes Luxembourg's CC0 feed. Add a verified adapter and exporter before enabling retrieval for another country.
+
+### Personal Spanish GeoJSON snapshot
+
+Download a small ENAIRE viewport as official, paged GeoJSON:
+
+```bash
+python pipeline/main.py fetch-spain-bbox --bbox=-3.75,40.38,-3.65,40.46 --output madrid.geojson
+```
+
+The downloader bounds every query, requests simplified coordinate precision, and
+paginates official features. It does not trace screenshots or bulk-copy the
+national service.
 
 ## Limitations
 

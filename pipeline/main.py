@@ -25,6 +25,9 @@ def main() -> None:
     wms.add_argument("url", help="Known public WMS service URL")
     wms.add_argument("--output", type=Path, help="Write JSON report to this path")
     subparsers.add_parser("update-luxembourg", help="Fetch and normalize Luxembourg's official CC0 UAS zones")
+    spain=subparsers.add_parser("fetch-spain-bbox",help="Download official ENAIRE GeoJSON for a small WGS84 viewport")
+    spain.add_argument("--bbox",required=True,help="west,south,east,north within Spain service extent")
+    spain.add_argument("--output",type=Path,required=True,help="Output .geojson path")
     args = parser.parse_args()
     if args.command == "discover":
         from discovery.public_endpoint_discovery import discover, report_as_dict
@@ -54,6 +57,15 @@ def main() -> None:
         target=ROOT / "public" / "data" / "zones" / "LU.geojson"
         target.write_text(json.dumps({"type":"FeatureCollection","features":result.features,"warnings":result.warnings},ensure_ascii=False,separators=(",",":")),encoding="utf-8")
         print(f"Wrote {len(result.features)} Luxembourg zone volumes to {target}")
+        return
+    if args.command == "fetch-spain-bbox":
+        from adapters.spain_enaire import SpainEnaireAdapter
+        bbox=tuple(float(value) for value in args.bbox.split(","))
+        if len(bbox)!=4: raise SystemExit("--bbox needs west,south,east,north")
+        result=SpainEnaireAdapter().fetch_bbox(bbox)
+        args.output.parent.mkdir(parents=True,exist_ok=True)
+        args.output.write_text(json.dumps({"type":"FeatureCollection","features":result.features,"warnings":result.warnings},ensure_ascii=False,separators=(",",":")),encoding="utf-8")
+        print(f"Wrote {len(result.features)} official ENAIRE features to {args.output}")
         return
     validate_registry()
 

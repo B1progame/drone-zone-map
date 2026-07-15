@@ -15,7 +15,17 @@ const DIPUL_LAYERS = [
 ].map(layer => `dipul:${layer}`).join(',');
 
 const dipulTiles = `https://uas-betrieb.de/geoservices/dipul/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=${encodeURIComponent(DIPUL_LAYERS)}&STYLES=&FORMAT=image%2Fpng&TRANSPARENT=true&SRS=EPSG%3A3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256`;
-const enaireTiles='https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V0/MapServer/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&layers=show%3A0%2C2%2C3&f=image';
+const ENAIRE='https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V0/MapServer';
+const enaireRequests=new WeakMap<MapLibreMap,AbortController>();
+
+async function loadSpainViewport(map:MapLibreMap){
+ const source=map.getSource('enaire') as maplibregl.GeoJSONSource|undefined;if(!source)return;
+ const bounds=map.getBounds(),west=bounds.getWest(),east=bounds.getEast(),south=bounds.getSouth(),north=bounds.getNorth();
+ if(map.getZoom()<7||east<-19||west>5||north<27||south>45){source.setData({type:'FeatureCollection',features:[]});return}
+ enaireRequests.get(map)?.abort();const controller=new AbortController();enaireRequests.set(map,controller);
+ const geometry=[Math.max(-19,west),Math.max(27,south),Math.min(5,east),Math.min(45,north)].join(',');
+ try{const collections=await Promise.all([0,2,3].map(async layer=>{const params=new URLSearchParams({where:'1=1',geometry,geometryType:'esriGeometryEnvelope',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outFields:'identifier,type,name,reasons,lower,upper,uom,updateDateTime',returnGeometry:'true',outSR:'4326',geometryPrecision:'5',resultRecordCount:'2000',f:'geojson'});const response=await fetch(`${ENAIRE}/${layer}/query?${params}`,{signal:controller.signal});if(!response.ok)throw new Error(`ENAIRE layer ${layer} failed`);const data=await response.json();return(data.features??[]).map((feature:any)=>({...feature,properties:{...feature.properties,enaireLayer:layer}}))}));if(!controller.signal.aborted)source.setData({type:'FeatureCollection',features:collections.flat()})}catch(error){if((error as Error).name!=='AbortError')console.warn('ENAIRE viewport query unavailable',error)}
+}
 
 function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
   const satellite = baseMap === 'satellite';
@@ -39,14 +49,15 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
         tileSize: 256,
         attribution: '<a href="https://dipul.bund.de/" target="_blank">Quelle Geodaten: DFS, BKG 2026</a>'
       },
-      enaire: { type:'raster', tiles:[enaireTiles], tileSize:256, attribution:'<a href="https://aip.enaire.es/AIP/UAS-en.html" target="_blank">UAS zones © ENAIRE / AIS</a>' },
+      enaire: { type:'geojson', data:{type:'FeatureCollection',features:[]}, attribution:'<a href="https://aip.enaire.es/AIP/UAS-en.html" target="_blank">UAS zones © ENAIRE / AIS</a>' },
       luxembourg: { type:'geojson', data:`${import.meta.env.BASE_URL}data/zones/LU.geojson`, attribution:'Direction de l’Aviation Civile Luxembourg · CC0' },
       weather: { type:'geojson', data:{type:'FeatureCollection',features:[]} }
     },
     layers: [
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
       { id: 'dipul-zones', type: 'raster', source: 'dipul', layout: { visibility: zonesVisible ? 'visible' : 'none' }, paint: { 'raster-opacity': 0.78, 'raster-fade-duration': 150 } },
-      { id:'enaire-zones', type:'raster', source:'enaire', layout:{visibility:zonesVisible?'visible':'none'}, paint:{'raster-opacity':.76,'raster-fade-duration':150} },
+      { id:'enaire-zones', type:'fill', source:'enaire', minzoom:7, layout:{visibility:zonesVisible?'visible':'none'}, paint:{'fill-color':['match',['get','type'],'PROHIBITED','#ff455d','REQ_AUTHORIZATION','#ffb84d','CONDITIONAL','#55dff0','#8bbcff'],'fill-opacity':['match',['get','type'],'PROHIBITED',.34,'REQ_AUTHORIZATION',.28,'CONDITIONAL',.12,.16]} },
+      { id:'enaire-lines', type:'line', source:'enaire', minzoom:7, layout:{visibility:zonesVisible?'visible':'none'}, paint:{'line-color':['match',['get','type'],'PROHIBITED','#ff455d','REQ_AUTHORIZATION','#ffd15c','CONDITIONAL','#66e7f5','#9bc4ff'],'line-width':['interpolate',['linear'],['zoom'],7,.7,12,1.8,16,3],'line-opacity':.9} },
       { id:'luxembourg-zones', type:'fill', source:'luxembourg', layout:{visibility:zonesVisible?'visible':'none'}, paint:{'fill-color':['match',['get','restriction'],'PROHIBITED','#ff4d57','REQ_AUTHORIZATION','#ff9e43','#ffd75e'],'fill-opacity':.42,'fill-outline-color':'#fff2d0'} },
       { id:'weather-halo', type:'circle', source:'weather', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,22,10,110,15,210],'circle-color':['get','color'],'circle-opacity':.2,'circle-blur':.65,'circle-stroke-width':2,'circle-stroke-color':['get','color'],'circle-stroke-opacity':.55} }
     ]
@@ -80,7 +91,8 @@ export function MapCanvas({ location, weather, onPick }: { location?: Location; 
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
     map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
-    map.on('load', () => { setLoaded(true); setError(''); map.resize(); });
+    map.on('load', () => { setLoaded(true); setError(''); map.resize();loadSpainViewport(map); });
+    map.on('moveend',()=>loadSpainViewport(map));
     map.on('click', event => onPickRef.current({
       lat: event.lngLat.lat,
       lng: event.lngLat.lng,
@@ -101,7 +113,7 @@ export function MapCanvas({ location, weather, onPick }: { location?: Location; 
 
   useEffect(() => {
     if (!mapRef.current) return;
-    mapRef.current.setStyle(mapStyle(baseMap, zonesVisible));
+    const map=mapRef.current;map.setStyle(mapStyle(baseMap, zonesVisible));map.once('styledata',()=>loadSpainViewport(map));
   }, [baseMap, zonesVisible]);
 
   useEffect(() => {
