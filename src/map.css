@@ -1,4 +1,7 @@
 .mapHost { position: relative; background: linear-gradient(145deg, #10231e, #07100e); }
+.mapPage > .mapHost { position: absolute; inset: 0; z-index: 0; height: 100%; }
+.mapPage .mapSearch { z-index: 20; }
+.mapPage .mapPanel, .mapPage .resultCard, .mapPage .emptyCheck { z-index: 15; }
 .mapLoading { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 10px; background: #091512; color: #d7e4dd; font-size: 12px; }
 .mapLoading span { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #b6ff9433; border-top-color: #b6ff94; animation: map-spin .8s linear infinite; }
 .mapStyleControl { position: absolute; z-index: 5; top: 82px; right: 58px; display: flex; gap: 4px; padding: 5px; background: #0c1d19df; border: 1px solid #ffffff25; border-radius: 15px; box-shadow: 0 12px 30px #0007; backdrop-filter: blur(18px); }
