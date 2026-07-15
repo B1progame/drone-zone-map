@@ -1,0 +1,144 @@
+{
+  "url": "https://uas-betrieb.de/geoservices/dipul/wms",
+  "kind": "wms",
+  "status": "capabilities_verified",
+  "layers": [
+    {
+      "name": "bahnanlagen",
+      "title": "Bahnanlagen"
+    },
+    {
+      "name": "behoerden",
+      "title": "Oberste Bundes- und Landesbehörden und Verfassungsorgane"
+    },
+    {
+      "name": "binnenwasserstrassen",
+      "title": "Binnenwasserstraßen"
+    },
+    {
+      "name": "bundesautobahnen",
+      "title": "Bundesautobahnen"
+    },
+    {
+      "name": "bundesstrassen",
+      "title": "Bundesstraßen"
+    },
+    {
+      "name": "diplomatische_vertretungen",
+      "title": "Diplomatische und konsularische Vertretungen"
+    },
+    {
+      "name": "ffh-gebiete",
+      "title": "FFH-Gebiete"
+    },
+    {
+      "name": "flugbeschraenkungsgebiete",
+      "title": "Flugbeschränkungsgebiete"
+    },
+    {
+      "name": "flughaefen",
+      "title": "Flughäfen"
+    },
+    {
+      "name": "flugplaetze",
+      "title": "Flugplätze"
+    },
+    {
+      "name": "freibaeder",
+      "title": "Freibäder und Badestrände"
+    },
+    {
+      "name": "haengegleiter",
+      "title": "Hängegleiter"
+    },
+    {
+      "name": "inaktive_temporaere_betriebseinschraenkungen",
+      "title": "Inaktive temporäre Betriebseinschränkungen"
+    },
+    {
+      "name": "industrieanlagen",
+      "title": "Industrieanlagen"
+    },
+    {
+      "name": "internationale_organisationen",
+      "title": "Internationale Organisationen im Sinne des Völkerrechts"
+    },
+    {
+      "name": "justizvollzugsanstalten",
+      "title": "JVA und Einrichtungen des Maßregelvollzugs"
+    },
+    {
+      "name": "kontrollzonen",
+      "title": "Kontrollzonen"
+    },
+    {
+      "name": "kraftwerke",
+      "title": "Kraftwerke"
+    },
+    {
+      "name": "krankenhaeuser",
+      "title": "Krankenhäuser"
+    },
+    {
+      "name": "labore",
+      "title": "Einrichtungen BSL-4"
+    },
+    {
+      "name": "militaerische_anlagen",
+      "title": "Militärische Anlagen und Organisationen"
+    },
+    {
+      "name": "modellflugplaetze",
+      "title": "Modellflugplätze"
+    },
+    {
+      "name": "nationalparks",
+      "title": "Nationalparks"
+    },
+    {
+      "name": "naturschutzgebiete",
+      "title": "Naturschutzgebiete"
+    },
+    {
+      "name": "polizei",
+      "title": "Liegenschaften der Polizei"
+    },
+    {
+      "name": "schifffahrtsanlagen",
+      "title": "Schifffahrtsanlagen"
+    },
+    {
+      "name": "seewasserstrassen",
+      "title": "Seewasserstraßen"
+    },
+    {
+      "name": "sicherheitsbehoerden",
+      "title": "Andere Sicherheitsbehörden"
+    },
+    {
+      "name": "stromleitungen",
+      "title": "Stromleitungen"
+    },
+    {
+      "name": "temporaere_betriebseinschraenkungen",
+      "title": "Temporäre Betriebseinschränkungen"
+    },
+    {
+      "name": "umspannwerke",
+      "title": "Umspannwerke"
+    },
+    {
+      "name": "vogelschutzgebiete",
+      "title": "Vogelschutzgebiete"
+    },
+    {
+      "name": "windkraftanlagen",
+      "title": "Windkraftanlagen"
+    },
+    {
+      "name": "wohngrundstuecke",
+      "title": "Wohngrundstücke"
+    }
+  ],
+  "note": "Known public WMS responds. Confirm its provider documentation, licence, attribution, and caching terms."
+}

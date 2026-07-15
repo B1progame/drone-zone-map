@@ -1,0 +1,15 @@
+.mapHost { position: relative; background: linear-gradient(145deg, #10231e, #07100e); }
+.mapLoading { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 10px; background: #091512; color: #d7e4dd; font-size: 12px; }
+.mapLoading span { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #b6ff9433; border-top-color: #b6ff94; animation: map-spin .8s linear infinite; }
+.mapStyleControl { position: absolute; z-index: 5; top: 82px; right: 58px; display: flex; gap: 4px; padding: 5px; background: #0c1d19df; border: 1px solid #ffffff25; border-radius: 15px; box-shadow: 0 12px 30px #0007; backdrop-filter: blur(18px); }
+.mapStyleControl button { border: 0; background: transparent; padding: 8px 10px; font-size: 11px; border-radius: 10px; }
+.mapStyleControl button.active { background: #f1f6eb; color: #122018; }
+.mapStyleControl button.zones.active { background: #b6ff94; color: #122018; }
+.mapError { top: 130px; z-index: 6; }
+.maplibregl-ctrl-attrib { max-width: min(70vw, 740px); }
+@keyframes map-spin { to { transform: rotate(360deg); } }
+@media (max-width: 680px) {
+  .mapStyleControl { top: 142px; right: 14px; }
+  .mapStyleControl button { padding: 9px; }
+  .mapStyleControl button span { display: none; }
+}

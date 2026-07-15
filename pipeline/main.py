@@ -4,14 +4,50 @@ This MVP deliberately exports registry metadata only. Country adapters must veri
 official public endpoint terms and schema before fetching or publishing geometry.
 """
 from pathlib import Path
+import argparse
 import json
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "public" / "data" / "sources" / "countries.json"
 
-def main() -> None:
+def validate_registry() -> None:
     countries = json.loads(REGISTRY.read_text(encoding="utf-8"))
     print(f"Validated {len(countries)} country source records; no network fetching configured.")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Drone Zone Map source pipeline")
+    subparsers = parser.add_subparsers(dest="command")
+    discovery = subparsers.add_parser("discover", help="Inspect a public official page for geospatial endpoint candidates")
+    discovery.add_argument("url", help="Official public page URL")
+    discovery.add_argument("--output", type=Path, help="Write JSON report to this path")
+    discovery.add_argument("--delay", type=float, default=1.0, help="Delay between public requests (default: 1 second)")
+    wms = subparsers.add_parser("inspect-wms", help="Inspect a documented public WMS endpoint supplied explicitly")
+    wms.add_argument("url", help="Known public WMS service URL")
+    wms.add_argument("--output", type=Path, help="Write JSON report to this path")
+    args = parser.parse_args()
+    if args.command == "discover":
+        from discovery.public_endpoint_discovery import discover, report_as_dict
+        report = report_as_dict(discover(args.url, delay_seconds=max(0.5, args.delay)))
+        output = json.dumps(report, indent=2, ensure_ascii=False)
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(output + "\n", encoding="utf-8")
+            print(f"Wrote discovery report to {args.output}")
+        else:
+            print(output)
+        return
+    if args.command == "inspect-wms":
+        from dataclasses import asdict
+        from discovery.public_endpoint_discovery import inspect_known_wms
+        output = json.dumps(asdict(inspect_known_wms(args.url)), indent=2, ensure_ascii=False)
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(output + "\n", encoding="utf-8")
+            print(f"Wrote WMS inspection report to {args.output}")
+        else:
+            print(output)
+        return
+    validate_registry()
 
 if __name__ == "__main__":
     main()
