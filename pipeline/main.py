@@ -6,6 +6,7 @@ official public endpoint terms and schema before fetching or publishing geometry
 from pathlib import Path
 import argparse
 import json
+import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "public" / "data" / "sources" / "countries.json"
@@ -25,6 +26,7 @@ def main() -> None:
     wms.add_argument("url", help="Known public WMS service URL")
     wms.add_argument("--output", type=Path, help="Write JSON report to this path")
     subparsers.add_parser("update-luxembourg", help="Fetch and normalize Luxembourg's official CC0 UAS zones")
+    subparsers.add_parser("publish-sweden", help="Publish previously downloaded, unmodified LFV Dronechart GeoJSON layers")
     spain=subparsers.add_parser("fetch-spain-bbox",help="Download official ENAIRE GeoJSON for a small WGS84 viewport")
     spain.add_argument("--bbox",required=True,help="west,south,east,north within Spain service extent")
     spain.add_argument("--output",type=Path,required=True,help="Output .geojson path")
@@ -57,6 +59,18 @@ def main() -> None:
         target=ROOT / "public" / "data" / "zones" / "LU.geojson"
         target.write_text(json.dumps({"type":"FeatureCollection","features":result.features,"warnings":result.warnings},ensure_ascii=False,separators=(",",":")),encoding="utf-8")
         print(f"Wrote {len(result.features)} Luxembourg zone volumes to {target}")
+        return
+    if args.command == "publish-sweden":
+        source = ROOT / "exports" / "requested" / "sweden"
+        target = ROOT / "public" / "data" / "zones" / "sweden"
+        files = sorted(source.glob("*.geojson"))
+        if len(files) != 10:
+            raise SystemExit(f"Expected 10 official LFV layers in {source}; found {len(files)}")
+        target.mkdir(parents=True, exist_ok=True)
+        for item in files:
+            # Keep LFV output unmodified; its published terms prohibit derivatives.
+            shutil.copyfile(item, target / item.name)
+        print(f"Published {len(files)} unmodified LFV layers to {target}")
         return
     if args.command == "fetch-spain-bbox":
         from adapters.spain_enaire import SpainEnaireAdapter
