@@ -11,5 +11,6 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
       - run: python pipeline/main.py
+      - run: python pipeline/main.py update-luxembourg
       - run: |
           git diff --quiet || (git config user.name 'github-actions[bot]' && git config user.email '41898282+github-actions[bot]@users.noreply.github.com' && git add public/data && git commit -m 'chore(data): update verified source metadata' && git push)

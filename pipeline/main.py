@@ -24,6 +24,7 @@ def main() -> None:
     wms = subparsers.add_parser("inspect-wms", help="Inspect a documented public WMS endpoint supplied explicitly")
     wms.add_argument("url", help="Known public WMS service URL")
     wms.add_argument("--output", type=Path, help="Write JSON report to this path")
+    subparsers.add_parser("update-luxembourg", help="Fetch and normalize Luxembourg's official CC0 UAS zones")
     args = parser.parse_args()
     if args.command == "discover":
         from discovery.public_endpoint_discovery import discover, report_as_dict
@@ -46,6 +47,13 @@ def main() -> None:
             print(f"Wrote WMS inspection report to {args.output}")
         else:
             print(output)
+        return
+    if args.command == "update-luxembourg":
+        from adapters.luxembourg_geojson import LuxembourgGeojsonAdapter
+        result=LuxembourgGeojsonAdapter().fetch()
+        target=ROOT / "public" / "data" / "zones" / "LU.geojson"
+        target.write_text(json.dumps({"type":"FeatureCollection","features":result.features,"warnings":result.warnings},ensure_ascii=False,separators=(",",":")),encoding="utf-8")
+        print(f"Wrote {len(result.features)} Luxembourg zone volumes to {target}")
         return
     validate_registry()
 

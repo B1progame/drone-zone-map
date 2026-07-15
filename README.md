@@ -20,9 +20,9 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 | Country | Source | Status | Offline/vector claim |
 |---|---|---|---|
 | Germany | DIPUL | WMS configuration status | No vector/offline zone claim |
-| Spain | ENAIRE Drones | Endpoint discovery required | None |
+| Spain | ENAIRE servAIS / ED-318 | Live MapServer overlay and point identify | No offline bulk export |
 | France | Géoportail | Official-link-only fallback | None |
-| Luxembourg | DAC Geoportal | Endpoint discovery required | None |
+| Luxembourg | DAC Geoportal | Normalized official CC0 vector zones | Offline pack supported |
 
 The current MVP deliberately bundles **no drone-zone geometry**. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and is designed to become the single traceable record of verified public services, freshness, attribution, capability, warnings, and terms notes.
 
