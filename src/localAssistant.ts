@@ -12,12 +12,12 @@ const formatHour = (value: string) =>
 
 export function answerFlightQuestion({ question, location, weather, zoneInfo }: FlightContext) {
   if (!location) {
-    return 'Select a point on the map first. I can then explain its loaded airspace zones, weather risk and best forecast window without an account or API key.';
+    return '### Load a location first\nSelect a point on the map so I can explain its airspace objects, weather risk and strongest forecast window.';
   }
 
   const normalized = question.toLowerCase();
   const weatherSummary = weather
-    ? `The current weather score is ${weather.score}/100 with ${weather.wind} km/h wind, gusts up to ${weather.gusts} km/h and ${weather.rainProbability}% rain probability.`
+    ? `**Weather:** ${weather.score}/100, ${weather.wind} km/h wind, gusts up to ${weather.gusts} km/h, ${weather.rainProbability}% rain probability and about ${Math.round(weather.visibility / 1000)} km visibility.`
     : 'Live weather has not loaded for this point yet.';
   const zoneSummary = !zoneInfo
     ? 'The official airspace source is still loading.'
@@ -26,6 +26,15 @@ export function answerFlightQuestion({ question, location, weather, zoneInfo }: 
       : zoneInfo.status === 'none'
         ? `${zoneInfo.sourceName} returned no overlapping zone, but normal rules and temporary restrictions may still apply.`
         : `${zoneInfo.countryName} is currently handled through its official map.`;
+  const officialLink=zoneInfo?`[Open ${zoneInfo.sourceName}](${zoneInfo.sourceUrl})`:'Open the responsible national aviation source.';
+  const zoneDetails=zoneInfo?.zones.slice(0,5).map(zone=>{
+    const startsAtGround=/^0(?:[.,]0+)?\s*m?\s*AGL/i.test(zone.lower??'');
+    const vertical=[zone.lower&&`lower ${zone.lower}`,zone.upper&&`upper ${zone.upper}`].filter(Boolean).join(', ');
+    const meaning=startsAtGround?'It starts at ground level; that describes its vertical extent and does not by itself mean every flight is prohibited.':vertical||'No verified vertical limit was supplied.';
+    return `- **${zone.name} — ${zone.type}:** ${meaning}${zone.message?` ${zone.message}`:''}`;
+  }).join('\n')??'';
+  const standardAnswer=(quick:string,extra:string[]=[])=>
+    `### Quick answer\n${quick}\n\n### What matters\n- ${weatherSummary}\n- **Airspace:** ${zoneSummary}${zoneDetails?`\n${zoneDetails}`:''}${extra.length?`\n${extra.map(item=>`- ${item}`).join('\n')}`:''}\n\n### Before takeoff\n- ${officialLink}\n- Recheck temporary restrictions, local rules, landowner permission and your aircraft limits immediately before flight.`;
 
   if (/best|time|hour|window|when/.test(normalized) && weather?.hourly.length) {
     const best = weather.hourly
@@ -33,25 +42,22 @@ export function answerFlightQuestion({ question, location, weather, zoneInfo }: 
       .map(hour => ({ ...hour }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 3);
-    return `The strongest forecast windows in the next 24 hours are ${best.map(hour => `${formatHour(hour.time)} (${hour.score}/100, ${hour.wind} km/h wind, ${hour.rainProbability}% rain)`).join(', ')}. Recheck the forecast and official source immediately before takeoff.`;
+    return standardAnswer(`The strongest forecast windows are ${best.map(hour => `**${formatHour(hour.time)}** (${hour.score}/100, ${hour.wind} km/h wind, ${hour.rainProbability}% rain)`).join(', ')}.`,['Forecast rankings are weather-only and do not override airspace restrictions.']);
   }
 
   if (/zone|airspace|restriction|overlay|source/.test(normalized)) {
-    if (!zoneInfo?.zones.length) return `${zoneSummary} Open the official map before takeoff for the authoritative result.`;
-    const visible = zoneInfo.zones.slice(0, 5).map(zone => `${zone.name} (${zone.type})`).join(', ');
-    return `${zoneSummary} The loaded matches are: ${visible}. These overlays are context, not legal clearance; use the official map for the final decision.`;
+    return standardAnswer(zoneInfo?.zones.length?'The map found relevant airspace or infrastructure objects at this point. Their type and published conditions matter more than their color or lower altitude.':'No overlapping object was returned, but that is not permission to fly.');
   }
 
   if (/weather|wind|rain|visibility|risk|gust/.test(normalized)) {
-    if (!weather) return 'Live weather is not available yet. Wait for the forecast to finish loading or select the point again.';
-    const visibility = Math.round(weather.visibility / 1000);
+    if (!weather) return standardAnswer('Live weather is not available yet. Wait for the forecast to finish loading or select the point again.');
     const risk = weather.score >= 75 ? 'relatively favorable' : weather.score >= 50 ? 'mixed and worth extra care' : 'unfavorable';
-    return `${weatherSummary} Visibility is about ${visibility} km. Based only on these forecast values, conditions look ${risk}; also check local wind, precipitation and your aircraft limits at takeoff time.`;
+    return standardAnswer(`Based only on the loaded forecast, conditions look **${risk}**. This is not a go/no-go decision.`,['Compare wind and gusts with the limits for your exact aircraft and takeoff site.']);
   }
 
   if (/can i|fly|allowed|legal|permission|safe/.test(normalized)) {
-    return `I cannot grant permission to fly at ${location.name}. ${zoneSummary} ${weatherSummary} Open the official national map and verify local rules, temporary restrictions and landowner requirements before takeoff.`;
+    return standardAnswer(`I cannot confirm legal permission at **${location.name}** from planning overlays alone. The loaded context can identify what needs checking, not authorize the flight.`);
   }
 
-  return `For ${location.name}: ${zoneSummary} ${weatherSummary} Ask about visible zones, weather risk or the best time in the next 24 hours for a more focused answer.`;
+  return standardAnswer(`For **${location.name}**, review the loaded airspace objects and forecast together. Ask about a specific zone, weather risk or the best time for a more focused answer.`);
 }

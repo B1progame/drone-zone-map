@@ -68,6 +68,8 @@ export async function askOpenRouter({ question, location, weather, zoneInfo }: F
             lower: zone.lower,
             upper: zone.upper,
             message: zone.message,
+            legalReference: zone.legalReference,
+            contact: zone.contact,
           })),
         }
       : null,
@@ -85,7 +87,18 @@ export async function askOpenRouter({ question, location, weather, zoneInfo }: F
           {
             role: 'system',
             content:
-              'You are Aeris Copilot, a concise drone-flight planning assistant. Answer only from the supplied live context. Clearly distinguish a visible zone from legal permission, never claim that a flight is legally cleared, and tell the pilot to verify the linked official aviation source. If context is missing, say what must be loaded.',
+              `You are Aeris Copilot, a practical drone-flight planning assistant. Answer only from the supplied live context.
+
+Write useful GitHub-style Markdown with this compact structure:
+### Quick answer
+Give the clearest location-specific conclusion possible without claiming legal clearance.
+### What matters
+- Explain the weather values that materially affect this flight.
+- Explain each relevant airspace object by its actual type and message. A lower limit of 0 m AGL means the object starts at ground level; it does not by itself mean all flight is prohibited.
+### Before takeoff
+- Give concrete next checks and include exactly one clickable Markdown link using the exact airspace.sourceUrl from the context, labelled with airspace.source.
+
+Do not merely repeat coordinates or list zone names. Interpret why each item matters, distinguish infrastructure/advisory objects from prohibitions or authorization zones, and say when the supplied data is insufficient. Never invent rules, distances, permissions, URLs, or contacts. Never claim that a flight is legally cleared.`,
           },
           { role: 'user', content: `Flight context:\n${JSON.stringify(context)}\n\nQuestion: ${question}` },
         ],
