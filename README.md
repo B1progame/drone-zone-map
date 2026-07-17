@@ -1,6 +1,6 @@
 # Drone Zone Map
 
-A privacy-friendly, static drone planning map built for GitHub Pages. It combines map exploration, multi-point route planning, honest official-source status, live weather context, saved locations, and a keyless local flight-context assistant in a polished responsive interface.
+A privacy-friendly, static drone planning map built for GitHub Pages. It combines map exploration, multi-point route planning, honest official-source status, live weather context, saved locations, and a local flight-context assistant with optional OpenRouter answers in a polished responsive interface.
 
 > **Planning and situational awareness only.** This project is not an official aviation authority and does not grant permission to fly. Check the official national aviation source before takeoff.
 
@@ -8,12 +8,12 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 
 - Interactive MapLibre globe/map with click, touch, pinch zoom, and 100 km+ country-scale overlays
 - Coordinate search, browser geolocation, and animated map fly-to
-- Current Open-Meteo conditions plus a cached viewport field for cloud, rain, animated wind particles, and optional RainViewer radar
+- Current Open-Meteo conditions plus a cached viewport field for cloud, rain, wind lines, and optional RainViewer radar
 - Multi-point flight routes with persisted waypoints, map/search entry, and geodesic distance
 - Local-only saved places and preference notice
 - Responsive liquid-glass UI with adjustable transparency, reduced motion, and overlay-detail budgets
 - Source registry and official links; no fake zones or derived legal claims
-- Keyless on-device flight-context assistant using the airspace and forecast data already loaded in the app
+- Keyless on-device flight-context assistant, plus optional OpenRouter Hunyuan answers using a session-only browser key
 - Current-viewport GeoJSON export plus a clean map-and-overlay PNG capture without app controls
 - GitHub Pages deployment and a safe metadata-validation workflow
 
@@ -101,12 +101,12 @@ national service.
 - The visible-overlay GeoJSON contains rendered vectors and metadata references for raster overlays; raster pixels are represented by the clean PNG instead of being mislabelled as vector geometry.
 - A remote tile service can still reject a canvas capture if it stops allowing cross-origin textures. Aeris reports that export failure instead of producing a corrupt file.
 - Offline packs are UI architecture only until each source’s caching terms and data format are verified.
-- The built-in assistant is deterministic and only summarizes already-loaded context; it is not a general-purpose language model and never grants legal clearance.
+- The keyless assistant is deterministic and only summarizes already-loaded context. An optional OpenRouter key enables the directly selected free Hunyuan model; the key is held in `sessionStorage`, is never bundled or committed, and is removed when the tab session ends. Neither mode grants legal clearance.
 - Primary home, weather, search, planner, settings, and result flows are translated into English, German, Spanish, French, and Italian. Other listed search languages use English UI fallback while still localizing geocoding and supported official-map handoffs.
 
 ## Privacy
 
-The basic app has no analytics. Route points, saved places, preferences, and the acknowledgement are stored in browser localStorage; clearing browser site data removes them. The app only calls Open-Meteo after you select a point. No account or AI-provider API key is required.
+The basic app has no analytics. Route points, saved places, preferences, and the acknowledgement are stored in browser localStorage; clearing browser site data removes them. The app only calls Open-Meteo after you select a point. No account or AI-provider API key is required. If you optionally enter an OpenRouter key, it remains in the current tab's `sessionStorage` and is sent only to OpenRouter for validation and Copilot requests.
 
 ## License
 

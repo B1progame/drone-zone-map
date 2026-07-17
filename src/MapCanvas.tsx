@@ -41,7 +41,6 @@ const SWEDEN_SOURCE_IDS=[...SWEDEN_POLYGON_SOURCES,'mais-ARP'] as const;
 const ZONE_LAYER_IDS = ['dipul-zones','dipul-detail','enaire-infrastructure-fill','enaire-infrastructure-line','enaire-aero-fill','enaire-aero-line','enaire-urban-fill','enaire-urban-line','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
 const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const dynamicRequestKeys=new WeakMap<MapLibreMap,Map<string,string>>();
-const weatherGridByMap=new WeakMap<MapLibreMap,any>();
 const radarUnavailableMaps=new WeakSet<MapLibreMap>();
 const emptyGeoJson={type:'FeatureCollection' as const,features:[]};
 
@@ -273,48 +272,19 @@ async function queryWeatherGrid(map:MapLibreMap,hourIndex:number,detail:RenderDe
 function loadWeatherGrid(map:MapLibreMap,hourIndex:number,visible:boolean,detail:RenderDetail,enabled:boolean,hooks?:OverlayHooks){
  const source=map.getSource('weather-grid') as maplibregl.GeoJSONSource|undefined;
  if(!source)return;
- if(!visible||!enabled){weatherGridByMap.set(map,emptyGeoJson);source.setData(emptyGeoJson);return}
+ if(!visible||!enabled){source.setData(emptyGeoJson);return}
  const keys=dynamicRequestKeys.get(map)??new Map<string,string>();dynamicRequestKeys.set(map,keys);
  const b=map.getBounds(),key=['weather',detail,hourIndex,Math.floor(map.getZoom()),b.getWest().toFixed(1),b.getSouth().toFixed(1),b.getEast().toFixed(1),b.getNorth().toFixed(1)].join(':');
  if(keys.get('weather-grid')===key)return;
  const cached=weatherGridCache.get(key);
- if(cached&&Date.now()-cached.time<10*60*1000){keys.set('weather-grid',key);weatherGridByMap.set(map,cached.data);source.setData(cached.data);return}
+ if(cached&&Date.now()-cached.time<10*60*1000){keys.set('weather-grid',key);source.setData(cached.data);return}
  keys.set('weather-grid',key);hooks?.start(key,'weather field');
  const pending=weatherGridPending.get(key)??queryWeatherGrid(map,hourIndex,detail).finally(()=>weatherGridPending.delete(key));
  weatherGridPending.set(key,pending);
  void pending.then(data=>{
    weatherGridCache.set(key,{time:Date.now(),data});
-   if(keys.get('weather-grid')===key){weatherGridByMap.set(map,data);(map.getSource('weather-grid') as maplibregl.GeoJSONSource|undefined)?.setData(data)}
+   if(keys.get('weather-grid')===key)(map.getSource('weather-grid') as maplibregl.GeoJSONSource|undefined)?.setData(data);
  }).catch(error=>{if(keys.get('weather-grid')===key)keys.delete('weather-grid');console.warn(error)}).finally(()=>hooks?.finish(key));
-}
-
-function startWindParticles(map:MapLibreMap,enabled:()=>boolean){
- let animationFrame=0,lastUpdate=0;
- const animate=(time:number)=>{
-   animationFrame=requestAnimationFrame(animate);
-   if(time-lastUpdate<70)return;
-   lastUpdate=time;
-   const source=map.getSource('weather-particles') as maplibregl.GeoJSONSource|undefined;
-   if(!source)return;
-   const grid=weatherGridByMap.get(map);
-   if(!enabled()||!grid?.features?.length){source.setData(emptyGeoJson);return}
-   const phase=(time/2400)%1,features:any[]=[];
-   const lines=(grid.features??[]).filter((feature:any)=>feature.properties?.kind==='wind'&&feature.geometry?.type==='LineString');
-   lines.forEach((line:any,lineIndex:number)=>{
-     const [start,end]=line.geometry.coordinates;
-     for(let trail=0;trail<3;trail++){
-       const progress=(phase+lineIndex*.137-trail*.045+1)%1;
-       features.push({
-         type:'Feature',
-         properties:{wind:line.properties.wind,opacity:1-trail*.27,size:trail===0?1.25:.82},
-         geometry:{type:'Point',coordinates:[start[0]+(end[0]-start[0])*progress,start[1]+(end[1]-start[1])*progress]}
-       });
-     }
-   });
-   source.setData({type:'FeatureCollection',features});
- };
- animationFrame=requestAnimationFrame(animate);
- return()=>cancelAnimationFrame(animationFrame);
 }
 
 const spainColor=['match',['get','type'],'PROHIBITED','#ff405b','REQ_AUTHORIZATION','#ffad3d','CONDITIONAL','#f2ce50','NO_RESTRICTION','#5ce09a','#69bff5'] as any;
@@ -380,7 +350,6 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       'denmark-nature':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://www.droneregler.dk/dronezoner/dronezoner-data-vejledninger/data-downloads" target="_blank">Nature zones © Trafikstyrelsen</a>'},
       ...swedenSources,
       'weather-grid': { type:'geojson', data:emptyGeoJson, attribution:'Forecast field © Open-Meteo' },
-      'weather-particles': { type:'geojson', data:emptyGeoJson },
       'weather-location': { type:'geojson', data:emptyGeoJson },
       'flight-plan': { type:'geojson', data:emptyGeoJson }
     },
@@ -417,8 +386,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:'sweden-airports',type:'circle',source:'sweden-mais-ARP',minzoom:8,layout:{visibility:zonesVisible?'visible':'none'},paint:{'circle-radius':['interpolate',['linear'],['zoom'],8,2.5,11,6],'circle-color':'#ffdc69','circle-stroke-color':'#2b2110','circle-stroke-width':1}},
       {id:'weather-clouds',type:'heatmap',source:'weather-grid',filter:['==',['get','kind'],'cell'],paint:{'heatmap-weight':['/', ['get','clouds'],100] as any,'heatmap-intensity':['interpolate',['linear'],['zoom'],0,.45,8,.75,14,1.05] as any,'heatmap-radius':['interpolate',['linear'],['zoom'],0,80,6,115,12,150] as any,'heatmap-opacity':.46,'heatmap-color':['interpolate',['linear'],['heatmap-density'],0,'rgba(255,255,255,0)',.18,'rgba(218,233,238,.15)',.45,'rgba(230,241,244,.38)',.75,'rgba(255,255,255,.64)',1,'rgba(255,255,255,.82)'] as any}},
       {id:'weather-rain',type:'heatmap',source:'weather-grid',filter:['==',['get','kind'],'cell'],paint:{'heatmap-weight':['min',1,['+', ['/', ['get','rain'],100],['/', ['get','precipitation'],8]]] as any,'heatmap-intensity':['interpolate',['linear'],['zoom'],0,.7,10,1.2] as any,'heatmap-radius':['interpolate',['linear'],['zoom'],0,45,7,90,13,125] as any,'heatmap-opacity':.76,'heatmap-color':['interpolate',['linear'],['heatmap-density'],0,'rgba(35,169,255,0)',.16,'rgba(63,182,255,.28)',.4,'rgba(46,220,239,.56)',.68,'rgba(255,222,82,.76)',.88,'rgba(255,132,58,.88)',1,'rgba(226,57,82,.95)'] as any}},
-      {id:'weather-wind',type:'line',source:'weather-grid',filter:['==',['get','kind'],'wind'],paint:{'line-color':['interpolate',['linear'],['get','wind'],0,'#c7f4ff',20,'#79ddff',40,'#ffd267',65,'#ff795f'] as any,'line-width':['interpolate',['linear'],['zoom'],0,.4,8,.85,14,1.4] as any,'line-opacity':.24}},
-      {id:'weather-wind-particles',type:'circle',source:'weather-particles',paint:{'circle-radius':['interpolate',['linear'],['zoom'],0,['*',['get','size'],1.2],8,['*',['get','size'],2.1],14,['*',['get','size'],3.4]] as any,'circle-color':['interpolate',['linear'],['get','wind'],0,'#dff9ff',20,'#74ddff',40,'#ffd267',65,'#ff795f'] as any,'circle-opacity':['get','opacity'],'circle-blur':.22}},
+      {id:'weather-wind',type:'line',source:'weather-grid',filter:['==',['get','kind'],'wind'],paint:{'line-color':['interpolate',['linear'],['get','wind'],0,'#dff9ff',20,'#79ddff',40,'#ffd267',65,'#ff795f'] as any,'line-width':['interpolate',['linear'],['zoom'],0,.7,8,1.35,14,2.2] as any,'line-opacity':.72}},
       { id:'weather-field', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,28,10,150,15,280],'circle-color':['get','color'],'circle-opacity':.1,'circle-blur':.82} },
       { id:'weather-halo', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,12,10,56,15,105],'circle-color':['get','color'],'circle-opacity':.17,'circle-blur':.45,'circle-stroke-width':2,'circle-stroke-color':['get','color'],'circle-stroke-opacity':.7} },
       { id:'weather-core', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,3,10,8,15,13],'circle-color':['get','color'],'circle-opacity':.9,'circle-stroke-width':3,'circle-stroke-color':'#ffffff','circle-stroke-opacity':.85} },
@@ -429,7 +397,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
   };
 }
 
-const exportLayerIds=[...ZONE_LAYER_IDS,'weather-clouds','weather-rain','weather-wind','weather-wind-particles','weather-field','weather-halo','weather-core','flight-plan-line','flight-plan-points'] as string[];
+const exportLayerIds=[...ZONE_LAYER_IDS,'weather-clouds','weather-rain','weather-wind','weather-field','weather-halo','weather-core','flight-plan-line','flight-plan-points'] as string[];
 
 function downloadBlob(blob:Blob,filename:string){
  const url=URL.createObjectURL(blob),link=document.createElement('a');
@@ -457,11 +425,7 @@ function downloadVisibleGeoJson(map:MapLibreMap,name?:string){
    if(existing){if(!existing.properties._aerisRenderedLayers.includes(layerId))existing.properties._aerisRenderedLayers.push(layerId);continue}
    byKey.set(key,{type:'Feature',id:feature.id,geometry:feature.geometry,properties:{...feature.properties,_aerisSource:source,_aerisRenderedLayers:[layerId]}});
  }
- const bounds=map.getBounds(),viewRing=[
-   [bounds.getWest(),bounds.getSouth()],[bounds.getEast(),bounds.getSouth()],
-   [bounds.getEast(),bounds.getNorth()],[bounds.getWest(),bounds.getNorth()],
-   [bounds.getWest(),bounds.getSouth()]
- ];
+ const bounds=map.getBounds();
  const viewIntersectsSource=(source:any)=>{
    if(!source?.bounds)return true;
    const [west,south,east,north]=source.bounds;
@@ -475,7 +439,6 @@ function downloadVisibleGeoJson(map:MapLibreMap,name?:string){
    const sourceId=String(layer.source),source=(style.sources as any)[sourceId]??{};
    return{layerId:layer.id,sourceId,tileTemplates:source.tiles??[],attribution:source.attribution??'',note:'Raster pixels cannot be embedded in GeoJSON. The clean PNG snapshot contains the rendered raster overlay.'};
  });
- const rasterFeatures=rasterReferences.map(reference=>({type:'Feature',geometry:{type:'Polygon',coordinates:[viewRing]},properties:{_aerisRasterOverlay:true,...reference}}));
  const collection={
    type:'FeatureCollection',
    name:`Aeris visible overlays - ${name??'current map'}`,
@@ -486,7 +449,7 @@ function downloadVisibleGeoJson(map:MapLibreMap,name?:string){
      rasterOverlays:rasterReferences,
      notice:'Contains vector features currently rendered in the viewport. Raster services are referenced as metadata; use the PNG snapshot for their rendered pixels.'
    },
-   features:[...byKey.values(),...rasterFeatures]
+   features:[...byKey.values()]
  };
  downloadBlob(new Blob([JSON.stringify(collection,null,2)],{type:'application/geo+json'}),`aeris-visible-overlays-${safeMapName(name)}.geojson`);
 }
@@ -563,7 +526,6 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
     map.touchZoomRotate.enable();
     map.dragPan.enable();
-    const stopWindParticles=startWindParticles(map,()=>weatherStateRef.current.visible&&!settingsRef.current.reducedMotion);
     const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)};
     map.on('load', () => { map.setProjection({type:'globe'});setLoaded(true); setError(''); map.resize();refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightPlan(map,planPointsRef.current); });
     map.on('style.load',()=>{map.setProjection({type:'globe'});loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightPlan(map,planPointsRef.current)});
@@ -577,7 +539,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       const sourceId=String((event as any).sourceId??'');
       if(/rainviewer|tilecache\\.rainviewer|weather-radar/i.test(`${sourceId} ${message}`)){
         radarUnavailableMaps.add(map);
-        setRadarNotice('Live radar is unavailable. Forecast rain and animated wind remain active.');
+        setRadarNotice('Live radar is unavailable. Forecast rain and wind lines remain active.');
         window.setTimeout(()=>{
           if(map.getLayer('weather-radar'))map.removeLayer('weather-radar');
           if(map.getSource('weather-radar'))map.removeSource('weather-radar');
@@ -591,7 +553,6 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     resize.observe(hostRef.current);
     return () => {
       resize.disconnect();
-      stopWindParticles();
       markerRef.current?.remove();
       map.remove();
       mapRef.current = null;
@@ -641,6 +602,6 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       <button className={zonesVisible ? 'active zones' : ''} onClick={() => setZonesVisible(value => !value)} aria-pressed={zonesVisible} aria-label="Toggle verified official drone zones"><Layers3 size={16}/><span>Zones</span></button>
       <button className={weatherVisible?'active weather':''} onClick={()=>setWeatherVisible(value=>!value)} aria-pressed={weatherVisible} aria-label="Toggle weather forecast overlay"><CloudSun size={16}/><span>Weather</span></button>
     </div>
-    {weather&&location&&weatherVisible&&<div className="mapWeatherControl liquid"><div className="mapWeatherNow">{(weather.hourly[weatherHour]?.rainProbability??0)>45?<CloudRain/>:<CloudSun/>}<div><small>FORECAST OVERLAY · +{weatherHour}H</small><b>{weather.hourly[weatherHour]?.score??weather.score}/100</b><span><Wind/> {weather.hourly[weatherHour]?.wind??weather.wind} km/h · {weather.hourly[weatherHour]?.rainProbability??weather.rainProbability}% rain</span></div></div><div className="weatherLegend" aria-label="Weather overlay legend"><span className="cloudKey">Cloud</span><span className="rainKey">Rain field</span><span className="windKey">Animated wind</span></div><input type="range" min="0" max="8" step="1" value={weatherHour} onChange={event=>setWeatherHour(Number(event.target.value))} aria-label="Weather forecast hour"/><div className="weatherTicks">{Array.from({length:9},(_,i)=><button className={i===weatherHour?'active':''} onClick={()=>setWeatherHour(i)} key={i}>{i===0?'Now':`+${i}`}</button>)}</div></div>}
+    {weather&&location&&weatherVisible&&<div className="mapWeatherControl liquid"><div className="mapWeatherNow">{(weather.hourly[weatherHour]?.rainProbability??0)>45?<CloudRain/>:<CloudSun/>}<div><small>FORECAST OVERLAY · +{weatherHour}H</small><b>{weather.hourly[weatherHour]?.score??weather.score}/100</b><span><Wind/> {weather.hourly[weatherHour]?.wind??weather.wind} km/h · {weather.hourly[weatherHour]?.rainProbability??weather.rainProbability}% rain</span></div></div><div className="weatherLegend" aria-label="Weather overlay legend"><span className="cloudKey">Cloud</span><span className="rainKey">Rain field</span><span className="windKey">Wind lines</span></div><input type="range" min="0" max="8" step="1" value={weatherHour} onChange={event=>setWeatherHour(Number(event.target.value))} aria-label="Weather forecast hour"/><div className="weatherTicks">{Array.from({length:9},(_,i)=><button className={i===weatherHour?'active':''} onClick={()=>setWeatherHour(i)} key={i}>{i===0?'Now':`+${i}`}</button>)}</div></div>}
   </div>;
 });
