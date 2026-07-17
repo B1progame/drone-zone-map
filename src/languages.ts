@@ -8,7 +8,7 @@ export const SUPPORTED_LANGUAGES = [
 ] as const;
 
 export const normalizeLanguage = (value?:string) => {
-  const code=(value||navigator.language||'en').toLowerCase().split('-')[0];
+  const code=(value||'en').toLowerCase().split('-')[0];
   return SUPPORTED_LANGUAGES.some(([item])=>item===code)?code:'en';
 };
 

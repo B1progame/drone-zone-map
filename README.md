@@ -1,6 +1,6 @@
 # Drone Zone Map
 
-A privacy-friendly, static drone planning map built for GitHub Pages. It combines map exploration, multi-point route planning, honest official-source status, live weather context, local accounts, saved locations, and an optional OpenRouter copilot in a polished responsive interface.
+A privacy-friendly, static drone planning map built for GitHub Pages. It combines map exploration, multi-point route planning, honest official-source status, live weather context, saved locations, and a keyless local flight-context assistant in a polished responsive interface.
 
 > **Planning and situational awareness only.** This project is not an official aviation authority and does not grant permission to fly. Check the official national aviation source before takeoff.
 
@@ -14,7 +14,7 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 - Local-only saved places and preference notice
 - Responsive liquid-glass UI with adjustable transparency, reduced motion, and overlay-detail budgets
 - Source registry and official links; no fake zones or derived legal claims
-- Optional OpenRouter free-router copilot using a user-provided key kept only in memory
+- Keyless on-device flight-context assistant using the airspace and forecast data already loaded in the app
 - GitHub Pages deployment and a safe metadata-validation workflow
 
 ## Official-source coverage
@@ -100,12 +100,12 @@ national service.
 - Weather is forecast context, not a go/no-go decision; temporary restrictions can change.
 - Cross-origin map tiles may block screenshot canvas export. A production export must retain required attribution.
 - Offline packs are UI architecture only until each source’s caching terms and data format are verified.
-- OpenRouter is disconnected by default. User keys stay only in React memory and are cleared on reload or sign-out; a server proxy is still recommended for a public multi-user deployment.
+- The built-in assistant is deterministic and only summarizes already-loaded context; it is not a general-purpose language model and never grants legal clearance.
 - Primary home, weather, search, planner, settings, result, and login flows are translated into English, German, Spanish, French, and Italian. Other listed search languages use English UI fallback while still localizing geocoding and supported official-map handoffs.
 
 ## Privacy
 
-The basic app has no analytics. Device-local accounts, route points, saved places, preferences, and the acknowledgement are stored in browser localStorage; clearing browser site data removes them. These local accounts are convenience profiles, not secure server authentication. The app only calls Open-Meteo after you select a point. An OpenRouter key is never written to localStorage.
+The basic app has no analytics. Route points, saved places, preferences, and the acknowledgement are stored in browser localStorage; clearing browser site data removes them. The app only calls Open-Meteo after you select a point. No account or AI-provider API key is required.
 
 ## License
 
