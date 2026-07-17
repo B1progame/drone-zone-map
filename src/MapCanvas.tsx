@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import maplibregl, { Map as MapLibreMap, Marker, type FilterSpecification, type StyleSpecification } from 'maplibre-gl';
-import { CloudRain, CloudSun, Layers3, Map as MapIcon, Satellite, Wind } from 'lucide-react';
+import { CloudRain, CloudSun, Layers3, Map as MapIcon, Pause, Play, Satellite, Wind } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
@@ -8,8 +8,14 @@ import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 type BaseMap = 'satellite' | 'streets';
 
 export type MapCanvasHandle = {
-  downloadVisibleGeoJson: (name?: string) => void;
+  downloadVisibleGeoJson: (name?: string,onProgress?:(progress:GeoJsonExportProgress)=>void) => Promise<void>;
   downloadCleanSnapshot: (name?: string) => Promise<void>;
+};
+
+export type GeoJsonExportProgress = {
+  percent:number;
+  stage:string;
+  features:number;
 };
 
 const DIPUL_LAYER_NAMES = [
@@ -24,12 +30,25 @@ const DIPUL_LAYER_NAMES = [
   'umspannwerke', 'vogelschutzgebiete', 'windkraftanlagen', 'wohngrundstuecke'
 ];
 const DIPUL_CORE_NAMES=['ffh-gebiete','flugbeschraenkungsgebiete','flughaefen','flugplaetze','haengegleiter','kontrollzonen','militaerische_anlagen','modellflugplaetze','nationalparks','naturschutzgebiete','temporaere_betriebseinschraenkungen','vogelschutzgebiete','windkraftanlagen'];
+const DIPUL_EXPORT_NAMES=[
+ 'flugbeschraenkungsgebiete',
+ 'flughaefen',
+ 'flugplaetze',
+ 'kontrollzonen',
+ 'militaerische_anlagen',
+ 'temporaere_betriebseinschraenkungen'
+];
+// The official WFS currently omits these two WMS-only point layers.
+const DIPUL_WFS_LAYER_NAMES=DIPUL_LAYER_NAMES.filter(layer=>!['haengegleiter','modellflugplaetze'].includes(layer));
 const DIPUL_LAYERS = DIPUL_LAYER_NAMES.map(layer => `dipul:${layer}`).join(',');
 const DIPUL_CORE_LAYERS=DIPUL_CORE_NAMES.map(layer=>`dipul:${layer}`).join(',');
 const DIPUL_DETAIL_LAYERS=DIPUL_LAYER_NAMES.filter(layer=>!DIPUL_CORE_NAMES.includes(layer)).map(layer=>`dipul:${layer}`).join(',');
+const DIPUL_WFS='https://uas-betrieb.de/geoservices/dipul/wfs';
+const FRANCE_WFS='https://data.geopf.fr/wfs/ows';
+const FRANCE_WFS_LAYER='TRANSPORTS.DRONES.RESTRICTIONS:carte_restriction_drones_lf';
 
 const dipulTiles=(layers:string)=>`https://uas-betrieb.de/geoservices/dipul/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=${encodeURIComponent(layers)}&STYLES=&FORMAT=image%2Fpng&TRANSPARENT=true&SRS=EPSG%3A3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256`;
-const ENAIRE='https://servais.enaire.es/insigniads/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer';
+const ENAIRE='https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer';
 const FAA_UAS='https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0';
 const CANADA_AIRPORTS='https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0';
 const CANADA_NATIONAL_PARKS='https://proxyinternet.nrcan-rncan.gc.ca/arcgis/rest/services/CLSS-SATC/CLSS_Administrative_Boundaries/MapServer/1';
@@ -45,6 +64,11 @@ const NATIONAL_GEOZONE_SOURCES=[
  {id:'estonia',url:'https://utm.eans.ee/avm/utm/uas.geojson',bounds:[21.5,57.3,28.3,60.1],minzoom:5,attribution:'<a href="https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones" target="_blank">Live UAS zones © Transport Administration / EANS</a>'},
  {id:'portugal',url:latestPortugalEd269Url,bounds:[-31.5,30,-6,42.3],minzoom:4,attribution:'<a href="https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx" target="_blank">Live ED-269 UAS zones © ANAC Portugal</a>',transform:normalizeEd269}
 ] as const;
+const FRANCE_EXTENTS:[number,number,number,number][]=[
+ [-5.5,41,10,51.6],[-63.7,14,-60.7,19],[-54.8,2,-51.4,6.2],
+ [-56.6,46.7,-55.8,47.3],[44.9,-13.1,45.4,-12.5],[55,-21.6,56,-20.7],
+ [39,-50,78,-11]
+];
 const ZONE_LAYER_IDS = ['dipul-zones','dipul-detail','enaire-infrastructure-fill','enaire-infrastructure-line','enaire-aero-fill','enaire-aero-line','enaire-urban-fill','enaire-urban-line','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
 const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const dynamicRequestKeys=new WeakMap<MapLibreMap,Map<string,string>>();
@@ -107,20 +131,20 @@ function tagEnaireScale(data:any){
 }
 
 const arcGisViewportSources:ArcGisViewportConfig[]=[
- {id:'enaire-infrastructure',endpoint:`${ENAIRE}/0`,bounds:[-19,27,5,45],minZoom:4,pageSize:5000,maxFeatures:15000,outFields:'OBJECTID,identifier,name,type,reasons,variant,provider,lower,upper,uom,updateDateTime',transform:tagEnaireScale},
- {id:'enaire-aero',endpoint:`${ENAIRE}/2`,bounds:[-19,27,5,45],minZoom:4,pageSize:5000,maxFeatures:15000,outFields:'OBJECTID,identifier,name,type,reasons,variant,provider,lower,upper,uom,updateDateTime',transform:tagEnaireScale},
+ {id:'enaire-infrastructure',endpoint:`${ENAIRE}/0`,bounds:[-25,19,5,45],minZoom:4,pageSize:5000,maxFeatures:15000,outFields:'OBJECTID,identifier,name,type,reasons,variant,provider,lower,upper,uom,updateDateTime',transform:tagEnaireScale},
+ {id:'enaire-aero',endpoint:`${ENAIRE}/2`,bounds:[-25,19,5,45],minZoom:4,pageSize:5000,maxFeatures:15000,outFields:'OBJECTID,identifier,name,type,reasons,variant,provider,lower,upper,uom,updateDateTime',transform:tagEnaireScale},
  // ENAIRE's urban layer contains province-sized coverage polygons. Its own
  // viewer only makes that detail useful locally, so do not paint it nationwide.
- {id:'enaire-urban',endpoint:`${ENAIRE}/3`,bounds:[-19,27,5,45],minZoom:8,pageSize:5000,maxFeatures:15000,outFields:'OBJECTID,identifier,name,type,reasons,lower,upper,uom,updateDateTime',transform:tagEnaireScale},
+ {id:'enaire-urban',endpoint:`${ENAIRE}/3`,bounds:[-25,19,5,45],minZoom:8,pageSize:5000,maxFeatures:15000,outFields:'OBJECTID,identifier,name,type,reasons,lower,upper,uom,updateDateTime',transform:tagEnaireScale},
  {id:'us-facility',endpoint:FAA_UAS,bounds:[-179,13,-64,72],minZoom:6,pageSize:1000,maxFeatures:6000,outFields:'OBJECTID,CEILING,UNIT,MAP_EFF,LAST_EDIT,APT1_FAAID,APT1_ICAO,APT1_NAME,APT1_LAANC,AIRSPACE_1,REGION'},
  {id:'canada-airports',endpoint:CANADA_AIRPORTS,bounds:[-141,41,-52,84],minZoom:3.5,pageSize:1000,maxFeatures:2000,outFields:'*',transform:bufferCanadaAirports},
  {id:'canada-national-parks',endpoint:CANADA_NATIONAL_PARKS,bounds:[-141,41,-52,84],minZoom:3,pageSize:200,maxFeatures:600,outFields:'OBJECTID,adminAreaId,adminAreaNameEng,adminAreaNameFra,distributionTypeEng,jurisdictionEng,webReference'}
 ];
 
 const detailConfig:Record<RenderDetail,{zoomDelta:number;featureScale:number;weatherColumns:number;weatherRows:number}> = {
- efficient:{zoomDelta:.8,featureScale:.55,weatherColumns:3,weatherRows:3},
- balanced:{zoomDelta:0,featureScale:1,weatherColumns:4,weatherRows:3},
- maximum:{zoomDelta:-1.6,featureScale:1.75,weatherColumns:5,weatherRows:4}
+ efficient:{zoomDelta:.8,featureScale:.55,weatherColumns:4,weatherRows:3},
+ balanced:{zoomDelta:0,featureScale:1,weatherColumns:5,weatherRows:4},
+ maximum:{zoomDelta:-1.6,featureScale:1.75,weatherColumns:7,weatherRows:5}
 };
 const weatherGridCache=new Map<string,{time:number;data:any}>();
 const weatherGridPending=new Map<string,Promise<any>>();
@@ -222,6 +246,23 @@ function applyFlightPlan(map:MapLibreMap,points:Location[]){
  (map.getSource('flight-plan') as maplibregl.GeoJSONSource|undefined)?.setData(flightPlanData(points));
 }
 
+function flightRangeData(points:Location[],radiusKm:number){
+ const origin=points[0];
+ if(!origin||!Number.isFinite(radiusKm)||radiusKm<=0)return emptyGeoJson;
+ const angularDistance=radiusKm/6371,latitude=origin.lat*Math.PI/180,longitude=origin.lng*Math.PI/180,ring:number[][]=[];
+ for(let index=0;index<=144;index++){
+  const bearing=index/144*Math.PI*2;
+  const targetLatitude=Math.asin(Math.sin(latitude)*Math.cos(angularDistance)+Math.cos(latitude)*Math.sin(angularDistance)*Math.cos(bearing));
+  const targetLongitude=longitude+Math.atan2(Math.sin(bearing)*Math.sin(angularDistance)*Math.cos(latitude),Math.cos(angularDistance)-Math.sin(latitude)*Math.sin(targetLatitude));
+  ring.push([((targetLongitude*180/Math.PI+540)%360)-180,targetLatitude*180/Math.PI]);
+ }
+ return{type:'FeatureCollection' as const,features:[{type:'Feature' as const,properties:{radiusKm,notice:'Orientation envelope only; not battery, radio-link, VLOS or legal clearance.'},geometry:{type:'Polygon' as const,coordinates:[ring]}}]};
+}
+
+function applyFlightRange(map:MapLibreMap,points:Location[],radiusKm:number){
+ (map.getSource('flight-range') as maplibregl.GeoJSONSource|undefined)?.setData(flightRangeData(points,radiusKm));
+}
+
 async function latestRadar(){
  if(!radarMetadata)radarMetadata=fetch('https://api.rainviewer.com/public/weather-maps.json').then(async response=>{
    if(!response.ok)throw new Error(`radar metadata failed (${response.status})`);
@@ -232,9 +273,10 @@ async function latestRadar(){
  return radarMetadata;
 }
 
-function ensureRadar(map:MapLibreMap,visible:boolean,hooks?:OverlayHooks){
- if(map.getLayer('weather-radar')){map.setLayoutProperty('weather-radar','visibility',visible?'visible':'none');return}
- if(!visible||!map.isStyleLoaded()||radarUnavailableMaps.has(map))return;
+function ensureRadar(map:MapLibreMap,visible:boolean,hourIndex=0,hooks?:OverlayHooks){
+ const radarVisible=visible&&hourIndex===0;
+ if(map.getLayer('weather-radar')){map.setLayoutProperty('weather-radar','visibility',radarVisible?'visible':'none');return}
+ if(!radarVisible||!map.isStyleLoaded()||radarUnavailableMaps.has(map))return;
  const key='weather:radar';hooks?.start(key,'live precipitation radar');
  void latestRadar().then(({tiles,time})=>{
    if(!map.isStyleLoaded()||map.getSource('weather-radar'))return;
@@ -367,7 +409,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       'enaire-infrastructure':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://aip.enaire.es/AIP/UAS-en.html" target="_blank">UAS zones © ENAIRE / AIS</a>'},
       'enaire-aero':{type:'geojson',data:emptyGeoJson,attribution:'UAS zones © ENAIRE / AIS'},
       'enaire-urban':{type:'geojson',data:emptyGeoJson,attribution:'UAS zones © ENAIRE / AIS'},
-      france: {type:'raster',tiles:[franceTiles],tileSize:256,bounds:[-5.5,41,10,51.5],minzoom:6,maxzoom:18,attribution:'<a href="https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme" target="_blank">Restrictions UAS © IGN / Géoportail</a>'},
+      france: {type:'raster',tiles:[franceTiles],tileSize:256,bounds:[-63.7,-50,78,51.6],minzoom:6,maxzoom:18,attribution:'<a href="https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme" target="_blank">Restrictions UAS © IGN / Géoportail</a>'},
       uk:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/" target="_blank">NATS UK AIS · effective 9 Jul 2026</a>'},
       switzerland:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://opendata.swiss/en/dataset/geografische-uas-gebiete-der-schweiz" target="_blank">UAS zones © FOCA / geo.admin.ch</a>'},
       'us-facility':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://www.faa.gov/uas/getting_started/b4ufly" target="_blank">FAA UAS Facility Maps</a>'},
@@ -381,6 +423,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       ...swedenSources,
       'weather-grid': { type:'geojson', data:emptyGeoJson, attribution:'Forecast field © Open-Meteo' },
       'weather-location': { type:'geojson', data:emptyGeoJson },
+      'flight-range': { type:'geojson', data:emptyGeoJson },
       'flight-plan': { type:'geojson', data:emptyGeoJson }
     },
     layers: [
@@ -421,6 +464,8 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       { id:'weather-field', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,28,10,150,15,280],'circle-color':['get','color'],'circle-opacity':.1,'circle-blur':.82} },
       { id:'weather-halo', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,12,10,56,15,105],'circle-color':['get','color'],'circle-opacity':.17,'circle-blur':.45,'circle-stroke-width':2,'circle-stroke-color':['get','color'],'circle-stroke-opacity':.7} },
       { id:'weather-core', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,3,10,8,15,13],'circle-color':['get','color'],'circle-opacity':.9,'circle-stroke-width':3,'circle-stroke-color':'#ffffff','circle-stroke-opacity':.85} },
+      {id:'flight-range-fill',type:'fill',source:'flight-range',paint:{'fill-color':'#8dff66','fill-opacity':.075}},
+      {id:'flight-range-line',type:'line',source:'flight-range',paint:{'line-color':'#b7ff9c','line-width':['interpolate',['linear'],['zoom'],3,1,14,2.4],'line-opacity':.94,'line-dasharray':[2.5,1.8]}},
       {id:'flight-plan-halo',type:'line',source:'flight-plan',filter:['==',['geometry-type'],'LineString'],paint:{'line-color':'#07120f','line-width':['interpolate',['linear'],['zoom'],3,5,14,10],'line-opacity':.75}},
       {id:'flight-plan-line',type:'line',source:'flight-plan',filter:['==',['geometry-type'],'LineString'],paint:{'line-color':'#b7ff9c','line-width':['interpolate',['linear'],['zoom'],3,2,14,4],'line-opacity':.98,'line-dasharray':[2,1.1]}},
       {id:'flight-plan-points',type:'circle',source:'flight-plan',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':['interpolate',['linear'],['zoom'],3,5,14,10],'circle-color':['case',['get','last'],'#ffffff','#b7ff9c'],'circle-stroke-color':'#102017','circle-stroke-width':3}}
@@ -448,7 +493,7 @@ function startWindLineAnimation(map:MapLibreMap){
  return()=>{stopped=true;cancelAnimationFrame(animation)};
 }
 
-const exportLayerIds=[...ZONE_LAYER_IDS,'weather-clouds','weather-rain','weather-wind','weather-field','weather-halo','weather-core','flight-plan-line','flight-plan-points'] as string[];
+const exportLayerIds=[...ZONE_LAYER_IDS,'weather-clouds','weather-rain','weather-wind','weather-field','weather-halo','weather-core','flight-range-fill','flight-range-line','flight-plan-line','flight-plan-points'] as string[];
 
 function downloadBlob(blob:Blob,filename:string){
  const url=URL.createObjectURL(blob),link=document.createElement('a');
@@ -460,21 +505,89 @@ function safeMapName(name='map'){
  return name.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'map';
 }
 
+function uniqueDownloadToken(map:MapLibreMap){
+ const stamp=new Date().toISOString().replace(/\D/g,'').slice(0,17);
+ const zoom=`z${map.getZoom().toFixed(1).replace('.','-')}`;
+ const random=crypto.randomUUID().slice(0,6);
+ return `${stamp}-${zoom}-${random}`;
+}
+
+const nextPaint=()=>new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
+
 function layerIsVisible(map:MapLibreMap,layer:any){
  const zoom=map.getZoom();
  return layer.layout?.visibility!=='none'&&(layer.minzoom==null||zoom>=layer.minzoom)&&(layer.maxzoom==null||zoom<layer.maxzoom);
 }
 
-function downloadVisibleGeoJson(map:MapLibreMap,name?:string){
+const intersectsBounds=(bounds:{getWest:()=>number;getSouth:()=>number;getEast:()=>number;getNorth:()=>number},[west,south,east,north]:[number,number,number,number])=>bounds.getEast()>=west&&bounds.getWest()<=east&&bounds.getNorth()>=south&&bounds.getSouth()<=north;
+
+async function fetchWfsViewport(endpoint:string,typeName:string,bounds:maplibregl.LngLatBounds,source:string,layer:string,maxFeatures=7500){
+ const features:any[]=[],pageSize=2500;
+ for(let startIndex=0;startIndex<maxFeatures;startIndex+=pageSize){
+  const params=new URLSearchParams({
+   SERVICE:'WFS',VERSION:'2.0.0',REQUEST:'GetFeature',TYPENAMES:typeName,
+   OUTPUTFORMAT:'application/json',SRSNAME:'EPSG:4326',
+   BBOX:[bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth(),'EPSG:4326'].join(','),
+   COUNT:String(Math.min(pageSize,maxFeatures-startIndex)),STARTINDEX:String(startIndex)
+  });
+  const response=await fetch(`${endpoint}?${params}`);
+  if(!response.ok)throw new Error(`${source} ${layer} WFS failed (${response.status})`);
+  const payload=await response.json();
+  if(!Array.isArray(payload.features))throw new Error(`${source} ${layer} returned invalid GeoJSON`);
+  for(const feature of payload.features)features.push({...feature,properties:{...feature.properties,_aerisSource:source,_aerisLayer:layer,_aerisLiveExport:true}});
+  if(payload.features.length<pageSize||payload.numberMatched===features.length)break;
+ }
+ return features;
+}
+
+async function fetchOfficialExportVectors(map:MapLibreMap,onProgress?:(done:number,total:number,features:number,stage:string)=>void){
+ const bounds=map.getBounds(),zonesVisible=map.getLayer('dipul-zones')&&map.getLayoutProperty('dipul-zones','visibility')!=='none';
+ const features:any[]=[],warnings:string[]=[],sources:string[]=[];
+ const tasks:{source:string;layer:string;run:()=>Promise<any[]>}[]=[];
+ if(zonesVisible&&intersectsBounds(bounds,[5.5,47,15.5,55.2])){
+  const layers=DIPUL_EXPORT_NAMES.filter(layer=>DIPUL_WFS_LAYER_NAMES.includes(layer));
+  sources.push('DIPUL WFS · CC BY-ND 4.0 · live viewport flight-critical extract');
+  layers.forEach(layer=>tasks.push({source:'DIPUL',layer,run:()=>fetchWfsViewport(DIPUL_WFS,`dipul:${layer}`,bounds,'DIPUL',layer,3500)}));
+ }
+ if(zonesVisible&&map.getZoom()>=5.5&&FRANCE_EXTENTS.some(extent=>intersectsBounds(bounds,extent))){
+  sources.push('IGN / Géoportail WFS · live viewport extract');
+  tasks.push({source:'IGN / Géoportail',layer:'French UAS restrictions',run:()=>fetchWfsViewport(FRANCE_WFS,FRANCE_WFS_LAYER,bounds,'IGN / Géoportail','French UAS restrictions',5000)});
+ }
+ let completed=0;
+ onProgress?.(completed,Math.max(1,tasks.length),features.length,tasks.length?'Connecting to official WFS layers':'No official WFS layer in this view');
+ for(let offset=0;offset<tasks.length;offset+=4){
+  const group=tasks.slice(offset,offset+4);
+  const batch=await Promise.allSettled(group.map(task=>task.run()));
+  batch.forEach((result,index)=>{
+   const task=group[index];
+   if(result.status==='fulfilled')features.push(...result.value);
+   else warnings.push(`${task.source} ${task.layer}: ${result.reason instanceof Error?result.reason.message:'query failed'}`);
+   completed+=1;
+   onProgress?.(completed,Math.max(1,tasks.length),features.length,`Reading ${task.source} · ${task.layer.replaceAll('_',' ')}`);
+  });
+  await nextPaint();
+ }
+ return{features,warnings,sources};
+}
+
+async function downloadVisibleGeoJson(map:MapLibreMap,name?:string,onProgress?:(progress:GeoJsonExportProgress)=>void){
+ const report=(percent:number,stage:string,features=0)=>onProgress?.({percent:Math.round(percent),stage,features});
+ report(2,'Scanning visible map layers');
+ await nextPaint();
  const style=map.getStyle(),visibleLayers=(style.layers??[]).filter(layer=>exportLayerIds.includes(layer.id)&&layer.type!=='raster'&&layerIsVisible(map,layer));
  const rendered=visibleLayers.length?map.queryRenderedFeatures({layers:visibleLayers.map(layer=>layer.id)}):[];
+ report(8,'Collecting rendered vector features',rendered.length);
+ await nextPaint();
+ const official=await fetchOfficialExportVectors(map,(done,total,features,stage)=>report(10+(done/Math.max(1,total))*68,stage,rendered.length+features));
+ report(80,'Removing duplicate map features',rendered.length+official.features.length);
+ await nextPaint();
  const byKey=new Map<string,any>();
- for(const feature of rendered){
+ for(const feature of [...rendered,...official.features]){
    const source=feature.source??'unknown',key=feature.id!=null?`${source}:${feature.id}`:`${source}:${JSON.stringify(feature.geometry)}:${JSON.stringify(feature.properties)}`;
    const layerId=feature.layer?.id??'unknown';
    const existing=byKey.get(key);
-   if(existing){if(!existing.properties._aerisRenderedLayers.includes(layerId))existing.properties._aerisRenderedLayers.push(layerId);continue}
-   byKey.set(key,{type:'Feature',id:feature.id,geometry:feature.geometry,properties:{...feature.properties,_aerisSource:source,_aerisRenderedLayers:[layerId]}});
+   if(existing){if(layerId!=='unknown'&&!existing.properties._aerisRenderedLayers.includes(layerId))existing.properties._aerisRenderedLayers.push(layerId);continue}
+   byKey.set(key,{type:'Feature',id:feature.id,geometry:feature.geometry,properties:{...feature.properties,_aerisSource:feature.properties?._aerisSource??source,_aerisRenderedLayers:layerId==='unknown'?[]:[layerId]}});
  }
  const bounds=map.getBounds();
  const viewIntersectsSource=(source:any)=>{
@@ -497,12 +610,20 @@ function downloadVisibleGeoJson(map:MapLibreMap,name?:string){
      exportedAt:new Date().toISOString(),
      viewport:{west:bounds.getWest(),south:bounds.getSouth(),east:bounds.getEast(),north:bounds.getNorth(),zoom:map.getZoom(),bearing:map.getBearing(),pitch:map.getPitch()},
      visibleVectorLayers:[...new Set(rendered.map(feature=>feature.layer?.id).filter(Boolean))],
+     liveOfficialVectorSources:official.sources,
      rasterOverlays:rasterReferences,
-     notice:'Contains vector features currently rendered in the viewport. Raster services are referenced as metadata; use the PNG snapshot for their rendered pixels.'
+     warnings:official.warnings,
+     notice:'Contains vector features currently rendered in the viewport plus untouched, viewport-bounded official WFS geometry for French restrictions and Germany’s flight-critical aviation layers. High-volume German conservation and visual-detail layers remain on the map and raster services are referenced as metadata.'
    },
    features:[...byKey.values()]
  };
- downloadBlob(new Blob([JSON.stringify(collection,null,2)],{type:'application/geo+json'}),`aeris-visible-overlays-${safeMapName(name)}.geojson`);
+ report(90,'Encoding compact GeoJSON',collection.features.length);
+ await nextPaint();
+ const json=JSON.stringify(collection),sizeMb=new Blob([json]).size/1024/1024;
+ report(97,`Saving ${sizeMb.toFixed(1)} MB file`,collection.features.length);
+ await nextPaint();
+ downloadBlob(new Blob([json],{type:'application/geo+json'}),`aeris-visible-${safeMapName(name)}-${uniqueDownloadToken(map)}.geojson`);
+ report(100,`Download ready · ${sizeMb.toFixed(1)} MB`,collection.features.length);
 }
 
 async function downloadCleanSnapshot(map:MapLibreMap,name?:string){
@@ -515,10 +636,10 @@ async function downloadCleanSnapshot(map:MapLibreMap,name?:string){
  const blob=await new Promise<Blob>((resolve,reject)=>{
    try{canvas.toBlob(value=>value?resolve(value):reject(new Error('The map image could not be encoded.')),'image/png')}catch(error){reject(error)}
  });
- downloadBlob(blob,`aeris-map-snapshot-${safeMapName(name)}.png`);
+ downloadBlob(blob,`aeris-map-snapshot-${safeMapName(name)}-${uniqueDownloadToken(map)}.png`);
 }
 
-export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather?:Weather; weatherError?:string; onPick: (location: Location) => void; settings:AppSettings; planPoints?:Location[]; plannerMode?:boolean; onPlanPoint?:(location:Location)=>void }>(function MapCanvas({ location, weather, weatherError='', onPick, settings, planPoints=[], plannerMode=false, onPlanPoint },ref) {
+export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather?:Weather; weatherError?:string; onPick: (location: Location) => void; settings:AppSettings; planPoints?:Location[]; plannerMode?:boolean; flightRadiusKm?:number; onPlanPoint?:(location:Location)=>void }>(function MapCanvas({ location, weather, weatherError='', onPick, settings, planPoints=[], plannerMode=false, flightRadiusKm=20, onPlanPoint },ref) {
   const mapRef = useRef<MapLibreMap | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<Marker | null>(null);
@@ -526,6 +647,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   const onPickRef = useRef(onPick);
   const plannerRef=useRef({active:plannerMode,onPoint:onPlanPoint});
   const planPointsRef=useRef(planPoints);
+  const flightRadiusRef=useRef(flightRadiusKm);
   const weatherStateRef=useRef({location,weather,hour:0,visible:true});
   const settingsRef=useRef(settings);
   const overlayTasksRef=useRef({pending:new Set<string>(),done:0,total:0,label:'official overlays'});
@@ -534,6 +656,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   const [zonesVisible, setZonesVisible] = useState(true);
   const [weatherVisible,setWeatherVisible]=useState(true);
   const [weatherHour,setWeatherHour]=useState(0);
+  const [weatherPlaying,setWeatherPlaying]=useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
   const [overlayProgress,setOverlayProgress]=useState<{done:number;total:number;label:string}|null>(null);
@@ -555,6 +678,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useEffect(() => { onPickRef.current = onPick; }, [onPick]);
   useEffect(()=>{plannerRef.current={active:plannerMode,onPoint:onPlanPoint}},[plannerMode,onPlanPoint]);
   useEffect(()=>{planPointsRef.current=planPoints},[planPoints]);
+  useEffect(()=>{flightRadiusRef.current=flightRadiusKm},[flightRadiusKm]);
   useEffect(()=>{settingsRef.current=settings},[settings]);
   useEffect(()=>{
     const map=mapRef.current;
@@ -564,7 +688,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     return()=>{windAnimationRef.current?.();windAnimationRef.current=null};
   },[settings.reducedMotion]);
   useImperativeHandle(ref,()=>({
-    downloadVisibleGeoJson:(name?:string)=>{const map=mapRef.current;if(!map)throw new Error('The map is not ready yet.');downloadVisibleGeoJson(map,name)},
+    downloadVisibleGeoJson:async(name?:string,onProgress?:(progress:GeoJsonExportProgress)=>void)=>{const map=mapRef.current;if(!map)throw new Error('The map is not ready yet.');await downloadVisibleGeoJson(map,name,onProgress)},
     downloadCleanSnapshot:async(name?:string)=>{const map=mapRef.current;if(!map)throw new Error('The map is not ready yet.');await downloadCleanSnapshot(map,name)}
   }),[]);
 
@@ -585,9 +709,9 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
     map.touchZoomRotate.enable();
     map.dragPan.enable();
-    const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)};
-    map.on('load', () => { map.setProjection({type:'globe'});setLoaded(true); setError(''); map.resize();refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightPlan(map,planPointsRef.current);if(!settingsRef.current.reducedMotion&&!windAnimationRef.current)windAnimationRef.current=startWindLineAnimation(map); });
-    map.on('style.load',()=>{map.setProjection({type:'globe'});loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightPlan(map,planPointsRef.current)});
+    const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,state.hour,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)};
+    map.on('load', () => { map.setProjection({type:'globe'});setLoaded(true); setError(''); map.resize();refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current);if(!settingsRef.current.reducedMotion&&!windAnimationRef.current)windAnimationRef.current=startWindLineAnimation(map); });
+    map.on('style.load',()=>{map.setProjection({type:'globe'});loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current)});
     map.on('moveend',refresh);
     map.on('click', event => {
       const point={lat:event.lngLat.lat,lng:event.lngLat.lng,name:`${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`};
@@ -641,13 +765,14 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       .addTo(map);
   }, [location]);
 
-  useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);ensureRadar(map,weatherVisible,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined)}},[location,weather,weatherHour,weatherVisible]);
+  useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);ensureRadar(map,weatherVisible,weatherHour,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined)}},[location,weather,weatherHour,weatherVisible]);
 
-  useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks)},[settings.renderDetail,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
+  useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,weatherHour,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks)},[settings.renderDetail,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
 
-  useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded())applyFlightPlan(map,planPoints)},[planPoints,loaded,baseMap]);
+  useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded()){applyFlightRange(map,planPoints,flightRadiusKm);applyFlightPlan(map,planPoints)}},[planPoints,flightRadiusKm,loaded,baseMap]);
 
-  useEffect(()=>{if(weatherHour>8)setWeatherHour(8)},[weatherHour]);
+  useEffect(()=>{if(!weatherPlaying)return;const timer=window.setInterval(()=>setWeatherHour(value=>(value+1)%12),1250);return()=>window.clearInterval(timer)},[weatherPlaying]);
+  useEffect(()=>{if(settings.reducedMotion)setWeatherPlaying(false)},[settings.reducedMotion]);
 
   return <div className="mapHost" ref={hostRef}>
     {!loaded && !error && <div className="mapLoading"><span />Loading globe and satellite map…<i><b style={{width:'34%'}}/></i></div>}
@@ -663,6 +788,6 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       <button className={zonesVisible ? 'active zones' : ''} onClick={() => setZonesVisible(value => !value)} aria-pressed={zonesVisible} aria-label="Toggle verified official drone zones"><Layers3 size={16}/><span>Zones</span></button>
       <button className={weatherVisible?'active weather':''} onClick={()=>setWeatherVisible(value=>!value)} aria-pressed={weatherVisible} aria-label="Toggle weather forecast overlay"><CloudSun size={16}/><span>Weather</span></button>
     </div>
-    {weather&&location&&weatherVisible&&<div className="mapWeatherControl liquid"><div className="mapWeatherNow">{(weather.hourly[weatherHour]?.rainProbability??0)>45?<CloudRain/>:<CloudSun/>}<div><small>FORECAST OVERLAY · +{weatherHour}H</small><b>{weather.hourly[weatherHour]?.score??weather.score}/100</b><span><Wind/> {weather.hourly[weatherHour]?.wind??weather.wind} km/h · {weather.hourly[weatherHour]?.rainProbability??weather.rainProbability}% rain</span></div></div><div className="weatherLegend" aria-label="Weather overlay legend"><span className="cloudKey">Cloud</span><span className="rainKey">Rain field</span><span className="windKey">Wind lines</span></div><input type="range" min="0" max="8" step="1" value={weatherHour} onChange={event=>setWeatherHour(Number(event.target.value))} aria-label="Weather forecast hour"/><div className="weatherTicks">{Array.from({length:9},(_,i)=><button className={i===weatherHour?'active':''} onClick={()=>setWeatherHour(i)} key={i}>{i===0?'Now':`+${i}`}</button>)}</div></div>}
+    {weather&&location&&weatherVisible&&<div className="mapWeatherControl liquid"><div className="mapWeatherNow">{(weather.hourly[weatherHour]?.rainProbability??0)>45?<CloudRain/>:<CloudSun/>}<div><small>FORECAST OVERLAY · +{weatherHour}H</small><b>{weather.hourly[weatherHour]?.score??weather.score}/100</b><span><Wind/> {weather.hourly[weatherHour]?.wind??weather.wind} km/h · {weather.hourly[weatherHour]?.rainProbability??weather.rainProbability}% rain</span></div><button className="weatherPlay" onClick={()=>setWeatherPlaying(value=>!value)} aria-label={weatherPlaying?'Pause forecast animation':'Play forecast animation'}>{weatherPlaying?<Pause/>:<Play/>}</button></div><div className="weatherLegend" aria-label="Weather overlay legend"><span className="cloudKey">Cloud forecast</span><span className="rainKey">Rain forecast</span><span className="windKey">Animated wind</span><small>{weatherHour===0?'Live radar + forecast field':'Forecast field · live radar hidden for future hours'}</small></div><input type="range" min="0" max="11" step="1" value={weatherHour} onChange={event=>{setWeatherPlaying(false);setWeatherHour(Number(event.target.value))}} aria-label="Weather forecast hour"/><div className="weatherTicks">{Array.from({length:12},(_,i)=><button className={i===weatherHour?'active':''} onClick={()=>{setWeatherPlaying(false);setWeatherHour(i)}} key={i}>{i===0?'Now':`+${i}`}</button>)}</div></div>}
   </div>;
 });

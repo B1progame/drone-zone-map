@@ -6,7 +6,7 @@ let selectedLanguage=(navigator.language||'en').toLowerCase().split('-')[0];
 const language=()=>selectedLanguage;
 const COUNTRY_SOURCES={
  GB:{name:'United Kingdom',source:'NATS UK AIS',url:'https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/',warning:'Official permanent NATS UAS restrictions render from the current AIRAC visualization dataset. Check the UK AIP and current NOTAMs before flight.'},
- FR:{name:'France',source:'IGN / Géoportail',url:'https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme',warning:'The official IGN restrictions render on the map, but this WMTS layer does not provide a verified point-query result in Aeris.'},
+ FR:{name:'France',source:'IGN / Géoportail',url:'https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme',warning:'The official IGN restrictions render and are queried from the published WFS for metropolitan and covered overseas territories. The dataset does not include temporary restrictions; check SIA before flight.'},
  SE:{name:'Sweden',source:'LFV Dronechart',url:'https://dronechart.lfv.se/',warning:'Official LFV vectors render on the map with the published ground-level filters. Check LFV and current NOTAMs before flight.'},
  DK:{name:'Denmark',source:'Trafikstyrelsen Dronezoner',url:'https://www.droneregler.dk/dronezoner',warning:'Official static drone-zone data is loaded from Trafikstyrelsen. Check Dronezoner for temporary changes before flight.'},
  NO:{name:'Norway',source:'Avinor drone map',url:'https://www.avinor.no/en/practical-info/drone/dronekart/',warning:'Avinor prohibits presenting its service data in another application, so Aeris links to the official map instead of copying its zones.'},
@@ -38,14 +38,14 @@ const COUNTRY_SOURCES={
  SG:{name:'Singapore',source:'CAAS / OneMap',url:'https://www.onemap.gov.sg/',warning:'CAAS identifies OneMap as the authoritative source for no-fly, permit, and temporary restricted areas.'},
  ZA:{name:'South Africa',source:'SACAA / ATNS AIP',url:'https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/',warning:'Current restrictions are published through AIP, NOTAM, and SACAA RPAS rules; no reusable national drone-geozone feed was verified.'}
 } as const;
-type CountryCode=keyof typeof COUNTRY_SOURCES|'DE'|'ES'|'LU'|'IE'|'XX';
+type CountryCode=keyof typeof COUNTRY_SOURCES|'DE'|'ES'|'LU'|'IE'|'GF'|'GP'|'MQ'|'RE'|'YT'|'PM'|'TF'|'XX';
 function countryAt(p:Location):CountryCode{
  const named=p.name.toLowerCase();
  const namedCountry:[CountryCode,string[]][]=[
   ['LU',['luxembourg']],['IE',['ireland','éire','irland']],['ES',['spain','españa','spanien']],['DK',['denmark','danmark','dänemark']],
   ['GB',['united kingdom','great britain','england','scotland','wales','northern ireland','vereinigtes königreich','großbritannien']],
   ['US',['united states','usa','vereinigte staaten']],
-  ['CH',['switzerland','schweiz','suisse','svizzera']],['AT',['austria','österreich','autriche']],['DE',['germany','deutschland']],['FR',['france','frankreich']],['SE',['sweden','sverige','schweden']],
+  ['CH',['switzerland','schweiz','suisse','svizzera']],['AT',['austria','österreich','autriche']],['DE',['germany','deutschland']],['FR',['france','frankreich','french guiana','guyane','guadeloupe','martinique','réunion','reunion','mayotte','saint pierre and miquelon','saint-pierre-et-miquelon']],['SE',['sweden','sverige','schweden']],
   ['NO',['norway','norge','norwegen']],['CA',['canada','kanada']],['NL',['netherlands','nederland','niederlande']],['FI',['finland','suomi','finnland']],['EE',['estonia','eesti','estland']],['BG',['bulgaria','българия','bulgarien']],['PT',['portugal','portugalia']],
   ['BE',['belgium','belgië','belgique','belgien']],['PL',['poland','polska','polen']],['CZ',['czechia','czech republic','česko','tschechien']],['SK',['slovakia','slovensko','slowakei']],
   ['HU',['hungary','magyarország','ungarn']],['RO',['romania','românia','rumänien']],['GR',['greece','ελλάδα','griechenland']],['HR',['croatia','hrvatska','kroatien']],
@@ -60,6 +60,7 @@ function countryAt(p:Location):CountryCode{
  if(p.lat>=59.5&&p.lat<=70.2&&p.lng>=19&&p.lng<=31.6)return'FI';
  if(p.lat>=41.1&&p.lat<=44.3&&p.lng>=22.2&&p.lng<=28.7)return'BG';
  if(p.lat>=30&&p.lat<=42.3&&p.lng>=-31.5&&p.lng<=-6)return'PT';
+ if((p.lat>=2&&p.lat<=6.2&&p.lng>=-54.8&&p.lng<=-51.4)||(p.lat>=14&&p.lat<=19&&p.lng>=-63.7&&p.lng<=-60.7)||(p.lat>=-21.6&&p.lat<=-20.7&&p.lng>=55&&p.lng<=56)||(p.lat>=-13.1&&p.lat<=-12.5&&p.lng>=44.9&&p.lng<=45.4)||(p.lat>=46.7&&p.lat<=47.3&&p.lng>=-56.6&&p.lng<=-55.8))return'FR';
  if(p.lat>=51.2&&p.lat<=55.6&&p.lng>=-11&&p.lng<=-5)return'IE';
  if(p.lat>=49&&p.lat<=61&&p.lng>=-9&&p.lng<=2.5)return'GB';
  if(p.lat>=27&&p.lat<=44.5&&p.lng>=-18.5&&p.lng<=5)return'ES';
@@ -90,8 +91,53 @@ const translate=(value:string)=>{
  return labels[language()]?.[normalized]??labels.en[normalized]??normalized.replaceAll('_',' ').toLowerCase().replace(/^./,c=>c.toUpperCase());
 };
 const cleanHtml=(value='')=>{const doc=new DOMParser().parseFromString(value,'text/html');return (doc.body.textContent??'').replace(/\s+/g,' ').trim()};
-const translateEnaireMessage=(value:string)=>{
- if(!value||language()==='es'||!/(zona geográfica|operaciones VLOS|Nivel inferior|Nivel superior)/i.test(value))return value;
+const localizedOfficialText=(values:Record<string,string>)=>values[language()]??values.en;
+const translateEnaireName=(value:string)=>{
+ if(value.trim().toUpperCase()!=='POPULATION')return value;
+ return localizedOfficialText({
+  en:'Population / urban environment',
+  de:'Bevölkerung / städtische Umgebung',
+  es:'Población / entorno urbano',
+  fr:'Population / environnement urbain',
+  it:'Popolazione / ambiente urbano',
+  pt:'População / ambiente urbano'
+ });
+};
+const translateEnaireMessage=(value:string,attributes:Record<string,any>={})=>{
+ if(!value||language()==='es')return value;
+ if(/entorno urbano|Ministerio del Interior|5 días naturales/i.test(value)){
+  return localizedOfficialText({
+   en:'Before flying, check whether the flight area is an urban environment. ENAIRE defines this as: (a) population centres with consolidated built-up areas; (b) residential, commercial or industrial areas that have road access, paved public pedestrian access, drainage and public lighting; or (c) publicly accessible recreational areas with permanent or temporary leisure, recreation or sports structures—including beaches meeting both requirements and local-authority parks or gardens. If the flight takes place in one of these areas, UAS operators required to register must notify Spain’s Ministry of the Interior at least 5 calendar days before the planned start. In the open category, flying over buildings or reducing the minimum distance to them also requires permission from the competent authority or the owner or responsible manager.',
+   de:'Prüfe vor dem Flug, ob sich das Fluggebiet in einer städtischen Umgebung befindet. ENAIRE definiert diese als: (a) Siedlungskerne mit zusammenhängend bebauten Flächen; (b) Wohn-, Gewerbe- oder Industrieflächen, die zusammen mindestens über Straßenanbindung, befestigte öffentliche Fußwege, Entwässerung und öffentliche Beleuchtung verfügen; oder (c) öffentlich zugängliche Freizeitflächen mit dauerhaften oder vorübergehenden Bauten oder Anlagen für Freizeit, Erholung oder Sport – einschließlich Stränden, die beide Voraussetzungen erfüllen, sowie Parks oder Gärten in Zuständigkeit lokaler Behörden. Findet der Flug in einer dieser Zonen statt, müssen registrierungspflichtige UAS-Betreiber ihn mindestens 5 Kalendertage vor dem geplanten Beginn dem spanischen Innenministerium melden. Für das Überfliegen von Gebäuden oder das Unterschreiten der Mindestabstände in der offenen Kategorie ist zusätzlich die Erlaubnis der zuständigen Stelle oder des Eigentümers beziehungsweise verantwortlichen Betreibers erforderlich.',
+   fr:'Avant le vol, vérifiez si la zone de vol se trouve dans un environnement urbain. ENAIRE entend par là : (a) les noyaux de population aux zones bâties consolidées ; (b) les zones résidentielles, commerciales ou industrielles disposant au minimum d’un accès routier, de voies publiques piétonnes revêtues, d’un système d’évacuation des eaux et d’un éclairage public ; ou (c) les espaces de loisirs ouverts au public comportant des constructions ou installations permanentes ou temporaires destinées aux loisirs ou au sport — y compris les plages remplissant les deux conditions ainsi que les parcs ou jardins relevant des autorités locales. Si le vol a lieu dans l’une de ces zones, les exploitants de UAS soumis à l’enregistrement doivent le notifier au ministère espagnol de l’Intérieur au moins 5 jours calendaires avant le début prévu. En catégorie ouverte, le survol de bâtiments ou la réduction des distances minimales exige aussi l’autorisation de l’autorité compétente, du propriétaire ou du gestionnaire responsable.',
+   it:'Prima del volo, verifica se l’area di vol si trova in ambiente urbano. ENAIRE definisce tale ambiente come: (a) centri abitati con aree edificate consolidate; (b) aree residenziali, commerciali o industriali dotate almeno di accesso stradale, percorsi pedonali pubblici pavimentati, drenaggio e illuminazione pubblica; oppure (c) aree ricreative aperte al pubblico con costruzioni o installazioni permanenti o temporanee per il tempo libero, la ricreazione o lo sport — comprese le spiagge che soddisfano entrambi i requisiti e i parchi o giardini degli enti locali. Se il volo avviene in una di queste zone, gli operatori UAS soggetti a registrazione devono comunicarlo al Ministero dell’Interno spagnolo almeno 5 giorni di calendario prima dell’inizio previsto. In categoria aperta, il sorvolo degli edifici o la riduzione delle distanze minime richiede anche l’autorizzazione dell’autorità competente, del proprietario o del gestore responsabile.',
+   pt:'Antes do voo, verifique se a área de voo se encontra num ambiente urbano. A ENAIRE define-o como: (a) núcleos populacionais com áreas edificadas consolidadas; (b) áreas residenciais, comerciais ou industriais que disponham, no mínimo, de acesso rodoviário, vias públicas pedonais pavimentadas, drenagem e iluminação pública; ou (c) áreas recreativas de acesso público com construções ou instalações permanentes ou temporárias destinadas ao lazer, recreio ou desporto — incluindo praias que cumpram ambos os requisitos e parques ou jardins sob responsabilidade das autoridades locais. Se o voo ocorrer numa destas zonas, os operadores de UAS sujeitos a registo devem comunicá-lo ao Ministério do Interior espanhol com pelo menos 5 dias de calendário de antecedência. Na categoria aberta, sobrevoar edifícios ou reduzir as distâncias mínimas também exige autorização da autoridade competente, do proprietário ou do gestor responsável.'
+  });
+ }
+ if(/vuelo fotográfico|captación de datos|CECAF/i.test(value)){
+  return localizedOfficialText({
+   en:'This ENAIRE area is restricted for aerial photography or data capture. Request the technical conditions for each photography or data-capture job from the Spanish Air and Space Force Cartographic and Photographic Centre (CECAF) at cecaf@ea.mde.es, and check the current ENAIRE AIC before flying.',
+   de:'Dieses ENAIRE-Gebiet ist für Luftbildaufnahmen oder Datenerfassung beschränkt. Fordere für jeden Foto- oder Datenerfassungsauftrag die technischen Bedingungen beim kartografischen und fotografischen Zentrum der spanischen Luft- und Weltraumstreitkräfte (CECAF) unter cecaf@ea.mde.es an und prüfe vor dem Flug das aktuelle ENAIRE-AIC.',
+   fr:'Cette zone ENAIRE est soumise à des restrictions pour la photographie aérienne ou la collecte de données. Demandez les conditions techniques applicables à chaque mission au Centre cartographique et photographique de l’armée de l’Air et de l’Espace espagnole (CECAF) à cecaf@ea.mde.es et consultez l’AIC ENAIRE en vigueur avant le vol.',
+   it:'Questa zona ENAIRE è soggetta a restrizioni per la fotografia aerea o l’acquisizione di dati. Richiedi le condizioni tecniche per ogni attività al Centro cartografico e fotografico dell’Aeronautica e dello Spazio spagnola (CECAF) all’indirizzo cecaf@ea.mde.es e consulta l’AIC ENAIRE vigente prima del volo.',
+   pt:'Esta zona ENAIRE está sujeita a restrições para fotografia aérea ou captação de dados. Solicite as condições técnicas de cada trabalho ao Centro Cartográfico e Fotográfico da Força Aérea e Espacial espanhola (CECAF) através de cecaf@ea.mde.es e consulte a AIC ENAIRE em vigor antes do voo.'
+  });
+ }
+ if(/Por debajo de\s*[0-9.,]+\s*m|al menos\s*[0-9]+\s*días hábiles/i.test(value)){
+  const threshold=value.match(/Por debajo de\s*([0-9.,]+\s*m)/i)?.[1]??`${attributes.lower??''} ${attributes.uom??'m'}`.trim();
+  const reference=value.match(/punto de referencia del aeródromo\s*\(([^)]+)\)/i)?.[1];
+  const advance=value.match(/al menos\s*([0-9]+)\s*días hábiles/i)?.[1];
+  const contact=attributes.email&&attributes.email!=='Nulo'?attributes.email:'the listed official contact';
+  const place=attributes.name&&attributes.name!=='Nulo'?attributes.name:'this aerodrome area';
+  return localizedOfficialText({
+   en:`This is the general UAS geographical zone for operational safety around ${place}. Below ${threshold}${reference?` measured from the aerodrome reference elevation (${reference})`:''}, coordination is not required. Above that level, submit the request only through ${contact}${advance?` at least ${advance} working days before the activity`:''}; AENA will coordinate it with the tower ATS provider.`,
+   de:`Dies ist das allgemeine geografische UAS-Gebiet für die Betriebssicherheit im Umfeld von ${place}. Unterhalb von ${threshold}${reference?` gemessen ab der Flugplatz-Bezugshöhe (${reference})`:''} ist keine Koordination erforderlich. Oberhalb dieser Höhe darf der Antrag nur über ${contact}${advance?` mindestens ${advance} Arbeitstage vor der Aktivität`:''} eingereicht werden; AENA koordiniert ihn mit dem ATS-Anbieter des Towers.`,
+   fr:`Il s’agit de la zone géographique UAS générale établie pour la sécurité opérationnelle autour de ${place}. En dessous de ${threshold}${reference?` mesurés depuis l’altitude de référence de l’aérodrome (${reference})`:''}, aucune coordination n’est nécessaire. Au-dessus de ce niveau, envoyez la demande uniquement via ${contact}${advance?` au moins ${advance} jours ouvrables avant l’activité`:''} ; AENA la coordonnera avec le prestataire ATS de la tour.`,
+   it:`Questa è la zona geografica UAS generale per la sicurezza operativa intorno a ${place}. Al di sotto di ${threshold}${reference?` misurati dalla quota di riferimento dell’aeroporto (${reference})`:''} non è richiesto alcun coordinamento. Al di sopra di tale livello, invia la richiesta esclusivamente tramite ${contact}${advance?` almeno ${advance} giorni lavorativi prima dell’attività`:''}; AENA la coordinerà con il fornitore ATS della torre.`,
+   pt:`Esta é a zona geográfica UAS geral para a segurança operacional em redor de ${place}. Abaixo de ${threshold}${reference?` medidos a partir da altitude de referência do aeródromo (${reference})`:''}, não é necessária coordenação. Acima desse nível, envie o pedido apenas através de ${contact}${advance?` pelo menos ${advance} dias úteis antes da atividade`:''}; a AENA fará a coordenação com o prestador ATS da torre.`
+  });
+ }
+ if(!/(zona geográfica|operaciones VLOS|Nivel inferior|Nivel superior)/i.test(value))return value;
  const area=value.match(/espacio aéreo controlado\s+([^.]*)\./i)?.[1]?.trim();
  const height=value.match(/altura máxima de\s*([0-9.,]+\s*m)/i)?.[1]?.trim();
  const lower=value.match(/Nivel inferior:\s*([^;]+(?:;\s*[^;]+)?)/i)?.[1]?.trim().replace(/\s*;\s*/g,' / ');
@@ -122,7 +168,15 @@ const fetchGeoJson=(url:string)=>{let pending=geoJsonCache.get(url);if(!pending)
 
 async function dipul(point:Location):Promise<ZoneInfo>{const directUrl=`https://maptool-dipul.dfs.de/geozones/@${point.lng.toFixed(7)},${point.lat.toFixed(7)}?language=${language()==='de'?'de':'en'}&zoom=11.0`,result=base('DE',language()==='de'?'Deutschland':'Germany','DIPUL',directUrl);const d=.035,bbox=`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,layers=DIPUL_LAYERS.map(x=>`dipul:${x}`).join(',');const params=new URLSearchParams({SERVICE:'WMS',VERSION:'1.1.1',REQUEST:'GetFeatureInfo',LAYERS:layers,QUERY_LAYERS:layers,STYLES:'',SRS:'EPSG:4326',BBOX:bbox,WIDTH:'256',HEIGHT:'256',X:'128',Y:'128',INFO_FORMAT:'text/plain',FEATURE_COUNT:'50'});const response=await fetch(`https://uas-betrieb.de/geoservices/dipul/wms?${params}`);if(!response.ok)throw new Error('DIPUL query failed');const text=await response.text(),blocks=text.split(/Results for FeatureType/).slice(1);result.zones=blocks.map((block,index)=>{const attrs=Object.fromEntries(block.split('\n').map(line=>line.match(/^([^=]+) = (.*)$/)).filter(Boolean).map(match=>[match![1].trim(),match![2].trim()]));const layer=(block.match(/'[^:]+:([^']+)'/)?.[1]??'zone');return{id:`DE-${index}-${attrs.external_reference??layer}`,name:attrs[`generated_name_${language().toUpperCase()}`]??attrs.generated_name_EN??attrs.name??translate(layer.toUpperCase()),type:translate(attrs.type_code??layer.toUpperCase()),lower:attrs.lower_limit_altitude?`${attrs.lower_limit_altitude} ${attrs.lower_limit_unit??''} ${attrs.lower_limit_alt_ref??''}`:undefined,upper:attrs.upper_limit_altitude?`${attrs.upper_limit_altitude} ${attrs.upper_limit_unit??''} ${attrs.upper_limit_alt_ref??''}`:undefined,legalReference:attrs.legal_ref,source:'DIPUL'} as ZoneDetail});result.status=result.zones.length?'loaded':'none';return result}
 
-async function enaire(point:Location):Promise<ZoneInfo>{const result=base('ES',language()==='es'?'España':'Spain','ENAIRE servAIS','https://drones.enaire.es/'),d=.12;const params=new URLSearchParams({geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',sr:'4326',tolerance:'3',mapExtent:`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,imageDisplay:'800,600,96',layers:'all:0,2,3',returnGeometry:'false',f:'json'});const response=await fetch(`https://servais.enaire.es/insigniads/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer/identify?${params}`);if(!response.ok)throw new Error('ENAIRE query failed');const data=await response.json();result.zones=(data.results??[]).map((item:any,index:number)=>{const a=item.attributes??{},message=translateEnaireMessage(cleanHtml(a.message||a.description));return{id:`ES-${item.layerId}-${a.OBJECTID??index}`,name:a.name&&a.name!=='Nulo'?a.name:item.value||item.layerName,type:translate(a.type||a.restriction||'COMMON'),message:message.slice(0,900),lower:a.lower!=null?`${a.lower} ${a.uom??''} ${a.lowerReference??''}`:undefined,upper:a.upper!=null?`${a.upper} ${a.uom??''} ${a.upperReference??''}`:undefined,contact:[a.email,a.phone].filter((x:string)=>x&&x!=='Nulo').join(' · ')||undefined,source:'ENAIRE',updated:a.updateDateTime||undefined}});result.status=result.zones.length?'loaded':'none';return result}
+async function enaire(point:Location):Promise<ZoneInfo>{const result=base('ES',language()==='es'?'España':'Spain','ENAIRE servAIS','https://drones.enaire.es/'),d=.12;const params=new URLSearchParams({geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',sr:'4326',tolerance:'3',mapExtent:`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,imageDisplay:'800,600,96',layers:'all:0,2,3',returnGeometry:'false',f:'json'});const response=await fetch(`https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer/identify?${params}`);if(!response.ok)throw new Error('ENAIRE query failed');const data=await response.json();result.zones=(data.results??[]).map((item:any,index:number)=>{const a=item.attributes??{},message=translateEnaireMessage(cleanHtml(a.message||a.description),a),rawName=a.name&&a.name!=='Nulo'?a.name:item.value||item.layerName;return{id:`ES-${item.layerId}-${a.OBJECTID??index}`,name:translateEnaireName(rawName),type:translate(a.type||a.restriction||'COMMON'),message:message.slice(0,2400),lower:a.lower!=null?`${a.lower} ${a.uom??''} ${a.lowerReference??''}`:undefined,upper:a.upper!=null?`${a.upper} ${a.uom??''} ${a.upperReference??''}`:undefined,legalReference:a.siteURL&&a.siteURL!=='Nulo'?a.siteURL:undefined,contact:[a.email,a.phone].filter((x:string)=>x&&x!=='Nulo').join(' · ')||undefined,source:'ENAIRE',updated:a.updateDateTime||undefined}});result.status=result.zones.length?'loaded':'none';return result}
+
+async function france(point:Location):Promise<ZoneInfo>{
+ const source=COUNTRY_SOURCES.FR,result=base('FR',source.name,source.source,source.url),d=.02;
+ const params=new URLSearchParams({SERVICE:'WFS',VERSION:'2.0.0',REQUEST:'GetFeature',TYPENAMES:'TRANSPORTS.DRONES.RESTRICTIONS:carte_restriction_drones_lf',OUTPUTFORMAT:'application/json',SRSNAME:'EPSG:4326',BBOX:`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d},EPSG:4326`,COUNT:'500'});
+ const data=await fetchGeoJson(`https://data.geopf.fr/wfs/ows?${params}`);
+ result.zones=(data.features??[]).filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{const properties=feature.properties??{};return{id:feature.id??`FR-${index}`,name:properties.limite??'French UAS restriction',type:properties.limite??'UAS restriction',message:properties.remarque,source:source.source,updated:'2025-07-01'}});
+ result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
+}
 
 const insideRing=(point:Location,ring:number[][])=>{let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const [xi,yi]=ring[i],[xj,yj]=ring[j];if(((yi>point.lat)!==(yj>point.lat))&&(point.lng<(xj-xi)*(point.lat-yi)/(yj-yi)+xi))inside=!inside}return inside};
 const insidePolygon=(point:Location,polygon:number[][][])=>insideRing(point,polygon[0])&&!polygon.slice(1).some(ring=>insideRing(point,ring));
@@ -189,6 +243,7 @@ async function resolvedCountryAt(point:Location):Promise<CountryCode>{
   const response=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${point.lat}&lon=${point.lng}&zoom=3&format=json&accept-language=en`);
   if(!response.ok)return initial;
   const country=String((await response.json()).address?.country_code??'').toUpperCase();
+  if(['GF','GP','MQ','RE','YT','PM','TF'].includes(country))return'FR';
   if(country in COUNTRY_SOURCES||['DE','ES','LU','IE'].includes(country))return country as CountryCode;
  }catch{return initial}
  return initial;
@@ -209,6 +264,7 @@ export async function getOfficialZoneInfo(point:Location,requestedLanguage=langu
  try{
   if(code==='DE')return await dipul(point);
   if(code==='ES')return await enaire(point);
+  if(code==='FR'||['GF','GP','MQ','RE','YT','PM','TF'].includes(code))return await france(point);
   if(code==='LU')return await luxembourg(point);
   if(code==='IE')return await ireland(point);
   if(code==='GB')return await uk(point);

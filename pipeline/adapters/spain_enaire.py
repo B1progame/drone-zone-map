@@ -3,7 +3,7 @@ import httpx
 from .base import FetchResult
 class SpainEnaireAdapter:
     country_code="ES"
-    service_url="https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V0/MapServer"
+    service_url="https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer"
     layers={0:"ZGUAS_Infraestructuras",2:"ZGUAS_Aero",3:"ZGUAS_Urbano"}
     attribution="ENAIRE / AIS"
     def fetch(self)->FetchResult: return FetchResult([], ["Use live MapServer export/identify endpoints. Bulk offline export is disabled by the provider."])
@@ -14,8 +14,8 @@ class SpainEnaireAdapter:
         geometry, memory use and browser rendering proportional to the viewed area.
         """
         west,south,east,north=bbox
-        if not (-19<=west<east<=5 and 27<=south<north<=45):
-            raise ValueError("Spain bbox must be within -19,27,5,45 (WGS84)")
+        if not (-25<=west<east<=5 and 19<=south<north<=45):
+            raise ValueError("Spain bbox must be within the published ENAIRE extent -25,19,5,45 (WGS84)")
         features=[];warnings=[]
         with httpx.Client(headers={"User-Agent":"AerisDroneMap/0.2 (+https://github.com/B1progame/drone-zone-map)"},timeout=60,follow_redirects=True) as client:
             for layer,name in self.layers.items():

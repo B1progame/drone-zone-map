@@ -1,9 +1,9 @@
 export type Source = { code:string; country:string; name:string; status:string; updated?:string; url:string; detail?:string };
 
 export const sources: Source[] = [
- { code:'DE', country:'Germany', name:'DIPUL', status:'Live official WMS', updated:'2026', url:'https://dipul.bund.de/homepage/en/information/geographical-zones/', detail:'Official DIPUL raster layers are displayed live with DFS/BKG attribution.' },
+ { code:'DE', country:'Germany', name:'DIPUL', status:'Live official WMS + WFS', updated:'2026', url:'https://dipul.bund.de/homepage/en/information/geographical-zones/', detail:'Official DIPUL raster layers render live; exact viewport export uses the published CC BY-ND 4.0 WFS without simplifying geometry.' },
  { code:'ES', country:'Spain', name:'ENAIRE servAIS', status:'Live official renderer', updated:'2026', url:'https://aip.enaire.es/AIP/UAS-en.html', detail:'The official MapServer renders the visible layer; point identify remains available for location checks.' },
- { code:'FR', country:'France', name:'IGN / Géoportail', status:'Live official WMTS', updated:'2026', url:'https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme', detail:'The official TRANSPORTS.DRONES.RESTRICTIONS tiles are displayed with IGN symbology.' },
+ { code:'FR', country:'France', name:'IGN / Géoportail', status:'Live official WMTS + WFS', updated:'2026', url:'https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme', detail:'Official tiles render with IGN symbology; point checks and exports use the official WFS, including published overseas coverage.' },
  { code:'GB', country:'United Kingdom', name:'NATS UK AIS', status:'Official AIRAC KML', updated:'9 Jul 2026', url:'https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/', detail:'Official permanent UAS restrictions are rendered from the NATS visualization dataset; current NOTAMs remain mandatory.' },
  { code:'US', country:'United States', name:'FAA UAS Facility Maps', status:'Live official FeatureServer', updated:'2026', url:'https://www.faa.gov/uas/getting_started/b4ufly', detail:'FAA facility grids load by viewport and show authorization ceilings; they are not permission or a complete restriction map.' },
  { code:'DK', country:'Denmark', name:'Trafikstyrelsen Dronezoner', status:'Live official GeoJSON', updated:'2026', url:'https://www.droneregler.dk/dronezoner/dronezoner-data-vejledninger/data-downloads', detail:'Stable official GeoJSON URLs are loaded on demand and styled with the published red, blue, orange and green categories.' },
@@ -31,7 +31,7 @@ export const sourceFor = (lat:number, lng:number) =>
   source.code==='FI'?lat>=59.5&&lat<=70.2&&lng>=19&&lng<=31.6:
   source.code==='BG'?lat>=41.1&&lat<=44.3&&lng>=22.2&&lng<=28.7:
   source.code==='PT'?lat>=30&&lat<=42.3&&lng>=-31.5&&lng<=-6:
-  source.code==='ES'?lat>=27&&lat<=44.5&&lng>=-18.5&&lng<=5:
+  source.code==='ES'?lat>=19&&lat<=45&&lng>=-25&&lng<=5:
   source.code==='DK'?lat>=54.4&&lat<=58&&lng>=7.8&&lng<=15.3:
   source.code==='CH'?lat>=45.75&&lat<=47.85&&lng>=5.75&&lng<=10.65:
   source.code==='AT'?lat>=46.25&&lat<=49.15&&lng>=9.45&&lng<=17.2:

@@ -6,6 +6,7 @@ import unittest
 
 from pipeline.adapters.public_uas_feeds import SlovakiaTransportAuthorityInspector
 from pipeline.audit_registry import audit
+from pipeline.check_source_health import classify
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -32,6 +33,14 @@ class SourceAuditTests(unittest.TestCase):
 </kml>"""
         root = SlovakiaTransportAuthorityInspector._kml_root(payload)
         self.assertEqual(1, len(root.findall(".//{*}Placemark")))
+
+    def test_source_health_classification_distinguishes_protection_from_failure(self) -> None:
+        self.assertEqual("reachable", classify(200))
+        self.assertEqual("reachable", classify(302))
+        self.assertEqual("protected_or_rate_limited", classify(403))
+        self.assertEqual("protected_or_rate_limited", classify(429))
+        self.assertEqual("unavailable_response", classify(404))
+        self.assertEqual("network_error", classify(None, "timeout"))
 
 
 if __name__ == "__main__":

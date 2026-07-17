@@ -1,0 +1,742 @@
+{
+  "auditedAt": "2026-07-17T16:21:51.069402+00:00",
+  "scope": "Every official page and endpoint registered by Aeris",
+  "countryCount": 36,
+  "requestCount": 60,
+  "healthCounts": {
+    "network_error": 2,
+    "protected_or_rate_limited": 4,
+    "reachable": 54
+  },
+  "interpretation": "Reachability is a transport check, not legal approval or proof of data completeness. Protected services remain official handoffs and are not bypassed.",
+  "records": [
+    {
+      "countryCode": "DE",
+      "countryName": "Germany",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://dipul.bund.de/homepage/en/information/geographical-zones/",
+          "finalUrl": "https://dipul.bund.de/homepage/en/information/geographical-zones/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 32768
+        },
+        "endpointUrl": {
+          "url": "https://uas-betrieb.de/geoservices/dipul/wfs",
+          "requestUrl": "https://uas-betrieb.de/geoservices/dipul/wfs?service=WFS&request=GetCapabilities&version=2.0.0",
+          "finalUrl": "https://uas-betrieb.de/geoservices/dipul/wfs?service=WFS&request=GetCapabilities&version=2.0.0",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "application/xml",
+          "sampleBytes": 941
+        }
+      }
+    },
+    {
+      "countryCode": "ES",
+      "countryName": "Spain",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://aip.enaire.es/AIP/UAS-en.html",
+          "finalUrl": "https://aip.enaire.es/AIP/UAS-en.html",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 4096
+        },
+        "endpointUrl": {
+          "url": "https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer",
+          "finalUrl": "https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 5925
+        }
+      }
+    },
+    {
+      "countryCode": "FR",
+      "countryName": "France",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme",
+          "finalUrl": "https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 6708
+        },
+        "endpointUrl": {
+          "url": "https://data.geopf.fr/wfs/ows",
+          "requestUrl": "https://data.geopf.fr/wfs/ows?service=WFS&request=GetCapabilities&version=2.0.0",
+          "finalUrl": "https://data.geopf.fr/wfs/ows?service=WFS&request=GetCapabilities&version=2.0.0",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "application/xml",
+          "sampleBytes": 143817
+        }
+      }
+    },
+    {
+      "countryCode": "IE",
+      "countryName": "Ireland",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.iaa.ie/general-aviation/drones/uas-geographic-zones",
+          "finalUrl": "https://www.iaa.ie/general-aviation/drones/uas-geographic-zones",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 27494
+        }
+      }
+    },
+    {
+      "countryCode": "GB",
+      "countryName": "United Kingdom",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/",
+          "finalUrl": "https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 3684
+        },
+        "endpointUrl": {
+          "url": "https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/digital-datasets/index.html",
+          "finalUrl": "https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/digital-datasets/index.html",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 2316
+        }
+      }
+    },
+    {
+      "countryCode": "NL",
+      "countryName": "Netherlands",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone",
+          "finalUrl": "https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 13992
+        },
+        "endpointUrl": {
+          "url": "https://www.nieuwsienw.nl/api/documents/downloadfile?fileid=1650029&forcedownload=true&sectionid=178144",
+          "finalUrl": "https://www.nieuwsienw.nl/api/documents/downloadfile?fileid=1650029&forcedownload=true&sectionid=178144",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "application/json",
+          "sampleBytes": 3033
+        }
+      }
+    },
+    {
+      "countryCode": "BE",
+      "countryName": "Belgium",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://mobilit.belgium.be/fr/aviation/voler-en-piloter/drones-uas/informations-generales/zones-geographiques",
+          "finalUrl": "https://mobilit.belgium.be/fr/aviation/voler-en-piloter/drones-uas/informations-generales/zones-geographiques",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 17207
+        },
+        "endpointUrl": {
+          "url": "https://map.droneguide.be/",
+          "finalUrl": "https://map.droneguide.be/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 6907
+        }
+      }
+    },
+    {
+      "countryCode": "LU",
+      "countryName": "Luxembourg",
+      "status": "vector_supported",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://data.public.lu/en/datasets/uas-geographical-zones-grand-duchy-of-luxembourg-zones-geographiques-uas-grand-duche-de-luxembourg/",
+          "finalUrl": "https://data.public.lu/en/datasets/uas-geographical-zones-grand-duchy-of-luxembourg-zones-geographiques-uas-grand-duche-de-luxembourg/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 3736
+        },
+        "endpointUrl": {
+          "url": "https://drones.geoportail.lu/zones",
+          "finalUrl": "https://drones.geoportail.lu/zones",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "application/octet-stream",
+          "sampleBytes": 22349
+        }
+      }
+    },
+    {
+      "countryCode": "AT",
+      "countryName": "Austria",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://map.dronespace.at/",
+          "finalUrl": "https://utm.dronespace.at/avm/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 3058
+        }
+      }
+    },
+    {
+      "countryCode": "CH",
+      "countryName": "Switzerland",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen",
+          "finalUrl": "https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 1451
+        },
+        "endpointUrl": {
+          "url": "https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson",
+          "finalUrl": "https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "application/geo+json",
+          "sampleBytes": 4096
+        }
+      }
+    },
+    {
+      "countryCode": "PT",
+      "countryName": "Portugal",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx",
+          "finalUrl": "https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 22365
+        },
+        "endpointUrl": {
+          "url": "https://dnt.anac.pt/json/?",
+          "finalUrl": "https://dnt.anac.pt/json/?",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 299
+        }
+      }
+    },
+    {
+      "countryCode": "SE",
+      "countryName": "Sweden",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://dronechart.lfv.se/",
+          "finalUrl": "https://dronechart.lfv.se/",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 2058
+        }
+      }
+    },
+    {
+      "countryCode": "DK",
+      "countryName": "Denmark",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.droneregler.dk/dronezoner",
+          "finalUrl": "https://www.droneregler.dk/dronezoner",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 14639
+        },
+        "endpointUrl": {
+          "url": "https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/980697acd04d4a9bb1fd34bbefab924a/data",
+          "finalUrl": "https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/980697acd04d4a9bb1fd34bbefab924a/data",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "application/json",
+          "sampleBytes": 30116
+        }
+      }
+    },
+    {
+      "countryCode": "NO",
+      "countryName": "Norway",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.avinor.no/en/practical-info/drone/dronekart/",
+          "finalUrl": "https://www.avinor.no/en/practical-info/drone/dronekart/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 2117
+        }
+      }
+    },
+    {
+      "countryCode": "FI",
+      "countryName": "Finland",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa",
+          "finalUrl": "https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 8192
+        },
+        "endpointUrl": {
+          "url": "https://eservices.traficom.fi/Ilmatilasovellus/api/uas-reservations/json?lang=fi",
+          "finalUrl": "https://eservices.traficom.fi/Ilmatilasovellus/api/uas-reservations/json?lang=fi",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "application/json",
+          "sampleBytes": 15106
+        }
+      }
+    },
+    {
+      "countryCode": "PL",
+      "countryName": "Poland",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.pansa.pl/dronetower/",
+          "health": "network_error",
+          "error": "ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:992)"
+        }
+      }
+    },
+    {
+      "countryCode": "CZ",
+      "countryName": "Czechia",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.caa.cz/en/flight-operations/unmanned-aircraft/",
+          "finalUrl": "https://www.caa.cz/en/flight-operations/unmanned-aircraft/",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 12971
+        },
+        "endpointUrl": {
+          "url": "https://dronemap.gov.cz/index.php?lang=2",
+          "finalUrl": "https://dronemap.gov.cz/index.php?lang=2",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 7392
+        }
+      }
+    },
+    {
+      "countryCode": "SK",
+      "countryName": "Slovakia",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://letectvo.nsat.sk/bezpilotne-letectvo/zemepisne-oblasti-uas/",
+          "finalUrl": "https://letectvo.nsat.sk/bezpilotne-letectvo/zemepisne-oblasti-uas/",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 12389
+        }
+      }
+    },
+    {
+      "countryCode": "HU",
+      "countryName": "Hungary",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://mydronespace.hu/",
+          "finalUrl": "https://mydronespace.hu/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 44336
+        }
+      }
+    },
+    {
+      "countryCode": "RO",
+      "countryName": "Romania",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.caa.ro/ro/pages/drone",
+          "finalUrl": "https://www.caa.ro/ro/pages/drone",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 16384
+        }
+      }
+    },
+    {
+      "countryCode": "BG",
+      "countryName": "Bulgaria",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.caa.bg/bg/category/633/7062",
+          "finalUrl": "https://www.caa.bg/bg/category/633/7062",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 10530
+        }
+      }
+    },
+    {
+      "countryCode": "GR",
+      "countryName": "Greece",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://hcaa.gov.gr/el/where-you-are-allowed-fly-uas-greece",
+          "finalUrl": "https://hcaa.gov.gr/el/where-you-are-allowed-fly-uas-greece",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 3575
+        },
+        "endpointUrl": {
+          "url": "https://dagr.hasp.gov.gr/#map_page",
+          "finalUrl": "https://dagr.hasp.gov.gr/#map_page",
+          "statusCode": 403,
+          "health": "protected_or_rate_limited",
+          "contentType": "text/html",
+          "sampleBytes": 374
+        }
+      }
+    },
+    {
+      "countryCode": "HR",
+      "countryName": "Croatia",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://amc.crocontrol.hr/Informacije",
+          "finalUrl": "https://amc.crocontrol.hr/Informacije",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 3245
+        },
+        "endpointUrl": {
+          "url": "https://amc.crocontrol.hr/",
+          "finalUrl": "https://amc.crocontrol.hr/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 3245
+        }
+      }
+    },
+    {
+      "countryCode": "SI",
+      "countryName": "Slovenia",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.caa.si/geografske-omejitve-za-uas.html",
+          "finalUrl": "https://www.caa.si/geografske-omejitve-za-uas.html",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 43441
+        },
+        "endpointUrl": {
+          "url": "https://caa-slovenia.maps.arcgis.com/apps/webappviewer/index.html?id=25ba69037c264c5faa5381174f76f861",
+          "finalUrl": "https://caa-slovenia.maps.arcgis.com/apps/webappviewer/index.html?id=25ba69037c264c5faa5381174f76f861",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 6241
+        }
+      }
+    },
+    {
+      "countryCode": "EE",
+      "countryName": "Estonia",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones",
+          "finalUrl": "https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 745
+        },
+        "endpointUrl": {
+          "url": "https://utm.eans.ee/avm/utm/uas.geojson",
+          "finalUrl": "https://utm.eans.ee/avm/utm/uas.geojson",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "application/json",
+          "sampleBytes": 16097
+        }
+      }
+    },
+    {
+      "countryCode": "LV",
+      "countryName": "Latvia",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.airspace.lv/drones/en",
+          "finalUrl": "https://www.airspace.lv/drones/en",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 4260
+        },
+        "endpointUrl": {
+          "url": "https://ais.lgs.lv/page/UAS_geozones",
+          "finalUrl": "https://ais.lgs.lv/page/UAS_geozones",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 7912
+        }
+      }
+    },
+    {
+      "countryCode": "LT",
+      "countryName": "Lithuania",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.ans.lt/en/services/unmanned-aerial-vehicles-drones",
+          "finalUrl": "https://www.ans.lt/en/services/unmanned-aerial-vehicles-drones",
+          "statusCode": 403,
+          "health": "protected_or_rate_limited",
+          "contentType": "text/html",
+          "sampleBytes": 1033
+        },
+        "endpointUrl": {
+          "url": "https://utm.ans.lt/",
+          "finalUrl": "https://utm.ans.lt/",
+          "statusCode": 403,
+          "health": "protected_or_rate_limited",
+          "contentType": "text/html",
+          "sampleBytes": 1022
+        }
+      }
+    },
+    {
+      "countryCode": "US",
+      "countryName": "United States",
+      "status": "active",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.faa.gov/uas/getting_started/b4ufly",
+          "finalUrl": "https://www.faa.gov/uas/getting_started/b4ufly",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 9779
+        },
+        "endpointUrl": {
+          "url": "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0",
+          "finalUrl": "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 11630
+        }
+      }
+    },
+    {
+      "countryCode": "CA",
+      "countryName": "Canada",
+      "status": "vector_supported",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://nrc.canada.ca/en/drone-tool-2/map.html",
+          "finalUrl": "https://nrc.canada.ca/en/drone-tool-2/map.html",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 7659
+        },
+        "endpointUrl": {
+          "url": "https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0",
+          "finalUrl": "https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 11859
+        }
+      }
+    },
+    {
+      "countryCode": "AU",
+      "countryName": "Australia",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.casa.gov.au/knowyourdrone/drone-safety-apps",
+          "health": "network_error",
+          "error": "ReadTimeout: The read operation timed out"
+        }
+      }
+    },
+    {
+      "countryCode": "NZ",
+      "countryName": "New Zealand",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.aviation.govt.nz/drones/flying-your-drone-safely/check-the-airspace/",
+          "finalUrl": "https://www.aviation.govt.nz/drones/flying-your-drone-safely/check-the-airspace/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 843
+        },
+        "endpointUrl": {
+          "url": "https://www.airshare.co.nz/",
+          "finalUrl": "https://airshare.co.nz/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 37815
+        }
+      }
+    },
+    {
+      "countryCode": "JP",
+      "countryName": "Japan",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.mlit.go.jp/koku/koku_ua_dips.html",
+          "finalUrl": "https://www.mlit.go.jp/koku/koku_ua_dips.html",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 37766
+        }
+      }
+    },
+    {
+      "countryCode": "BR",
+      "countryName": "Brazil",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.gov.br/pt-br/servicos/solicitar-autorizacao-para-voo-de-aeronaves-remotamente-pilotadas",
+          "finalUrl": "https://www.gov.br/pt-br/servicos/solicitar-autorizacao-para-voo-de-aeronaves-remotamente-pilotadas",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 4096
+        },
+        "endpointUrl": {
+          "url": "https://servicos.decea.gov.br/sarpas/",
+          "finalUrl": "https://servicos.decea.mil.br/sarpas/",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 4096
+        }
+      }
+    },
+    {
+      "countryCode": "IN",
+      "countryName": "India",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://digitalsky.dgca.gov.in/",
+          "finalUrl": "https://digitalsky.aai.aero/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 9764
+        }
+      }
+    },
+    {
+      "countryCode": "SG",
+      "countryName": "Singapore",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.caas.gov.sg/unmanned-aircraft/no-fly-zones-and-ua-flying-areas/",
+          "finalUrl": "https://www.caas.gov.sg/unmanned-aircraft/no-fly-zones-and-ua-flying-areas/",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 4096
+        },
+        "endpointUrl": {
+          "url": "https://www.onemap.gov.sg/",
+          "finalUrl": "https://www.onemap.gov.sg/",
+          "statusCode": 200,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 2376
+        }
+      }
+    },
+    {
+      "countryCode": "ZA",
+      "countryName": "South Africa",
+      "status": "official_link_only",
+      "checks": {
+        "officialMapUrl": {
+          "url": "https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/",
+          "finalUrl": "https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/",
+          "statusCode": 206,
+          "health": "reachable",
+          "contentType": "text/html",
+          "sampleBytes": 17403
+        },
+        "endpointUrl": {
+          "url": "https://www.atns.co.za/products/aim/AeronauticalInformationManagementProduct",
+          "finalUrl": "https://www.atns.co.za/products/aim/AeronauticalInformationManagementProduct",
+          "statusCode": 403,
+          "health": "protected_or_rate_limited",
+          "contentType": "text/html",
+          "sampleBytes": 116
+        }
+      }
+    }
+  ]
+}

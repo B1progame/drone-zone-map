@@ -12,17 +12,18 @@
       "countryCode": "DE",
       "countryName": "Germany",
       "disposition": "integrated",
-      "sourceType": "WMS",
+      "sourceType": "WMS + WFS",
       "officialMapUrl": "https://dipul.bund.de/homepage/en/information/geographical-zones/",
-      "endpointUrl": "https://uas-betrieb.de/geoservices/dipul/wms",
+      "endpointUrl": "https://uas-betrieb.de/geoservices/dipul/wfs",
       "supports": {
-        "vector": false,
+        "vector": true,
         "raster": true,
         "pointQuery": true,
         "offline": false
       },
       "decision": [
-        "Live official raster WMS; confirm the official national source before takeoff."
+        "Official raster renders live; exact viewport export uses the official WFS without simplifying or caching its geometry.",
+        "Confirm the current DIPUL map before takeoff."
       ]
     },
     {
@@ -31,7 +32,7 @@
       "disposition": "integrated",
       "sourceType": "ArcGIS Feature/MapServer",
       "officialMapUrl": "https://aip.enaire.es/AIP/UAS-en.html",
-      "endpointUrl": "https://servais.enaire.es/insigniads/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer",
+      "endpointUrl": "https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer",
       "supports": {
         "vector": true,
         "raster": true,
@@ -39,7 +40,7 @@
         "offline": false
       },
       "decision": [
-        "Live official vectors are loaded by viewport; broad urban coverage is shown only at local zoom to match the useful official view.",
+        "Live official vectors are loaded by viewport across mainland Spain, the Canary Islands, Balearic Islands, Ceuta and Melilla; broad urban coverage is shown only at local zoom.",
         "Re-check ENAIRE Drones before flight."
       ]
     },
@@ -47,17 +48,18 @@
       "countryCode": "FR",
       "countryName": "France",
       "disposition": "integrated",
-      "sourceType": "WMTS",
+      "sourceType": "WMTS + WFS",
       "officialMapUrl": "https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme",
-      "endpointUrl": "https://data.geopf.fr/wmts",
+      "endpointUrl": "https://data.geopf.fr/wfs/ows",
       "supports": {
-        "vector": false,
+        "vector": true,
         "raster": true,
-        "pointQuery": false,
+        "pointQuery": true,
         "offline": false
       },
       "decision": [
-        "Official TRANSPORTS.DRONES.RESTRICTIONS WMTS layer; point-query support is not enabled in Aeris."
+        "Official WMTS styling plus live WFS point checks and viewport exports for metropolitan France and the published overseas coverage.",
+        "The published dataset does not cover temporary restrictions; check SIA before flight."
       ]
     },
     {
@@ -90,6 +92,7 @@
         "offline": true
       },
       "decision": [
+        "Current permanent AIRAC UAS restriction geometry only; it will not match a live planning app that also includes temporary restrictions and NOTAMs.",
         "Visualization only; consult the UK AIP and current NOTAMs before flight."
       ]
     },
@@ -268,7 +271,7 @@
       "countryName": "Poland",
       "disposition": "official_handoff",
       "sourceType": "official real-time planning service",
-      "officialMapUrl": "https://dronetower.pansa.pl/",
+      "officialMapUrl": "https://www.pansa.pl/dronetower/",
       "supports": {
         "vector": false,
         "raster": false,
@@ -276,7 +279,7 @@
         "offline": false
       },
       "decision": [
-        "Polish CAA guidance requires pilots to check current zones and check in through DroneTower. No documented anonymous reusable geozone feed was verified."
+        "PANSA requires pilots to check current zones and notify intended flights through the DroneTower app. No documented anonymous reusable geozone feed was verified."
       ]
     },
     {
@@ -605,7 +608,7 @@
       "disposition": "official_handoff",
       "sourceType": "official guidance and aeronautical publications",
       "officialMapUrl": "https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/",
-      "endpointUrl": "https://cad.atns.co.za/",
+      "endpointUrl": "https://www.atns.co.za/products/aim/AeronauticalInformationManagementProduct",
       "supports": {
         "vector": false,
         "raster": false,

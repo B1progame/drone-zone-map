@@ -11,4 +11,36 @@ export type WeatherHour = { time:string; temperature:number; wind:number; gusts:
 export type Weather = { temperature: number; wind: number; gusts: number; rain: number; rainProbability:number; cloud: number; visibility:number; score: number; hourly:WeatherHour[]; timezone:string };
 export type ZoneDetail = { id:string; name:string; type:string; message?:string; lower?:string; upper?:string; legalReference?:string; contact?:string; source:string; updated?:string };
 export type ZoneInfo = { countryCode:string; countryName:string; sourceName:string; sourceUrl:string; status:'loaded'|'none'|'unsupported'|'error'; zones:ZoneDetail[]; checkedAt:string; warning:string };
-export type SavedPlace = Location & { id: string; savedAt: string; score?: number };
+export type SavedWeatherSummary = {
+  score:number;
+  temperature:number;
+  wind:number;
+  gusts:number;
+  rainProbability:number;
+};
+export type SavedAirspaceSummary = {
+  countryCode:string;
+  countryName:string;
+  sourceName:string;
+  status:ZoneInfo['status'];
+  zoneCount:number;
+  zoneTypes:string[];
+  sourceUrl:string;
+};
+export type SavedPlace = Location & {
+  id:string;
+  savedAt:string;
+  score?:number;
+  weather?:SavedWeatherSummary;
+  airspace?:SavedAirspaceSummary;
+  note?:string;
+  favorite?:boolean;
+};
+export type SavedRoute = {
+  id:string;
+  name:string;
+  savedAt:string;
+  points:(Location&{id:string})[];
+  radiusKm:number;
+  distanceKm:number;
+};

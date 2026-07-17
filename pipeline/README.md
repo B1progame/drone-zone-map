@@ -5,6 +5,7 @@ The pipeline inventories public geospatial endpoints for personal research. It d
 ```powershell
 python pipeline/main.py
 python pipeline/audit_registry.py --output pipeline/reports/source-coverage-audit.json
+python pipeline/check_source_health.py --output pipeline/reports/source-health-audit.json
 python pipeline/main.py discover "https://dipul.bund.de/homepage/en/information/geographical-zones/web-map-service-wms/" --output pipeline/reports/germany.json
 python pipeline/main.py inspect-wms "https://uas-betrieb.de/geoservices/dipul/wms" --output pipeline/reports/germany-wms.json
 python pipeline/main.py update-ireland
@@ -23,13 +24,13 @@ Discovery extracts public WMS, WFS, WMTS, OGC API, ArcGIS service, GeoJSON, and 
 
 If an official page blocks crawling but publicly documents a service URL, use `inspect-wms` with that known endpoint. It performs only `GetCapabilities`; it does not crawl the site or bypass the robots policy.
 
-DIPUL explicitly documents personal/internal use and limited non-commercial application use with current DFS/BKG attribution. Its official WMS is rendered directly by the frontend; the pipeline does not pretend raster pixels are vector restrictions.
+DIPUL's official WMS is rendered directly by the frontend. Exact visible exports are requested layer-by-layer from the documented WFS and retain the provider's geometry without simplification under CC BY-ND 4.0; they are not cached as a national snapshot.
 
 Ireland is downloaded only from the GeoJSON link explicitly published by the Irish Aviation Authority. The adapter validates the FeatureCollection before replacing the public file. IAA marks the data as reference-only and requires pilots to check current TRAs, NOTAMs, and the official file.
 
 Sweden is downloaded from LFV's documented WFS endpoint under CC BY-NC-ND 4.0. The ten responses are stored as separate layers without simplifying or rewriting their geometry. LFV's documented altitude and NOTAM display rules are applied only as frontend filters. Norway remains an official link: Avinor's current terms prohibit scraping, copying, and redistribution of its service data.
 
-France is rendered directly from IGN's public `TRANSPORTS.DRONES.RESTRICTIONS` WMTS layer. Spain uses ENAIRE's current V1 viewport queries with separate infrastructure, aeronautical, and urban styling. Urban coverage is hidden below zoom 10 because its province-scale polygons create a misleading opaque pink patchwork when the raw service renderer is tiled nationally.
+France is rendered directly from IGN's public `TRANSPORTS.DRONES.RESTRICTIONS` WMTS layer. Point checks and exact visible exports use the matching official WFS, including the service's published overseas coverage; the layer explicitly excludes temporary restrictions. Spain uses ENAIRE's current V1 viewport queries across its full published extent, including Tenerife and the other Canary Islands, with separate infrastructure, aeronautical, and urban styling. Urban coverage is hidden below zoom 10 because its province-scale polygons create a misleading opaque pink patchwork when the raw service renderer is tiled nationally.
 
 The UK adapter downloads NATS' official AIRAC KML visualization and retains its effective date and warnings. The KML is a visualization aid; the UK AIP and current NOTAMs remain authoritative.
 
