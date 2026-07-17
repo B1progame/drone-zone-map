@@ -4,6 +4,7 @@ export type AppSettings = {
   renderDetail: RenderDetail;
   glassOpacity: number;
   reducedMotion: boolean;
+  language: string;
 };
 export type Location = { lat: number; lng: number; name: string };
 export type WeatherHour = { time:string; temperature:number; wind:number; gusts:number; rain:number; rainProbability:number; cloud:number; visibility:number; score:number; isDay:boolean };

@@ -10,9 +10,10 @@ export const sources: Source[] = [
  { code:'LU', country:'Luxembourg', name:'DAC Geoportal', status:'Official CC0 GeoJSON', updated:'2026', url:'https://drones.geoportail.lu/', detail:'Official Luxembourg UAS volumes are available offline.' },
  { code:'IE', country:'Ireland', name:'Irish Aviation Authority', status:'Official GeoJSON', updated:'14 Jul 2026', url:'https://www.iaa.ie/general-aviation/drones/uas-geographic-zones', detail:'The IAA explicitly publishes the common digital format; reference only, not for navigation.' },
  { code:'SE', country:'Sweden', name:'LFV Dronechart', status:'Official WFS', updated:'2026', url:'https://daim.lfv.se/echarts/dronechart/API/', detail:'Raw CC BY-NC-ND geometry is preserved. Published ground-level display filters exclude oversized non-drone layers.' },
+ { code:'CH', country:'Switzerland', name:'FOCA / geo.admin.ch', status:'Live official GeoJSON', updated:'14 Jul 2026', url:'https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen', detail:'Complete public Swiss UAS geozones render live with the colors published by FOCA.' },
+ { code:'AT', country:'Austria', name:'Austro Control Dronespace', status:'Official link only', updated:'2026', url:'https://map.dronespace.at/', detail:'Austro Control’s official interactive planner is linked directly; no unverified private feed is copied.' },
  { code:'NO', country:'Norway', name:'Avinor drone map', status:'Official link only', updated:'2026', url:'https://www.avinor.no/en/practical-info/drone/dronekart/', detail:'Avinor expressly prohibits presenting its service data through another application.' },
- { code:'IT', country:'Italy', name:'D-Flight / ENAC', status:'Authenticated source only', updated:'2026', url:'https://www.d-flight.it/web-app/', detail:'The ED-269 download is available only to authenticated D-Flight operators with an active subscription.' },
- { code:'CA', country:'Canada', name:'Transport Canada Open Government', status:'Open airport vectors + advisory rings', updated:'2021', url:'https://open.canada.ca/data/en/dataset/3a1eb6ef-6054-4f9d-b1f6-c30322cd7abf', detail:'Aeris renders openly licensed airports and 5.6 km orientation rings. The restricted NAV CANADA database is not copied; the NRC tool remains the authoritative check.' }
+ { code:'CA', country:'Canada', name:'Government of Canada Open Data', status:'Open airports + national parks', updated:'2026', url:'https://nrc.canada.ca/en/drone-tool-2/map.html', detail:'Aeris renders openly licensed federal airports, 5.6 km orientation rings, and national parks. NRC confirms the NAV CANADA-derived database may not be redistributed.' }
 ];
 
 export const sourceFor = (lat:number, lng:number) =>
@@ -22,9 +23,10 @@ export const sourceFor = (lat:number, lng:number) =>
   source.code==='IE'?lat>=51.2&&lat<=55.6&&lng>=-11&&lng<=-5:
   source.code==='ES'?lat>=27&&lat<=44.5&&lng>=-18.5&&lng<=5:
   source.code==='DK'?lat>=54.4&&lat<=58&&lng>=7.8&&lng<=15.3:
+  source.code==='CH'?lat>=45.75&&lat<=47.85&&lng>=5.75&&lng<=10.65:
+  source.code==='AT'?lat>=46.25&&lat<=49.15&&lng>=9.45&&lng<=17.2:
   source.code==='DE'?lat>=47&&lat<=55.2&&lng>=5.5&&lng<=15.5:
   source.code==='FR'?lat>=41&&lat<=51.5&&lng>=-5.5&&lng<=10:
-  source.code==='IT'?lat>=35.3&&lat<=47.2&&lng>=6.5&&lng<=18.8:
   source.code==='SE'?lat>=55&&lat<=69.2&&lng>=10.4&&lng<=24.5&&lng>=(lat<60.5?11.3:lat<63?12.5:lat<66?15:lat<68?18:lat<69?23:31.5):
   source.code==='NO'?lat>=57.5&&lat<=71.5&&lng>=4&&lng<(lat<60.5?11.3:lat<63?12.5:lat<66?15:lat<68?18:lat<69?23:31.5):
   source.code==='CA'?lat>=49&&lat<=83.5&&lng>=-141&&lng<=-52:

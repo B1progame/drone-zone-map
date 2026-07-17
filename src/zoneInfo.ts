@@ -1,16 +1,18 @@
 import type { Location, ZoneDetail, ZoneInfo } from './types';
 
 const DIPUL_LAYERS=['bahnanlagen','behoerden','binnenwasserstrassen','bundesautobahnen','bundesstrassen','diplomatische_vertretungen','ffh-gebiete','flugbeschraenkungsgebiete','flughaefen','flugplaetze','freibaeder','haengegleiter','industrieanlagen','internationale_organisationen','justizvollzugsanstalten','kontrollzonen','kraftwerke','krankenhaeuser','labore','militaerische_anlagen','modellflugplaetze','nationalparks','naturschutzgebiete','polizei','schifffahrtsanlagen','seewasserstrassen','sicherheitsbehoerden','stromleitungen','temporaere_betriebseinschraenkungen','umspannwerke','vogelschutzgebiete','windkraftanlagen','wohngrundstuecke'];
-const language=()=>navigator.language.toLowerCase().split('-')[0];
+let selectedLanguage=(navigator.language||'en').toLowerCase().split('-')[0];
+const language=()=>selectedLanguage;
 const COUNTRY_SOURCES={
  GB:{name:'United Kingdom',source:'NATS UK AIS',url:'https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/',warning:'Official permanent NATS UAS restrictions render from the current AIRAC visualization dataset. Check the UK AIP and current NOTAMs before flight.'},
  FR:{name:'France',source:'IGN / Géoportail',url:'https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme',warning:'The official IGN restrictions render on the map, but this WMTS layer does not provide a verified point-query result in Aeris.'},
  SE:{name:'Sweden',source:'LFV Dronechart',url:'https://dronechart.lfv.se/',warning:'Official LFV vectors render on the map with the published ground-level filters. Check LFV and current NOTAMs before flight.'},
  DK:{name:'Denmark',source:'Trafikstyrelsen Dronezoner',url:'https://www.droneregler.dk/dronezoner',warning:'Official static drone-zone data is loaded from Trafikstyrelsen. Check Dronezoner for temporary changes before flight.'},
  NO:{name:'Norway',source:'Avinor drone map',url:'https://www.avinor.no/en/practical-info/drone/dronekart/',warning:'Avinor prohibits presenting its service data in another application, so Aeris links to the official map instead of copying its zones.'},
- IT:{name:'Italy',source:'D-Flight / ENAC',url:'https://www.d-flight.it/web-app/',warning:'Italy provides its ED-269 zone download only to authenticated D-Flight operator subscriptions. Use the official D-Flight map.'},
+ CH:{name:'Switzerland',source:'FOCA / geo.admin.ch',url:'https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen',warning:'Complete public FOCA geographical UAS zones render live. Cantonal rules and temporary restrictions can still apply.'},
+ AT:{name:'Austria',source:'Austro Control Dronespace',url:'https://map.dronespace.at/',warning:'Austro Control does not expose a verified reusable zone feed here. Open the official Dronespace map for the selected area.'},
  US:{name:'United States',source:'FAA UAS Facility Maps',url:'https://www.faa.gov/uas/getting_started/b4ufly',warning:'FAA UAS Facility Map grids render live and show pre-coordinated authorization altitudes, not permission or every restriction. Check B4UFLY and current TFRs.'},
- CA:{name:'Canada',source:'Transport Canada Open Government',url:'https://open.canada.ca/data/en/dataset/3a1eb6ef-6054-4f9d-b1f6-c30322cd7abf',warning:'Aeris renders the reusable Government of Canada airport dataset and 5.6 km orientation rings. It is not the complete NRC/NAV CANADA airspace database; check the official Drone Site Selection Tool before flight.'}
+ CA:{name:'Canada',source:'Government of Canada Open Data',url:'https://nrc.canada.ca/en/drone-tool-2/map.html',warning:'Aeris renders reusable federal airport and national-park data. The NRC confirms its NAV CANADA-derived database cannot be redistributed; use the official Drone Site Selection Tool for the complete check.'}
 } as const;
 type CountryCode=keyof typeof COUNTRY_SOURCES|'DE'|'ES'|'LU'|'IE'|'XX';
 function countryAt(p:Location):CountryCode{
@@ -19,7 +21,7 @@ function countryAt(p:Location):CountryCode{
   ['LU',['luxembourg']],['IE',['ireland','éire','irland']],['ES',['spain','españa','spanien']],['DK',['denmark','danmark','dänemark']],
   ['GB',['united kingdom','great britain','england','scotland','wales','northern ireland','vereinigtes königreich','großbritannien']],
   ['US',['united states','usa','vereinigte staaten']],
-  ['DE',['germany','deutschland']],['FR',['france','frankreich']],['IT',['italy','italia','italien']],['SE',['sweden','sverige','schweden']],
+  ['CH',['switzerland','schweiz','suisse','svizzera']],['AT',['austria','österreich','autriche']],['DE',['germany','deutschland']],['FR',['france','frankreich']],['SE',['sweden','sverige','schweden']],
   ['NO',['norway','norge','norwegen']],['CA',['canada','kanada']]
  ];
  for(const [code,names] of namedCountry)if(names.some(name=>named.includes(name)))return code;
@@ -28,9 +30,10 @@ function countryAt(p:Location):CountryCode{
  if(p.lat>=49&&p.lat<=61&&p.lng>=-9&&p.lng<=2.5)return'GB';
  if(p.lat>=27&&p.lat<=44.5&&p.lng>=-18.5&&p.lng<=5)return'ES';
  if(p.lat>=54.4&&p.lat<=58&&p.lng>=7.8&&p.lng<=15.3)return'DK';
+ if(p.lat>=45.75&&p.lat<=47.85&&p.lng>=5.75&&p.lng<=10.65)return'CH';
+ if(p.lat>=46.25&&p.lat<=49.15&&p.lng>=9.45&&p.lng<=17.2)return'AT';
  if(p.lat>=47&&p.lat<=55.2&&p.lng>=5.5&&p.lng<=15.5)return'DE';
  if(p.lat>=41&&p.lat<=51.5&&p.lng>=-5.5&&p.lng<=10)return'FR';
- if(p.lat>=35.3&&p.lat<=47.2&&p.lng>=6.5&&p.lng<=18.8)return'IT';
  if(p.lat>=57.5&&p.lat<=71.5&&p.lng>=4&&p.lng<=31.5){
   const border=p.lat<60.5?11.3:p.lat<63?12.5:p.lat<66?15:p.lat<68?18:p.lat<69?23:31.5;
   if(p.lng<border)return'NO';
@@ -52,9 +55,9 @@ const base=(code:string,name:string,sourceName:string,sourceUrl:string):ZoneInfo
 const geoJsonCache=new Map<string,Promise<any>>();
 const fetchGeoJson=(url:string)=>{let pending=geoJsonCache.get(url);if(!pending){pending=fetch(url).then(response=>{if(!response.ok)throw new Error(`Zone file unavailable: ${response.status}`);return response.json()});geoJsonCache.set(url,pending)}return pending};
 
-async function dipul(point:Location):Promise<ZoneInfo>{const result=base('DE',language()==='de'?'Deutschland':'Germany','DIPUL','https://dipul.bund.de/');const d=.035,bbox=`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,layers=DIPUL_LAYERS.map(x=>`dipul:${x}`).join(',');const params=new URLSearchParams({SERVICE:'WMS',VERSION:'1.1.1',REQUEST:'GetFeatureInfo',LAYERS:layers,QUERY_LAYERS:layers,STYLES:'',SRS:'EPSG:4326',BBOX:bbox,WIDTH:'256',HEIGHT:'256',X:'128',Y:'128',INFO_FORMAT:'text/plain',FEATURE_COUNT:'50'});const response=await fetch(`https://uas-betrieb.de/geoservices/dipul/wms?${params}`);if(!response.ok)throw new Error('DIPUL query failed');const text=await response.text(),blocks=text.split(/Results for FeatureType/).slice(1);result.zones=blocks.map((block,index)=>{const attrs=Object.fromEntries(block.split('\n').map(line=>line.match(/^([^=]+) = (.*)$/)).filter(Boolean).map(match=>[match![1].trim(),match![2].trim()]));const layer=(block.match(/'[^:]+:([^']+)'/)?.[1]??'zone');return{id:`DE-${index}-${attrs.external_reference??layer}`,name:attrs[`generated_name_${language().toUpperCase()}`]??attrs.generated_name_EN??attrs.name??translate(layer.toUpperCase()),type:translate(attrs.type_code??layer.toUpperCase()),lower:attrs.lower_limit_altitude?`${attrs.lower_limit_altitude} ${attrs.lower_limit_unit??''} ${attrs.lower_limit_alt_ref??''}`:undefined,upper:attrs.upper_limit_altitude?`${attrs.upper_limit_altitude} ${attrs.upper_limit_unit??''} ${attrs.upper_limit_alt_ref??''}`:undefined,legalReference:attrs.legal_ref,source:'DIPUL'} as ZoneDetail});result.status=result.zones.length?'loaded':'none';return result}
+async function dipul(point:Location):Promise<ZoneInfo>{const directUrl=`https://maptool-dipul.dfs.de/geozones/@${point.lng.toFixed(7)},${point.lat.toFixed(7)}?language=${language()==='de'?'de':'en'}&zoom=11.0`,result=base('DE',language()==='de'?'Deutschland':'Germany','DIPUL',directUrl);const d=.035,bbox=`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,layers=DIPUL_LAYERS.map(x=>`dipul:${x}`).join(',');const params=new URLSearchParams({SERVICE:'WMS',VERSION:'1.1.1',REQUEST:'GetFeatureInfo',LAYERS:layers,QUERY_LAYERS:layers,STYLES:'',SRS:'EPSG:4326',BBOX:bbox,WIDTH:'256',HEIGHT:'256',X:'128',Y:'128',INFO_FORMAT:'text/plain',FEATURE_COUNT:'50'});const response=await fetch(`https://uas-betrieb.de/geoservices/dipul/wms?${params}`);if(!response.ok)throw new Error('DIPUL query failed');const text=await response.text(),blocks=text.split(/Results for FeatureType/).slice(1);result.zones=blocks.map((block,index)=>{const attrs=Object.fromEntries(block.split('\n').map(line=>line.match(/^([^=]+) = (.*)$/)).filter(Boolean).map(match=>[match![1].trim(),match![2].trim()]));const layer=(block.match(/'[^:]+:([^']+)'/)?.[1]??'zone');return{id:`DE-${index}-${attrs.external_reference??layer}`,name:attrs[`generated_name_${language().toUpperCase()}`]??attrs.generated_name_EN??attrs.name??translate(layer.toUpperCase()),type:translate(attrs.type_code??layer.toUpperCase()),lower:attrs.lower_limit_altitude?`${attrs.lower_limit_altitude} ${attrs.lower_limit_unit??''} ${attrs.lower_limit_alt_ref??''}`:undefined,upper:attrs.upper_limit_altitude?`${attrs.upper_limit_altitude} ${attrs.upper_limit_unit??''} ${attrs.upper_limit_alt_ref??''}`:undefined,legalReference:attrs.legal_ref,source:'DIPUL'} as ZoneDetail});result.status=result.zones.length?'loaded':'none';return result}
 
-async function enaire(point:Location):Promise<ZoneInfo>{const result=base('ES',language()==='es'?'España':'Spain','ENAIRE servAIS','https://aip.enaire.es/AIP/UAS-en.html'),d=.12;const params=new URLSearchParams({geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',sr:'4326',tolerance:'3',mapExtent:`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,imageDisplay:'800,600,96',layers:'all:0,1,2,3',returnGeometry:'false',f:'json'});const response=await fetch(`https://servais.enaire.es/insigniads/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer/identify?${params}`);if(!response.ok)throw new Error('ENAIRE query failed');const data=await response.json();result.zones=(data.results??[]).map((item:any,index:number)=>{const a=item.attributes??{};return{id:`ES-${item.layerId}-${a.OBJECTID??index}`,name:a.name&&a.name!=='Nulo'?a.name:item.value||item.layerName,type:translate(a.type||a.restriction||'COMMON'),message:cleanHtml(a.message||a.description).slice(0,700),lower:a.lower?`${a.lower} ${a.uom??''} ${a.lowerReference??''}`:undefined,upper:a.upper?`${a.upper} ${a.uom??''} ${a.upperReference??''}`:undefined,contact:[a.email,a.phone].filter((x:string)=>x&&x!=='Nulo').join(' · ')||undefined,source:'ENAIRE',updated:a.updateDateTime||undefined}});result.status=result.zones.length?'loaded':'none';return result}
+async function enaire(point:Location):Promise<ZoneInfo>{const result=base('ES',language()==='es'?'España':'Spain','ENAIRE servAIS','https://drones.enaire.es/'),d=.12;const params=new URLSearchParams({geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',sr:'4326',tolerance:'3',mapExtent:`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,imageDisplay:'800,600,96',layers:'all:0,2,3',returnGeometry:'false',f:'json'});const response=await fetch(`https://servais.enaire.es/insigniads/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer/identify?${params}`);if(!response.ok)throw new Error('ENAIRE query failed');const data=await response.json();result.zones=(data.results??[]).map((item:any,index:number)=>{const a=item.attributes??{};return{id:`ES-${item.layerId}-${a.OBJECTID??index}`,name:a.name&&a.name!=='Nulo'?a.name:item.value||item.layerName,type:translate(a.type||a.restriction||'COMMON'),message:cleanHtml(a.message||a.description).slice(0,700),lower:a.lower!=null?`${a.lower} ${a.uom??''} ${a.lowerReference??''}`:undefined,upper:a.upper!=null?`${a.upper} ${a.uom??''} ${a.upperReference??''}`:undefined,contact:[a.email,a.phone].filter((x:string)=>x&&x!=='Nulo').join(' · ')||undefined,source:'ENAIRE',updated:a.updateDateTime||undefined}});result.status=result.zones.length?'loaded':'none';return result}
 
 const insideRing=(point:Location,ring:number[][])=>{let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const [xi,yi]=ring[i],[xj,yj]=ring[j];if(((yi>point.lat)!==(yj>point.lat))&&(point.lng<(xj-xi)*(point.lat-yi)/(yj-yi)+xi))inside=!inside}return inside};
 const insidePolygon=(point:Location,polygon:number[][][])=>insideRing(point,polygon[0])&&!polygon.slice(1).some(ring=>insideRing(point,ring));
@@ -73,11 +76,17 @@ async function unitedStates(point:Location):Promise<ZoneInfo>{
 const distanceKm=(a:Location,b:{lat:number;lng:number})=>{const radius=6371,toRad=(value:number)=>value*Math.PI/180,dLat=toRad(b.lat-a.lat),dLng=toRad(b.lng-a.lng),lat1=toRad(a.lat),lat2=toRad(b.lat);const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;return radius*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))};
 async function canada(point:Location):Promise<ZoneInfo>{
  const source=COUNTRY_SOURCES.CA,result=base('CA',source.name,source.source,source.url),d=.12;
- const params=new URLSearchParams({where:'1=1',geometry:`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,geometryType:'esriGeometryEnvelope',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outSR:'4326',outFields:'OBJECTID,TC_ID,IATA,ICAO,TYPE,AIRPORT,CITY,PROVINCE,LATTITUDE,LONGITUDE',returnGeometry:'true',f:'json'});
- const response=await fetch(`https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0/query?${params}`);
- if(!response.ok)throw new Error('Transport Canada airport query failed');
- const data=await response.json();
- result.zones=(data.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{},coordinates=feature.geometry??{},lat=Number(coordinates.y??p.LATTITUDE),lng=Number(coordinates.x??p.LONGITUDE),distance=distanceKm(point,{lat,lng});return{distance,zone:{id:`CA-${p.OBJECTID??index}`,name:p.AIRPORT??p.ICAO??'Canadian airport',type:'5.6 km airport advisory area',message:`${p.TYPE??'Airport'}${p.CITY?` · ${p.CITY}, ${p.PROVINCE}`:''}. Approximately ${distance.toFixed(1)} km from the selected point. This orientation ring is not a complete legal airspace check.`,source:source.source}}}).filter((item:any)=>item.distance<=5.6).map((item:any)=>item.zone);
+ const airportParams=new URLSearchParams({where:'1=1',geometry:`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,geometryType:'esriGeometryEnvelope',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outSR:'4326',outFields:'OBJECTID,TC_ID,IATA,ICAO,TYPE,AIRPORT,CITY,PROVINCE,LATTITUDE,LONGITUDE',returnGeometry:'true',f:'json'});
+ const parkParams=new URLSearchParams({where:'1=1',geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outFields:'OBJECTID,adminAreaId,adminAreaNameEng,adminAreaNameFra,distributionTypeEng,jurisdictionEng,webReference',returnGeometry:'false',f:'json'});
+ const [airportResponse,parkResponse]=await Promise.all([
+  fetch(`https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0/query?${airportParams}`),
+  fetch(`https://proxyinternet.nrcan-rncan.gc.ca/arcgis/rest/services/CLSS-SATC/CLSS_Administrative_Boundaries/MapServer/1/query?${parkParams}`)
+ ]);
+ if(!airportResponse.ok||!parkResponse.ok)throw new Error('Government of Canada open-data query failed');
+ const [airportData,parkData]=await Promise.all([airportResponse.json(),parkResponse.json()]);
+ const airports=(airportData.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{},coordinates=feature.geometry??{},lat=Number(coordinates.y??p.LATTITUDE),lng=Number(coordinates.x??p.LONGITUDE),distance=distanceKm(point,{lat,lng});return{distance,zone:{id:`CA-AIRPORT-${p.OBJECTID??index}`,name:p.AIRPORT??p.ICAO??'Canadian airport',type:'5.6 km airport advisory area',message:`${p.TYPE??'Airport'}${p.CITY?` · ${p.CITY}, ${p.PROVINCE}`:''}. Approximately ${distance.toFixed(1)} km from the selected point. This orientation ring is not a complete legal airspace check.`,source:'Transport Canada Open Government'}}}).filter((item:any)=>item.distance<=5.6).map((item:any)=>item.zone);
+ const parks=(parkData.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{};return{id:`CA-PARK-${p.OBJECTID??index}`,name:(language()==='fr'?p.adminAreaNameFra:p.adminAreaNameEng)||p.adminAreaNameEng||'Canadian national park',type:'National park or national park reserve',message:'Drone take-off and landing in Parks Canada places is restricted. Check the park authority and the official Drone Site Selection Tool before flight.',legalReference:p.webReference,source:'Natural Resources Canada / Parks Canada'}});
+ result.zones=[...airports,...parks];
  result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
 }
 async function denmark(point:Location):Promise<ZoneInfo>{
@@ -99,7 +108,17 @@ async function resolvedCountryAt(point:Location):Promise<CountryCode>{
  return initial;
 }
 
-export async function getOfficialZoneInfo(point:Location):Promise<ZoneInfo>{
+async function switzerland(point:Location):Promise<ZoneInfo>{
+ const source=COUNTRY_SOURCES.CH;
+ const query=`${point.lng.toFixed(6)},${point.lat.toFixed(6)}`;
+ const url=`https://map.geo.admin.ch/#/map?lang=${encodeURIComponent(['de','fr','it','rm','en'].includes(language())?language():'en')}&topic=ech&layers=ch.bazl.einschraenkungen-drohnen&swisssearch=${encodeURIComponent(query)}&swisssearch_autoselect=true&z=9`;
+ const result=base('CH',source.name,source.source,url);
+ const data=await fetchGeoJson('https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson');
+ result.zones=(data.features??[]).filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{const p=feature.properties??{};return{id:p.identifier??`CH-${index}`,name:p.name||'Swiss UAS geographical zone',type:translate(p.restriction??p.type??'COMMON'),message:[p.restrictionConditions,p.message].filter(Boolean).join(' · '),lower:p.lowerLimit!=null?`${p.lowerLimit} ${p.uomDimensions??'M'} ${p.lowerVerticalReference??''}`:undefined,upper:p.upperLimit!=null?`${p.upperLimit} ${p.uomDimensions??'M'} ${p.upperVerticalReference??''}`:undefined,contact:[p.authorityName,p.service,p.email,p.phone].filter(Boolean).join(' · ')||undefined,source:source.source,updated:p.startDateTime}});result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
+}
+
+export async function getOfficialZoneInfo(point:Location,requestedLanguage=language()):Promise<ZoneInfo>{
+ selectedLanguage=requestedLanguage.toLowerCase().split('-')[0]||'en';
  const code=await resolvedCountryAt(point);
  try{
   if(code==='DE')return await dipul(point);
@@ -108,6 +127,7 @@ export async function getOfficialZoneInfo(point:Location):Promise<ZoneInfo>{
   if(code==='IE')return await ireland(point);
   if(code==='GB')return await uk(point);
   if(code==='DK')return await denmark(point);
+  if(code==='CH')return await switzerland(point);
   if(code==='US')return await unitedStates(point);
   if(code==='CA')return await canada(point);
   if(code in COUNTRY_SOURCES){const source=COUNTRY_SOURCES[code as keyof typeof COUNTRY_SOURCES];return{...base(code,source.name,source.source,source.url),status:'unsupported',warning:source.warning}}

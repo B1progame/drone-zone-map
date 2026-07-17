@@ -26,12 +26,14 @@ const dipulTiles=(layers:string)=>`https://uas-betrieb.de/geoservices/dipul/wms?
 const ENAIRE='https://servais.enaire.es/insigniads/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer';
 const FAA_UAS='https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0';
 const CANADA_AIRPORTS='https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0';
+const CANADA_NATIONAL_PARKS='https://proxyinternet.nrcan-rncan.gc.ca/arcgis/rest/services/CLSS-SATC/CLSS_Administrative_Boundaries/MapServer/1';
+const SWISS_UAS='https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson';
 const franceTiles='https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=TRANSPORTS.DRONES.RESTRICTIONS&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/png';
 const DENMARK_ZONES='https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/980697acd04d4a9bb1fd34bbefab924a/data';
 const DENMARK_NATURE='https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/ff657943724944faaf19807380f5e24a/data';
 const SWEDEN_POLYGON_SOURCES = ['mais-TIZ','mais-RSTA','mais-DNGA','mais-CTR','mais-ATZ','dynais-NOTAM','DAIM_TOPO-SUP','DAIM_TOPO-RWY5K','DAIM_TOPO-HKP1K'] as const;
 const SWEDEN_SOURCE_IDS=[...SWEDEN_POLYGON_SOURCES,'mais-ARP'] as const;
-const ZONE_LAYER_IDS = ['dipul-zones','dipul-detail','enaire-infrastructure-fill','enaire-infrastructure-line','enaire-aero-fill','enaire-aero-line','enaire-urban-fill','enaire-urban-line','france-zones','uk-zones','uk-lines','us-facility-fill','us-facility-line','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
+const ZONE_LAYER_IDS = ['dipul-zones','dipul-detail','enaire-infrastructure-fill','enaire-infrastructure-line','enaire-aero-fill','enaire-aero-line','enaire-urban-fill','enaire-urban-line','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
 const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const dynamicRequestKeys=new WeakMap<MapLibreMap,Map<string,string>>();
 const emptyGeoJson={type:'FeatureCollection' as const,features:[]};
@@ -51,6 +53,7 @@ const vectorSources=():VectorSourceConfig[]=>[
  {id:'luxembourg',url:`${import.meta.env.BASE_URL}data/zones/LU.geojson`,bounds:[5.65,49.35,6.65,50.25]},
  {id:'ireland',url:`${import.meta.env.BASE_URL}data/zones/IE.geojson`,bounds:[-11,51.2,-5,55.6]},
  {id:'uk',url:`${import.meta.env.BASE_URL}data/zones/GB.geojson`,bounds:[-9,49,2.5,61]},
+ {id:'switzerland',url:SWISS_UAS,bounds:[5.75,45.75,10.65,47.85]},
  {id:'denmark',url:DENMARK_ZONES,bounds:[7.8,54.4,15.3,58]},
  {id:'denmark-nature',url:DENMARK_NATURE,bounds:[7.8,54.4,15.3,58]},
  ...SWEDEN_SOURCE_IDS.map(id=>({id:`sweden-${id}`,url:`${import.meta.env.BASE_URL}data/zones/sweden/${id}.geojson`,bounds:[10.4,55,24.5,69.2] as [number,number,number,number]}))
@@ -79,7 +82,8 @@ const arcGisViewportSources:ArcGisViewportConfig[]=[
  // viewer only makes that detail useful locally, so do not paint it nationwide.
  {id:'enaire-urban',endpoint:`${ENAIRE}/3`,bounds:[-19,27,5,45],minZoom:8,pageSize:5000,maxFeatures:15000,outFields:'OBJECTID,identifier,name,type,reasons,lower,upper,uom,updateDateTime'},
  {id:'us-facility',endpoint:FAA_UAS,bounds:[-179,13,-64,72],minZoom:6,pageSize:1000,maxFeatures:6000,outFields:'OBJECTID,CEILING,UNIT,MAP_EFF,LAST_EDIT,APT1_FAAID,APT1_ICAO,APT1_NAME,APT1_LAANC,AIRSPACE_1,REGION'},
- {id:'canada-airports',endpoint:CANADA_AIRPORTS,bounds:[-141,41,-52,84],minZoom:3.5,pageSize:1000,maxFeatures:2000,outFields:'*',transform:bufferCanadaAirports}
+ {id:'canada-airports',endpoint:CANADA_AIRPORTS,bounds:[-141,41,-52,84],minZoom:3.5,pageSize:1000,maxFeatures:2000,outFields:'*',transform:bufferCanadaAirports},
+ {id:'canada-national-parks',endpoint:CANADA_NATIONAL_PARKS,bounds:[-141,41,-52,84],minZoom:3,pageSize:200,maxFeatures:600,outFields:'OBJECTID,adminAreaId,adminAreaNameEng,adminAreaNameFra,distributionTypeEng,jurisdictionEng,webReference'}
 ];
 
 const detailConfig:Record<RenderDetail,{zoomDelta:number;featureScale:number;weatherColumns:number;weatherRows:number}> = {
@@ -88,6 +92,8 @@ const detailConfig:Record<RenderDetail,{zoomDelta:number;featureScale:number;wea
  maximum:{zoomDelta:-1.6,featureScale:1.75,weatherColumns:5,weatherRows:4}
 };
 const weatherGridCache=new Map<string,{time:number;data:any}>();
+const weatherGridPending=new Map<string,Promise<any>>();
+let radarMetadata:Promise<{tiles:string[];time:number}>|undefined;
 
 function bufferCanadaAirports(data:any){
  const features:any[]=[];
@@ -175,6 +181,27 @@ function applyWeather(map:MapLibreMap,location?:Location,weather?:Weather,hourIn
  source?.setData(weatherData(location,weather,hourIndex,visible));
 }
 
+async function latestRadar(){
+ if(!radarMetadata)radarMetadata=fetch('https://api.rainviewer.com/public/weather-maps.json').then(async response=>{
+   if(!response.ok)throw new Error(`radar metadata failed (${response.status})`);
+   const data=await response.json(),frame=data.radar?.past?.at(-1);
+   if(!frame?.path||!data.host)throw new Error('radar metadata contained no frame');
+   return{tiles:[`${data.host}${frame.path}/256/{z}/{x}/{y}/2/1_1.png`],time:Number(frame.time??0)};
+ }).finally(()=>window.setTimeout(()=>{radarMetadata=undefined},5*60*1000));
+ return radarMetadata;
+}
+
+function ensureRadar(map:MapLibreMap,visible:boolean,hooks?:OverlayHooks){
+ if(map.getLayer('weather-radar')){map.setLayoutProperty('weather-radar','visibility',visible?'visible':'none');return}
+ if(!visible||!map.isStyleLoaded())return;
+ const key='weather:radar';hooks?.start(key,'live precipitation radar');
+ void latestRadar().then(({tiles,time})=>{
+   if(!map.isStyleLoaded()||map.getSource('weather-radar'))return;
+   map.addSource('weather-radar',{type:'raster',tiles,tileSize:256,maxzoom:7,attribution:`<a href="https://www.rainviewer.com/" target="_blank">Radar © RainViewer · ${new Date(time*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</a>`});
+   map.addLayer({id:'weather-radar',type:'raster',source:'weather-radar',paint:{'raster-opacity':.62,'raster-fade-duration':180}},map.getLayer('weather-clouds')?'weather-clouds':undefined);
+ }).catch(error=>console.warn(error)).finally(()=>hooks?.finish(key));
+}
+
 async function queryWeatherGrid(map:MapLibreMap,hourIndex:number,detail:RenderDetail){
  const bounds=map.getBounds(),{weatherColumns:columns,weatherRows:rows}=detailConfig[detail];
  const west=Math.max(-179.5,bounds.getWest()),east=Math.min(179.5,bounds.getEast());
@@ -191,7 +218,7 @@ async function queryWeatherGrid(map:MapLibreMap,hourIndex:number,detail:RenderDe
    forecast_hours:'12',timezone:'UTC'
  });
  let response:Response|undefined;
- for(let attempt=0;attempt<3;attempt++){response=await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);if(response.ok)break;if(response.status!==429&&response.status<500)break;await new Promise(resolve=>setTimeout(resolve,800*(attempt+1)))}
+ for(let attempt=0;attempt<2;attempt++){response=await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);if(response.ok)break;if(response.status!==429&&response.status<500)break;await new Promise(resolve=>setTimeout(resolve,1400*(attempt+1)))}
  if(!response?.ok)throw new Error(`weather grid failed (${response?.status??'offline'})`);
  const payload=await response.json(),locations=Array.isArray(payload)?payload:[payload],features:any[]=[];
  const cellWidth=Math.max(.08,Math.abs(east-west)/columns),cellHeight=Math.max(.08,Math.abs(north-south)/rows);
@@ -209,20 +236,22 @@ async function queryWeatherGrid(map:MapLibreMap,hourIndex:number,detail:RenderDe
  return {type:'FeatureCollection' as const,features};
 }
 
-function loadWeatherGrid(map:MapLibreMap,hourIndex:number,visible:boolean,detail:RenderDetail,hooks?:OverlayHooks){
+function loadWeatherGrid(map:MapLibreMap,hourIndex:number,visible:boolean,detail:RenderDetail,enabled:boolean,hooks?:OverlayHooks){
  const source=map.getSource('weather-grid') as maplibregl.GeoJSONSource|undefined;
  if(!source)return;
- if(!visible){source.setData(emptyGeoJson);return}
+ if(!visible||!enabled){source.setData(emptyGeoJson);return}
  const keys=dynamicRequestKeys.get(map)??new Map<string,string>();dynamicRequestKeys.set(map,keys);
  const b=map.getBounds(),key=['weather',detail,hourIndex,Math.floor(map.getZoom()),b.getWest().toFixed(1),b.getSouth().toFixed(1),b.getEast().toFixed(1),b.getNorth().toFixed(1)].join(':');
  if(keys.get('weather-grid')===key)return;
  const cached=weatherGridCache.get(key);
  if(cached&&Date.now()-cached.time<10*60*1000){keys.set('weather-grid',key);source.setData(cached.data);return}
  keys.set('weather-grid',key);hooks?.start(key,'weather field');
-  void queryWeatherGrid(map,hourIndex,detail).then(data=>{
+ const pending=weatherGridPending.get(key)??queryWeatherGrid(map,hourIndex,detail).finally(()=>weatherGridPending.delete(key));
+ weatherGridPending.set(key,pending);
+ void pending.then(data=>{
    weatherGridCache.set(key,{time:Date.now(),data});
    if(keys.get('weather-grid')===key)(map.getSource('weather-grid') as maplibregl.GeoJSONSource|undefined)?.setData(data);
- }).catch(error=>{if(keys.get('weather-grid')===key){keys.delete('weather-grid');source.setData(emptyGeoJson)}console.warn(error)}).finally(()=>hooks?.finish(key));
+ }).catch(error=>{if(keys.get('weather-grid')===key)keys.delete('weather-grid');console.warn(error)}).finally(()=>hooks?.finish(key));
 }
 
 const spainColor=['match',['get','type'],'PROHIBITED','#ff405b','REQ_AUTHORIZATION','#ffad3d','CONDITIONAL','#f2ce50','NO_RESTRICTION','#5ce09a','#69bff5'] as any;
@@ -272,8 +301,10 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       'enaire-urban':{type:'geojson',data:emptyGeoJson,attribution:'UAS zones © ENAIRE / AIS'},
       france: {type:'raster',tiles:[franceTiles],tileSize:256,bounds:[-5.5,41,10,51.5],minzoom:6,maxzoom:18,attribution:'<a href="https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme" target="_blank">Restrictions UAS © IGN / Géoportail</a>'},
       uk:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/" target="_blank">NATS UK AIS · effective 9 Jul 2026</a>'},
+      switzerland:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://opendata.swiss/en/dataset/geografische-uas-gebiete-der-schweiz" target="_blank">UAS zones © FOCA / geo.admin.ch</a>'},
       'us-facility':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://www.faa.gov/uas/getting_started/b4ufly" target="_blank">FAA UAS Facility Maps</a>'},
       'canada-airports':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://open.canada.ca/data/en/dataset/3a1eb6ef-6054-4f9d-b1f6-c30322cd7abf" target="_blank">Transport Canada Open Government Licence</a>'},
+      'canada-national-parks':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://open.canada.ca/data/en/dataset/9e1507cd-f25c-4c64-995b-6563bf9d65bd" target="_blank">Natural Resources Canada · Open Government Licence</a>'},
       luxembourg: { type:'geojson', data:emptyGeoJson, attribution:'Direction de l’Aviation Civile Luxembourg · CC0' },
       ireland: { type:'geojson', data:emptyGeoJson, attribution:'<a href="https://www.iaa.ie/general-aviation/drones/uas-geographic-zones" target="_blank">Irish Aviation Authority UAS zones</a>' },
       denmark:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://www.droneregler.dk/dronezoner/dronezoner-data-vejledninger/data-downloads" target="_blank">Drone zones © Trafikstyrelsen</a>'},
@@ -286,17 +317,21 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
       { id: 'dipul-zones', type: 'raster', source: 'dipul', layout: { visibility: zonesVisible ? 'visible' : 'none' }, paint: { 'raster-opacity': 0.78, 'raster-fade-duration': 150 } },
       { id:'dipul-detail',type:'raster',source:'dipul-detail',minzoom:8.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.76,'raster-fade-duration':120}},
-      {id:'enaire-infrastructure-fill',type:'fill',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainColor,'fill-opacity':['interpolate',['linear'],['zoom'],3,.08,8,.12,12,.17]}},
+      {id:'enaire-infrastructure-fill',type:'fill',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainColor,'fill-opacity':['interpolate',['linear'],['zoom'],3,.18,8,.27,12,.34]}},
       {id:'enaire-infrastructure-line',type:'line',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':spainColor,'line-width':['interpolate',['linear'],['zoom'],3,.65,12,2.1],'line-opacity':.95}},
-      {id:'enaire-aero-fill',type:'fill',source:'enaire-aero',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainColor,'fill-opacity':['interpolate',['linear'],['zoom'],3,.065,8,.09,12,.13]}},
+      {id:'enaire-aero-fill',type:'fill',source:'enaire-aero',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainColor,'fill-opacity':['interpolate',['linear'],['zoom'],3,.14,8,.22,12,.3]}},
       {id:'enaire-aero-line',type:'line',source:'enaire-aero',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':spainColor,'line-width':['interpolate',['linear'],['zoom'],3,.75,12,2.2],'line-opacity':.98}},
-      {id:'enaire-urban-fill',type:'fill',source:'enaire-urban',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':'#b57cff','fill-opacity':['interpolate',['linear'],['zoom'],6,.06,10,.1,14,.15]}},
+      {id:'enaire-urban-fill',type:'fill',source:'enaire-urban',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['match',['get','type'],'REQ_AUTHORIZATION','#bb7cff','PROHIBITED','#ff405b','CONDITIONAL','#f2ce50','#b57cff'],'fill-opacity':['interpolate',['linear'],['zoom'],6,.13,10,.23,14,.3]}},
       {id:'enaire-urban-line',type:'line',source:'enaire-urban',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':'#d0a8ff','line-width':1.1,'line-opacity':.86}},
       {id:'france-zones',type:'raster',source:'france',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.82,'raster-fade-duration':100}},
-      {id:'uk-zones',type:'fill',source:'uk',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['match',['get','category'],'Danger','#ff9e43','Prohibited','#ff455d','Restricted','#ef4e68','Flight Restriction Zones','#ff455d','#d56fff'],'fill-opacity':.15}},
-      {id:'uk-lines',type:'line',source:'uk',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['match',['get','category'],'Danger','#ffb45f','Prohibited','#ff6174','Restricted','#ff7082','Flight Restriction Zones','#ff6174','#e39aff'],'line-width':['interpolate',['linear'],['zoom'],5,.8,12,2.2],'line-opacity':.95}},
+      {id:'uk-zones',type:'fill',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['match',['get','category'],'Danger','#c43b73','Prohibited','#ff405d','Restricted','#e55270','#e55270'],'fill-opacity':['interpolate',['linear'],['zoom'],4.5,.2,8,.26,12,.32]}},
+      {id:'uk-lines',type:'line',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['match',['get','category'],'Danger','#ef6098','Prohibited','#ff667d','Restricted','#ff748c','#ff748c'],'line-width':['interpolate',['linear'],['zoom'],4.5,.75,12,2.2],'line-opacity':.98}},
+      {id:'swiss-zones',type:'fill',source:'switzerland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['coalesce',['get','fill'],'#b11313'] as any,'fill-opacity':['interpolate',['linear'],['zoom'],5,.2,10,.34,15,.42]}},
+      {id:'swiss-lines',type:'line',source:'switzerland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['coalesce',['get','stroke'],['get','fill'],'#ff6b6b'] as any,'line-width':['interpolate',['linear'],['zoom'],5,.7,12,2.1],'line-opacity':.92}},
       {id:'us-facility-fill',type:'fill',source:'us-facility',minzoom:7,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['step',['to-number',['get','CEILING']], '#ff4056',1,'#ff7c4d',100,'#ffb44e',300,'#ffe069'],'fill-opacity':.2}},
       {id:'us-facility-line',type:'line',source:'us-facility',minzoom:7,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['step',['to-number',['get','CEILING']], '#ff4056',1,'#ff7c4d',100,'#ffb44e',300,'#ffe069'],'line-width':['interpolate',['linear'],['zoom'],7,.45,13,1.5],'line-opacity':.9}},
+      {id:'canada-national-parks',type:'fill',source:'canada-national-parks',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':'#ff9e43','fill-opacity':['interpolate',['linear'],['zoom'],3,.13,7,.2,12,.28]}},
+      {id:'canada-national-park-lines',type:'line',source:'canada-national-parks',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':'#ffc26d','line-width':['interpolate',['linear'],['zoom'],3,.65,12,2.1],'line-opacity':.94}},
       {id:'canada-airport-rings',type:'fill',source:'canada-airports',minzoom:3,filter:['==',['geometry-type'],'Polygon'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':'#ffb548','fill-opacity':['interpolate',['linear'],['zoom'],3,.1,7,.2,12,.27]}},
       {id:'canada-airport-lines',type:'line',source:'canada-airports',minzoom:3,filter:['==',['geometry-type'],'Polygon'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':'#ffd37c','line-width':['interpolate',['linear'],['zoom'],3,.65,12,2],'line-opacity':.92}},
       {id:'canada-airports',type:'circle',source:'canada-airports',minzoom:4,filter:['==',['geometry-type'],'Point'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,2.5,11,7],'circle-color':'#f7f4e8','circle-stroke-color':'#ffb548','circle-stroke-width':2}},
@@ -368,9 +403,9 @@ export function MapCanvas({ location, weather, weatherError='', onPick, settings
     map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
     map.touchZoomRotate.enable();
     map.dragPan.enable();
-    const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined;loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);loadWeatherGrid(map,weatherStateRef.current.hour,weatherStateRef.current.visible,detail,hooks)};
-    map.on('load', () => { setLoaded(true); setError(''); map.resize();refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible); });
-    map.on('style.load',()=>{loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible)});
+    const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)};
+    map.on('load', () => { map.setProjection({type:'globe'});setLoaded(true); setError(''); map.resize();refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible); });
+    map.on('style.load',()=>{map.setProjection({type:'globe'});loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible)});
     map.on('moveend',refresh);
     map.on('click', event => onPickRef.current({
       lat: event.lngLat.lat,
@@ -411,9 +446,9 @@ export function MapCanvas({ location, weather, weatherError='', onPick, settings
       .addTo(map);
   }, [location]);
 
-  useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded())applyWeather(map,location,weather,weatherHour,weatherVisible)},[location,weather,weatherHour,weatherVisible]);
+  useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);ensureRadar(map,weatherVisible,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined)}},[location,weather,weatherHour,weatherVisible]);
 
-  useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,hooks)},[settings.renderDetail,weatherHour,weatherVisible,loaded,baseMap]);
+  useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks)},[settings.renderDetail,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
 
   useEffect(()=>{if(weatherHour>8)setWeatherHour(8)},[weatherHour]);
 
@@ -430,6 +465,6 @@ export function MapCanvas({ location, weather, weatherError='', onPick, settings
       <button className={zonesVisible ? 'active zones' : ''} onClick={() => setZonesVisible(value => !value)} aria-pressed={zonesVisible} aria-label="Toggle verified official drone zones"><Layers3 size={16}/><span>Zones</span></button>
       <button className={weatherVisible?'active weather':''} onClick={()=>setWeatherVisible(value=>!value)} aria-pressed={weatherVisible} aria-label="Toggle weather forecast overlay"><CloudSun size={16}/><span>Weather</span></button>
     </div>
-    {weather&&location&&weatherVisible&&<div className="mapWeatherControl liquid"><div className="mapWeatherNow">{(weather.hourly[weatherHour]?.rainProbability??0)>45?<CloudRain/>:<CloudSun/>}<div><small>FORECAST OVERLAY · +{weatherHour}H</small><b>{weather.hourly[weatherHour]?.score??weather.score}/100</b><span><Wind/> {weather.hourly[weatherHour]?.wind??weather.wind} km/h · {weather.hourly[weatherHour]?.rainProbability??weather.rainProbability}% rain</span></div></div><div className="weatherLegend" aria-label="Weather overlay legend"><span className="cloudKey">Cloud</span><span className="rainKey">Rain</span><span className="windKey">Wind flow</span></div><input type="range" min="0" max="8" step="1" value={weatherHour} onChange={event=>setWeatherHour(Number(event.target.value))} aria-label="Weather forecast hour"/><div className="weatherTicks">{Array.from({length:9},(_,i)=><button className={i===weatherHour?'active':''} onClick={()=>setWeatherHour(i)} key={i}>{i===0?'Now':`+${i}`}</button>)}</div></div>}
+    {weather&&location&&weatherVisible&&<div className="mapWeatherControl liquid"><div className="mapWeatherNow">{(weather.hourly[weatherHour]?.rainProbability??0)>45?<CloudRain/>:<CloudSun/>}<div><small>FORECAST OVERLAY · +{weatherHour}H</small><b>{weather.hourly[weatherHour]?.score??weather.score}/100</b><span><Wind/> {weather.hourly[weatherHour]?.wind??weather.wind} km/h · {weather.hourly[weatherHour]?.rainProbability??weather.rainProbability}% rain</span></div></div><div className="weatherLegend" aria-label="Weather overlay legend"><span className="cloudKey">Cloud</span><span className="rainKey">Live radar</span><span className="windKey">Wind flow</span></div><input type="range" min="0" max="8" step="1" value={weatherHour} onChange={event=>setWeatherHour(Number(event.target.value))} aria-label="Weather forecast hour"/><div className="weatherTicks">{Array.from({length:9},(_,i)=><button className={i===weatherHour?'active':''} onClick={()=>setWeatherHour(i)} key={i}>{i===0?'Now':`+${i}`}</button>)}</div></div>}
   </div>;
 }

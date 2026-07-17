@@ -24,7 +24,9 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 | France | IGN / Géoportail | Live official UAS-restriction WMTS | No vector/offline zone claim |
 | United Kingdom | NATS UK AIS | AIRAC KML visualization and local point checks | Permanent restrictions; check NOTAMs |
 | United States | FAA UAS Facility Maps | Live viewport grids and point checks | Authorization ceilings, not complete clearance |
-| Canada | Transport Canada Open Government | Open airport vectors and 5.6 km advisory rings | Orientation only; NAV CANADA database is not redistributed |
+| Canada | Government of Canada Open Data | Open airports, 5.6 km advisory rings, and national parks | Partial open-data view; NAV CANADA database is not redistributed |
+| Switzerland | FOCA / geo.admin.ch | Complete live official GeoJSON and point checks | Federal zones; cantonal rules may also apply |
+| Austria | Austro Control Dronespace | Location-aware official planner handoff | Official-link-only until a reusable feed is verified |
 | Denmark | Trafikstyrelsen Dronezoner | Live official GeoJSON and point lookup | Loaded on demand; not cached |
 | Luxembourg | DAC Geoportal | Normalized official CC0 vector zones | Offline pack supported |
 | Ireland | Irish Aviation Authority | Published official GeoJSON | Bundled reference copy |
@@ -32,7 +34,7 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 
 Germany loads every active layer advertised by DIPUL, separating country-scale safety layers from dense local infrastructure so the national view remains readable. France uses its bounded live raster source. Spain loads current ENAIRE vectors by viewport and colors `PROHIBITED`, `REQ_AUTHORIZATION`, `CONDITIONAL`, and `NO_RESTRICTION` distinctly; urban coverage is purple and appears only at useful zoom instead of creating an opaque red blanket. The UK uses NATS' AIRAC visualization KML, and US FAA facility grids load only near the viewed area. Denmark's stable official GeoJSON URLs load only when Denmark enters the viewport. Ireland, Luxembourg, and Sweden use verified vector files; Sweden's raw files remain unmodified and the frontend applies LFV's ground-level display filters. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and records verified services, freshness, attribution, capabilities, warnings, and terms notes.
 
-Norway and Italy resolve to their correct official source but do not display copied geometry. Avinor prohibits presenting its service data in another application, and Italy's ED-269 download requires an authenticated D-Flight operator subscription. Canada renders openly licensed Transport Canada airports with clearly labelled 5.6 km advisory rings; the restricted NAV CANADA database is not scraped or copied.
+Norway resolves to its official source but does not display copied geometry because Avinor prohibits presenting its service data in another application. Italy was removed from the map and source directory. Canada renders openly licensed federal airports, clearly labelled 5.6 km advisory rings, and national-park boundaries; NRC explicitly states that its NAV CANADA-derived database cannot be redistributed, so the complete official map remains a direct handoff.
 
 ### Expanded coverage directory
 
