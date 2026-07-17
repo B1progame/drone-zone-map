@@ -8,13 +8,13 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 
 - Interactive MapLibre globe/map with click, touch, pinch zoom, and 100 km+ country-scale overlays
 - Coordinate search, browser geolocation, and animated map fly-to
-- Current Open-Meteo conditions plus a cached viewport field for cloud, rain, wind flow, and RainViewer radar
+- Current Open-Meteo conditions plus a cached viewport field for cloud, rain, animated wind particles, and optional RainViewer radar
 - Multi-point flight routes with persisted waypoints, map/search entry, and geodesic distance
-- Device-local accounts: the first identifier becomes local admin and later identifiers become members
 - Local-only saved places and preference notice
 - Responsive liquid-glass UI with adjustable transparency, reduced motion, and overlay-detail budgets
 - Source registry and official links; no fake zones or derived legal claims
 - Keyless on-device flight-context assistant using the airspace and forecast data already loaded in the app
+- Current-viewport GeoJSON export plus a clean map-and-overlay PNG capture without app controls
 - GitHub Pages deployment and a safe metadata-validation workflow
 
 ## Official-source coverage
@@ -34,7 +34,7 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 | Ireland | Irish Aviation Authority | Published official GeoJSON | Bundled reference copy |
 | Sweden | LFV Dronechart | Published official WFS | Bundled unmodified layers |
 
-Germany loads every active layer advertised by DIPUL, separating country-scale safety layers from dense local infrastructure so the national view remains readable. France uses its bounded live raster source. Spain loads current ENAIRE vectors by viewport and colors `PROHIBITED`, `REQ_AUTHORIZATION`, `CONDITIONAL`, and `NO_RESTRICTION` distinctly; urban coverage is purple and appears only at useful zoom instead of creating an opaque red blanket. The UK uses NATS' AIRAC visualization KML, and US FAA facility grids load only near the viewed area. Denmark's stable official GeoJSON URLs load only when Denmark enters the viewport. Ireland, Luxembourg, and Sweden use verified vector files; Sweden's raw files remain unmodified and the frontend applies LFV's ground-level display filters. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and records verified services, freshness, attribution, capabilities, warnings, and terms notes.
+Germany loads every active layer advertised by DIPUL, separating country-scale safety layers from dense local infrastructure so the national view remains readable. France uses its bounded live raster source. Spain loads current ENAIRE vectors by viewport and colors `PROHIBITED`, `REQ_AUTHORIZATION`, `CONDITIONAL`, and `NO_RESTRICTION` distinctly; very large TMA/regional polygons are softly filled while local restrictions remain prominent, including the Canary Islands. The UK uses NATS' AIRAC visualization KML, and US FAA facility grids load only near the viewed area. Denmark's stable official GeoJSON URLs load only when Denmark enters the viewport. Ireland, Luxembourg, and Sweden use verified vector files; Sweden's raw files remain unmodified and the frontend applies LFV's ground-level display filters. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and records verified services, freshness, attribution, capabilities, warnings, and terms notes.
 
 Norway resolves to its official source but does not display copied geometry because Avinor prohibits presenting its service data in another application. Italy was removed from the map and source directory. Canada renders openly licensed federal airports, clearly labelled 5.6 km advisory rings, and national-park boundaries; NRC explicitly states that its NAV CANADA-derived database cannot be redistributed, so the complete official map remains a direct handoff.
 
@@ -98,10 +98,11 @@ national service.
 ## Limitations
 
 - Weather is forecast context, not a go/no-go decision; temporary restrictions can change.
-- Cross-origin map tiles may block screenshot canvas export. A production export must retain required attribution.
+- The visible-overlay GeoJSON contains rendered vectors and metadata references for raster overlays; raster pixels are represented by the clean PNG instead of being mislabelled as vector geometry.
+- A remote tile service can still reject a canvas capture if it stops allowing cross-origin textures. Aeris reports that export failure instead of producing a corrupt file.
 - Offline packs are UI architecture only until each source’s caching terms and data format are verified.
 - The built-in assistant is deterministic and only summarizes already-loaded context; it is not a general-purpose language model and never grants legal clearance.
-- Primary home, weather, search, planner, settings, result, and login flows are translated into English, German, Spanish, French, and Italian. Other listed search languages use English UI fallback while still localizing geocoding and supported official-map handoffs.
+- Primary home, weather, search, planner, settings, and result flows are translated into English, German, Spanish, French, and Italian. Other listed search languages use English UI fallback while still localizing geocoding and supported official-map handoffs.
 
 ## Privacy
 

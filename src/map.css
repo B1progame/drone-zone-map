@@ -14,6 +14,8 @@
 .mapWeatherStatus.loading span { width: 12px; height: 12px; border: 2px solid #8ddcff44; border-top-color: #8ddcff; border-radius: 50%; animation: map-spin .8s linear infinite; }
 .mapWeatherStatus.error { border-color: #ff9c9c66; color: #ffd0d0; }
 .mapWeatherStatus.error svg { color: #ff9c9c; }
+.mapWeatherStatus.warning { border-color: #ffd26766; color: #ffe4a0; }
+.mapWeatherStatus.warning svg { color: #ffd267; }
 .maplibregl-ctrl-attrib { max-width: min(70vw, 740px); }
 @keyframes map-spin { to { transform: rotate(360deg); } }
 @media (max-width: 680px) {
