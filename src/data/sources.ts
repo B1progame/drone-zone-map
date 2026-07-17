@@ -1,7 +1,7 @@
 export type Source = { code:string; country:string; name:string; status:string; updated?:string; url:string; detail?:string };
 
 export const sources: Source[] = [
- { code:'DE', country:'Germany', name:'DIPUL', status:'Live official WMS', updated:'2026', url:'https://dipul.bund.de/homepage/en/information/geographical-zones/web-map-service-wms/', detail:'Official DIPUL raster layers are displayed live with DFS/BKG attribution.' },
+ { code:'DE', country:'Germany', name:'DIPUL', status:'Live official WMS', updated:'2026', url:'https://dipul.bund.de/homepage/en/information/geographical-zones/', detail:'Official DIPUL raster layers are displayed live with DFS/BKG attribution.' },
  { code:'ES', country:'Spain', name:'ENAIRE servAIS', status:'Live official renderer', updated:'2026', url:'https://aip.enaire.es/AIP/UAS-en.html', detail:'The official MapServer renders the visible layer; point identify remains available for location checks.' },
  { code:'FR', country:'France', name:'IGN / Géoportail', status:'Live official WMTS', updated:'2026', url:'https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme', detail:'The official TRANSPORTS.DRONES.RESTRICTIONS tiles are displayed with IGN symbology.' },
  { code:'GB', country:'United Kingdom', name:'NATS UK AIS', status:'Official AIRAC KML', updated:'9 Jul 2026', url:'https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/', detail:'Official permanent UAS restrictions are rendered from the NATS visualization dataset; current NOTAMs remain mandatory.' },
@@ -15,6 +15,7 @@ export const sources: Source[] = [
  { code:'FI', country:'Finland', name:'Traficom', status:'Official CC BY 4.0 zones', updated:'2026', url:'https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa', detail:'Traficom’s machine-readable zone volumes are normalized with a modification notice under CC BY 4.0.' },
  { code:'EE', country:'Estonia', name:'Transport Administration / EANS', status:'Live official GeoJSON', updated:'2026', url:'https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones', detail:'The official EANS GeoJSON loads live; its outside-Estonia mask is intentionally excluded from painting.' },
  { code:'BG', country:'Bulgaria', name:'Bulgarian CAA', status:'Official link + inspection tool', updated:'18 Jun 2026', url:'https://www.caa.bg/bg/category/633/7062', detail:'The local importer can inspect the newest BGR_ZONES ZIP, but public geometry remains disabled until CAA reuse permission is explicit.' },
+ { code:'PT', country:'Portugal', name:'ANAC Portugal', status:'Live official ED-269', updated:'2026', url:'https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx', detail:'The newest dated official ED-269 file is discovered and normalized in memory, including mainland Portugal, Madeira, and the Azores.' },
  { code:'AT', country:'Austria', name:'Austro Control Dronespace', status:'Official link only', updated:'2026', url:'https://map.dronespace.at/', detail:'Austro Control’s official interactive planner is linked directly; no unverified private feed is copied.' },
  { code:'NO', country:'Norway', name:'Avinor drone map', status:'Official link only', updated:'2026', url:'https://www.avinor.no/en/practical-info/drone/dronekart/', detail:'Avinor expressly prohibits presenting its service data through another application.' },
  { code:'CA', country:'Canada', name:'Government of Canada Open Data', status:'Open airports + national parks', updated:'2026', url:'https://nrc.canada.ca/en/drone-tool-2/map.html', detail:'Aeris renders openly licensed federal airports, 5.6 km orientation rings, and national parks. NRC confirms the NAV CANADA-derived database may not be redistributed.' }
@@ -29,6 +30,7 @@ export const sourceFor = (lat:number, lng:number) =>
   source.code==='EE'?lat>=57.3&&lat<=60.1&&lng>=21.5&&lng<=28.3:
   source.code==='FI'?lat>=59.5&&lat<=70.2&&lng>=19&&lng<=31.6:
   source.code==='BG'?lat>=41.1&&lat<=44.3&&lng>=22.2&&lng<=28.7:
+  source.code==='PT'?lat>=30&&lat<=42.3&&lng>=-31.5&&lng<=-6:
   source.code==='ES'?lat>=27&&lat<=44.5&&lng>=-18.5&&lng<=5:
   source.code==='DK'?lat>=54.4&&lat<=58&&lng>=7.8&&lng<=15.3:
   source.code==='CH'?lat>=45.75&&lat<=47.85&&lng>=5.75&&lng<=10.65:

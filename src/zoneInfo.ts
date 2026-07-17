@@ -1,4 +1,5 @@
 import type { Location, ZoneDetail, ZoneInfo } from './types';
+import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 
 const DIPUL_LAYERS=['bahnanlagen','behoerden','binnenwasserstrassen','bundesautobahnen','bundesstrassen','diplomatische_vertretungen','ffh-gebiete','flugbeschraenkungsgebiete','flughaefen','flugplaetze','freibaeder','haengegleiter','industrieanlagen','internationale_organisationen','justizvollzugsanstalten','kontrollzonen','kraftwerke','krankenhaeuser','labore','militaerische_anlagen','modellflugplaetze','nationalparks','naturschutzgebiete','polizei','schifffahrtsanlagen','seewasserstrassen','sicherheitsbehoerden','stromleitungen','temporaere_betriebseinschraenkungen','umspannwerke','vogelschutzgebiete','windkraftanlagen','wohngrundstuecke'];
 let selectedLanguage=(navigator.language||'en').toLowerCase().split('-')[0];
@@ -16,7 +17,26 @@ const COUNTRY_SOURCES={
  NL:{name:'Netherlands',source:'Ministry of Infrastructure and Water Management',url:'https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone',warning:'Official CC0 ED-269 zones render from the latest bundled government dataset. Check Aeret and current NOTAMs before flight.'},
  FI:{name:'Finland',source:'Traficom',url:'https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa',warning:'Official machine-readable Traficom zones render from a dated CC BY 4.0 snapshot. Check the official map, temporary restrictions and NOTAMs before flight.'},
  EE:{name:'Estonia',source:'Transport Administration / EANS',url:'https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones',warning:'Official EANS GeoJSON renders live. Check the EANS map and current temporary restrictions before flight.'},
- BG:{name:'Bulgaria',source:'Bulgarian Civil Aviation Administration',url:'https://www.caa.bg/bg/category/633/7062',warning:'Aeris links to the official CAA source and does not redistribute BGR_ZONES geometry while reuse permission is unconfirmed. Check B-FLIP and active or temporary restrictions before flight.'}
+ BG:{name:'Bulgaria',source:'Bulgarian Civil Aviation Administration',url:'https://www.caa.bg/bg/category/633/7062',warning:'Aeris links to the official CAA source and does not redistribute BGR_ZONES geometry while reuse permission is unconfirmed. Check B-FLIP and active or temporary restrictions before flight.'},
+ PT:{name:'Portugal',source:'ANAC Portugal',url:'https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx',warning:'Official ANAC ED-269 zones load live from the newest dated file. Check ANAC, military no-fly zones and current NOTAMs before flight.'},
+ BE:{name:'Belgium',source:'FPS Mobility / Droneguide',url:'https://map.droneguide.be/',warning:'Belgium publishes fixed UAS geozones and access conditions through Droneguide. Open the official map because no reusable public feed was verified.'},
+ PL:{name:'Poland',source:'PANSA / DroneTower',url:'https://dronetower.pansa.pl/',warning:'Polish guidance requires a current DroneTower zone check and flight check-in. No anonymous reusable geozone feed was verified.'},
+ CZ:{name:'Czechia',source:'CAA Czechia / DroneMap',url:'https://dronemap.gov.cz/index.php?lang=2',warning:'CAA Czechia designates DroneMap for exact boundaries and operating conditions. No documented reusable public endpoint was verified.'},
+ SK:{name:'Slovakia',source:'Transport Authority',url:'https://letectvo.nsat.sk/bezpilotne-letectvo/zemepisne-oblasti-uas/',warning:'The Transport Authority publishes a current KML package, but Aeris does not redistribute it while reuse terms remain unstated.'},
+ HU:{name:'Hungary',source:'HungaroControl MyDroneSpace',url:'https://mydronespace.hu/',warning:'MyDroneSpace is Hungary’s official pre-flight and operational service. No anonymous reusable geozone feed was verified.'},
+ RO:{name:'Romania',source:'Romanian CAA',url:'https://www.caa.ro/ro/pages/drone',warning:'The Romanian CAA publishes prohibited and restricted UAS areas, contacts, and an official interactive map. No reusable feed was verified.'},
+ GR:{name:'Greece',source:'HCAA / Drone Aware Greece',url:'https://dagr.hasp.gov.gr/#map_page',warning:'HCAA requires a current DAGR check. Yellow and magenta areas can require approval or prohibit flight.'},
+ HR:{name:'Croatia',source:'Croatia Control AMC Portal',url:'https://amc.crocontrol.hr/',warning:'Croatian UAS zones and current airspace use are managed through the registered AMC Portal workflow.'},
+ SI:{name:'Slovenia',source:'Civil Aviation Agency',url:'https://www.caa.si/geografske-omejitve-za-uas.html',warning:'The public CAA ArcGIS map is inventoried, but its geometry is not copied because no reuse licence was stated.'},
+ LV:{name:'Latvia',source:'LGS / Civil Aviation Agency',url:'https://www.airspace.lv/drones/en',warning:'The official Latvian map updates every five minutes. No stable reusable download was verified, so use it directly.'},
+ LT:{name:'Lithuania',source:'Oro Navigacija / Lithuania Drone Map',url:'https://utm.ans.lt/',warning:'All approved Lithuanian geozones and temporary restrictions are published in the registered UTM platform.'},
+ AU:{name:'Australia',source:'CASA Drone Safety',url:'https://www.casa.gov.au/knowyourdrone/drone-safety-apps',warning:'CASA directs pilots to verified planning apps. Aeris does not bypass the authenticated provider data service.'},
+ NZ:{name:'New Zealand',source:'CAA New Zealand / AirShare',url:'https://www.airshare.co.nz/',warning:'CAA directs pilots to AirShare for current low-flying, aerodrome, control, restricted, military, and danger areas.'},
+ JP:{name:'Japan',source:'MLIT DIPS 2.0',url:'https://www.mlit.go.jp/koku/koku_ua_dips.html',warning:'DIPS 2.0 is Japan’s official authenticated registration, planning, and permission platform.'},
+ BR:{name:'Brazil',source:'DECEA SARPAS',url:'https://servicos.decea.gov.br/sarpas/',warning:'SARPAS requires operator and aircraft registration. Aeris does not automate or bypass the operational service.'},
+ IN:{name:'India',source:'DGCA Digital Sky',url:'https://digitalsky.dgca.gov.in/',warning:'Digital Sky is the government real-time repository for red, yellow, and green zones. No anonymous reusable feed was verified.'},
+ SG:{name:'Singapore',source:'CAAS / OneMap',url:'https://www.onemap.gov.sg/',warning:'CAAS identifies OneMap as the authoritative source for no-fly, permit, and temporary restricted areas.'},
+ ZA:{name:'South Africa',source:'SACAA / ATNS AIP',url:'https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/',warning:'Current restrictions are published through AIP, NOTAM, and SACAA RPAS rules; no reusable national drone-geozone feed was verified.'}
 } as const;
 type CountryCode=keyof typeof COUNTRY_SOURCES|'DE'|'ES'|'LU'|'IE'|'XX';
 function countryAt(p:Location):CountryCode{
@@ -26,7 +46,12 @@ function countryAt(p:Location):CountryCode{
   ['GB',['united kingdom','great britain','england','scotland','wales','northern ireland','vereinigtes königreich','großbritannien']],
   ['US',['united states','usa','vereinigte staaten']],
   ['CH',['switzerland','schweiz','suisse','svizzera']],['AT',['austria','österreich','autriche']],['DE',['germany','deutschland']],['FR',['france','frankreich']],['SE',['sweden','sverige','schweden']],
-  ['NO',['norway','norge','norwegen']],['CA',['canada','kanada']],['NL',['netherlands','nederland','niederlande']],['FI',['finland','suomi','finnland']],['EE',['estonia','eesti','estland']],['BG',['bulgaria','българия','bulgarien']]
+  ['NO',['norway','norge','norwegen']],['CA',['canada','kanada']],['NL',['netherlands','nederland','niederlande']],['FI',['finland','suomi','finnland']],['EE',['estonia','eesti','estland']],['BG',['bulgaria','българия','bulgarien']],['PT',['portugal','portugalia']],
+  ['BE',['belgium','belgië','belgique','belgien']],['PL',['poland','polska','polen']],['CZ',['czechia','czech republic','česko','tschechien']],['SK',['slovakia','slovensko','slowakei']],
+  ['HU',['hungary','magyarország','ungarn']],['RO',['romania','românia','rumänien']],['GR',['greece','ελλάδα','griechenland']],['HR',['croatia','hrvatska','kroatien']],
+  ['SI',['slovenia','slovenija','slowenien']],['LV',['latvia','latvija','lettland']],['LT',['lithuania','lietuva','litauen']],['AU',['australia','australien']],
+  ['NZ',['new zealand','aotearoa','neuseeland']],['JP',['japan','日本']],['BR',['brazil','brasil','brasilien']],['IN',['india','indien']],
+  ['SG',['singapore','singapur']],['ZA',['south africa','südafrika']]
  ];
  for(const [code,names] of namedCountry)if(names.some(name=>named.includes(name)))return code;
  if(p.lat>=49.35&&p.lat<=50.25&&p.lng>=5.65&&p.lng<=6.65)return'LU';
@@ -34,6 +59,7 @@ function countryAt(p:Location):CountryCode{
  if(p.lat>=57.3&&p.lat<=60.1&&p.lng>=21.5&&p.lng<=28.3)return'EE';
  if(p.lat>=59.5&&p.lat<=70.2&&p.lng>=19&&p.lng<=31.6)return'FI';
  if(p.lat>=41.1&&p.lat<=44.3&&p.lng>=22.2&&p.lng<=28.7)return'BG';
+ if(p.lat>=30&&p.lat<=42.3&&p.lng>=-31.5&&p.lng<=-6)return'PT';
  if(p.lat>=51.2&&p.lat<=55.6&&p.lng>=-11&&p.lng<=-5)return'IE';
  if(p.lat>=49&&p.lat<=61&&p.lng>=-9&&p.lng<=2.5)return'GB';
  if(p.lat>=27&&p.lat<=44.5&&p.lng>=-18.5&&p.lng<=5)return'ES';
@@ -114,6 +140,15 @@ async function bundledNationalGeozones(point:Location,code:'NL'|'FI'|'EE'):Promi
  });
  result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
 }
+async function portugal(point:Location):Promise<ZoneInfo>{
+ const source=COUNTRY_SOURCES.PT,result=base('PT',source.name,source.source,source.url);
+ const data=normalizeEd269(await fetchGeoJson(await latestPortugalEd269Url()));
+ result.zones=(data.features??[]).filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{
+  const p=feature.properties??{},reasons=Array.isArray(p.reason)?p.reason.join(', '):p.reason;
+  return{id:p.identifier??`PT-${index}`,name:p.name??'Portugal UAS geographical zone',type:translate(p.restriction??p.type??'COMMON'),message:[reasons,p.otherReasonInfo,p.message].filter(Boolean).join(' · '),lower:p.lowerLimit!=null?`${p.lowerLimit} ${p.uomDimensions??'M'} ${p.lowerVerticalReference??''}`:undefined,upper:p.upperLimit!=null?`${p.upperLimit} ${p.uomDimensions??'M'} ${p.upperVerticalReference??''}`:undefined,contact:[p.authorityName,p.authorityService,p.authorityEmail,p.authorityPhone].filter(Boolean).join(' · ')||undefined,source:source.source,updated:data.title};
+ });
+ result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
+}
 async function unitedStates(point:Location):Promise<ZoneInfo>{
  const source=COUNTRY_SOURCES.US,result=base('US',source.name,source.source,source.url);
  const params=new URLSearchParams({where:'1=1',geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outFields:'OBJECTID,CEILING,UNIT,MAP_EFF,LAST_EDIT,APT1_FAAID,APT1_ICAO,APT1_NAME,APT1_LAANC,AIRSPACE_1,REGION',returnGeometry:'false',f:'json'});
@@ -147,12 +182,14 @@ async function denmark(point:Location):Promise<ZoneInfo>{
 
 async function resolvedCountryAt(point:Location):Promise<CountryCode>{
  const initial=countryAt(point);
- if(initial!=='US'||point.lat<41||point.lat>50||point.lng<-141||point.lng>-52)return initial;
+ const northAmericaOverlap=initial==='US'&&point.lat>=41&&point.lat<=50&&point.lng>=-141&&point.lng<=-52;
+ const coordinateOrDevicePoint=/^-?\d/.test(point.name)||point.name==='My location';
+ if(initial!=='XX'&&!northAmericaOverlap&&!coordinateOrDevicePoint)return initial;
  try{
   const response=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${point.lat}&lon=${point.lng}&zoom=3&format=json&accept-language=en`);
   if(!response.ok)return initial;
   const country=String((await response.json()).address?.country_code??'').toUpperCase();
-  if(country==='CA'||country==='US')return country;
+  if(country in COUNTRY_SOURCES||['DE','ES','LU','IE'].includes(country))return country as CountryCode;
  }catch{return initial}
  return initial;
 }
@@ -176,6 +213,7 @@ export async function getOfficialZoneInfo(point:Location,requestedLanguage=langu
   if(code==='IE')return await ireland(point);
   if(code==='GB')return await uk(point);
   if(code==='NL'||code==='FI'||code==='EE')return await bundledNationalGeozones(point,code);
+  if(code==='PT')return await portugal(point);
   if(code==='DK')return await denmark(point);
   if(code==='CH')return await switzerland(point);
   if(code==='US')return await unitedStates(point);

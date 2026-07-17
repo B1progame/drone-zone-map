@@ -4,18 +4,22 @@ The pipeline inventories public geospatial endpoints for personal research. It d
 
 ```powershell
 python pipeline/main.py
+python pipeline/audit_registry.py --output pipeline/reports/source-coverage-audit.json
 python pipeline/main.py discover "https://dipul.bund.de/homepage/en/information/geographical-zones/web-map-service-wms/" --output pipeline/reports/germany.json
 python pipeline/main.py inspect-wms "https://uas-betrieb.de/geoservices/dipul/wms" --output pipeline/reports/germany-wms.json
 python pipeline/main.py update-ireland
 python pipeline/main.py update-uk
 python pipeline/main.py update-sweden
 python pipeline/main.py update-public-geozones
+python pipeline/main.py inspect-slovakia --output pipeline/reports/slovakia-kml-package.json
 python pipeline/main.py update-canada-open --output pipeline/reports/canada-open-data.geojson
 python pipeline/discovery/arcgis_webmap_inventory.py 25ba69037c264c5faa5381174f76f861 --output pipeline/reports/slovenia-arcgis-webmap.json
 python pipeline/validate_geojson.py "public/data/zones/*.geojson" "public/data/zones/sweden/*.geojson"
 ```
 
 Discovery extracts public WMS, WFS, WMTS, OGC API, ArcGIS service, GeoJSON, and ED-318 candidates from official HTML. WMS candidates receive a conservative `GetCapabilities` check and layer inventory. Every report still requires manual confirmation of licensing, attribution, caching, and update rules before its data can be added to the public app.
+
+`audit_registry.py` fails on duplicate countries, unsupported status values, insecure official links, missing source-specific decisions, placeholder research notes, or impossible link-only capability claims. Its JSON report records the disposition and supported capabilities of every country shown by the app.
 
 If an official page blocks crawling but publicly documents a service URL, use `inspect-wms` with that known endpoint. It performs only `GetCapabilities`; it does not crawl the site or bypass the robots policy.
 
@@ -35,7 +39,11 @@ Denmark's stable GeoJSON URLs are loaded directly from Trafikstyrelsen only when
 
 The former Dutch PDOK Drone No-Fly Zone services are not used because PDOK retired them on 1 July 2026. Estonia loads its public EANS GeoJSON live rather than bundling it. Its `EERZout` record is a deliberate global polygon with Estonia as a hole and is excluded from rendering so it cannot cover the globe.
 
+Portugal's ANAC page explicitly offers ED-269/ED-318 downloads for pre-flight use. The frontend reads the CORS-enabled official directory, selects the newest dated `UASZoneVersion` JSON file, and converts its volumes in memory. This avoids both filename staleness and redistribution of a copied snapshot.
+
 `update-estonia` and `update-bulgaria` are inspection exports written below ignored `exports/requested/` paths. The Bulgarian tool discovers the newest CAA `BGR_ZONES` link and normalizes its contents, but that geometry must not be published until the CAA's public-sector reuse process grants or clearly establishes reuse permission.
+
+`inspect-slovakia` discovers the newest dated ZIP on the Slovak Transport Authority's official geozone page and inventories every KML placemark, geometry type, style reference and inline colour. It does not publish the geometry while the site's reuse terms remain unstated.
 
 For public ArcGIS maps without stated reuse terms, `arcgis_webmap_inventory.py` records the public item, operational-layer URLs, popups, opacity, renderer symbols and label definitions without downloading geometry or tracing pixels. The checked-in Slovenia report demonstrates this audit path and keeps the official map link-only until reuse terms are clear.
 

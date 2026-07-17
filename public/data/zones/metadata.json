@@ -2,7 +2,7 @@
   "generatedAt": "2026-07-17",
   "notice": "Official snapshots and live sources are planning aids, never legal clearance. Always check the linked national source, temporary restrictions and NOTAMs before takeoff.",
   "bundledCountries": ["FI", "GB", "IE", "LU", "NL", "SE"],
-  "liveCountries": ["CA", "CH", "DE", "DK", "EE", "ES", "FR", "US"],
+  "liveCountries": ["CA", "CH", "DE", "DK", "EE", "ES", "FR", "PT", "US"],
   "linkOnlyCountries": ["AT", "BE", "BG", "NO", "SI", "LV"],
   "normalization": "ED-269 circles are converted to 96-segment geodesic polygons while original center, radius, vertical limits, applicability and authority fields are retained."
 }

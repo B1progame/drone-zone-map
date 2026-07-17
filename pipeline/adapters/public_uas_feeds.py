@@ -1,6 +1,7 @@
 """Verified public national UAS feeds that can be refreshed without scraping."""
 from __future__ import annotations
 
+from collections import Counter
 from datetime import datetime
 from html.parser import HTMLParser
 from io import BytesIO
@@ -8,6 +9,7 @@ import json
 import re
 from urllib.parse import urljoin
 from zipfile import ZipFile
+import xml.etree.ElementTree as ET
 
 import httpx
 
@@ -176,3 +178,106 @@ class BulgariaCaaAdapter:
                 "Do not redistribute this export until Bulgarian CAA public-sector reuse permission is confirmed.",
             ],
         )
+
+
+def _slovakia_link_score(url: str) -> tuple[int, int, int, str]:
+    match = re.search(r"(?<!\d)(\d{2})[.\-_](\d{2})[.\-_](\d{4})(?!\d)", url)
+    if match:
+        day, month, year = map(int, match.groups())
+        try:
+            datetime(year, month, day)
+            return year, month, day, url
+        except ValueError:
+            pass
+    return 0, 0, 0, url
+
+
+class SlovakiaTransportAuthorityInspector:
+    """Inventory the latest public Slovak KML package without publishing geometry."""
+
+    country_code = "SK"
+    source_page = "https://letectvo.nsat.sk/bezpilotne-letectvo/zemepisne-oblasti-uas/"
+
+    @staticmethod
+    def _kml_root(payload: bytes) -> ET.Element:
+        try:
+            return ET.fromstring(payload)
+        except ET.ParseError as original_error:
+            text = payload.decode("utf-8-sig")
+            namespaces = {
+                "atom": "http://www.w3.org/2005/Atom",
+                "gx": "http://www.google.com/kml/ext/2.2",
+                "xal": "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",
+                "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+            }
+            added = False
+            for prefix, namespace in namespaces.items():
+                if f"{prefix}:" in text and f"xmlns:{prefix}" not in text:
+                    text = re.sub(
+                        r"<kml\b",
+                        f'<kml xmlns:{prefix}="{namespace}"',
+                        text,
+                        count=1,
+                    )
+                    added = True
+            if not added:
+                raise original_error
+            return ET.fromstring(text)
+
+    def latest_endpoint(self) -> str:
+        response = _get(self.source_page)
+        parser = _LinkParser()
+        parser.feed(response.text)
+        candidates = [
+            urljoin(self.source_page, href).replace(
+                "http://letectvo.nsat.sk/", "https://letectvo.nsat.sk/"
+            )
+            for href in parser.links
+            if href.lower().split("?", 1)[0].endswith(".zip")
+        ]
+        if not candidates:
+            raise ValueError("Slovak Transport Authority page contains no KML ZIP link")
+        return max(candidates, key=_slovakia_link_score)
+
+    def inspect(self) -> dict:
+        endpoint = self.latest_endpoint()
+        archive = _get(endpoint, referer=self.source_page).content
+        files: list[dict] = []
+        with ZipFile(BytesIO(archive)) as zipped:
+            for name in sorted(item for item in zipped.namelist() if item.lower().endswith(".kml")):
+                root = self._kml_root(zipped.read(name))
+                placemarks = root.findall(".//{*}Placemark")
+                geometry_counts = {
+                    geometry: len(root.findall(f".//{{*}}Placemark/{{*}}{geometry}"))
+                    for geometry in ("Point", "LineString", "Polygon", "MultiGeometry")
+                }
+                geometry_counts = {key: value for key, value in geometry_counts.items() if value}
+                style_urls = [
+                    value.strip()
+                    for value in (item.findtext("{*}styleUrl") for item in placemarks)
+                    if value and value.strip()
+                ]
+                inline_colors = [
+                    element.text.strip()
+                    for element in root.findall(".//{*}color")
+                    if element.text and element.text.strip()
+                ]
+                files.append(
+                    {
+                        "name": name,
+                        "placemarkCount": len(placemarks),
+                        "geometryCounts": geometry_counts,
+                        "styleUrlCounts": dict(Counter(style_urls)),
+                        "inlineColorCounts": dict(Counter(inline_colors)),
+                    }
+                )
+        return {
+            "countryCode": self.country_code,
+            "sourcePage": self.source_page,
+            "latestPackage": endpoint,
+            "files": files,
+            "notice": (
+                "Structured KML package inventory only. Geometry is not published until "
+                "the Transport Authority's reuse terms are confirmed."
+            ),
+        }

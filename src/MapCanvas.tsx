@@ -3,6 +3,7 @@ import maplibregl, { Map as MapLibreMap, Marker, type FilterSpecification, type 
 import { CloudRain, CloudSun, Layers3, Map as MapIcon, Satellite, Wind } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
+import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 
 type BaseMap = 'satellite' | 'streets';
 
@@ -41,7 +42,8 @@ const SWEDEN_SOURCE_IDS=[...SWEDEN_POLYGON_SOURCES,'mais-ARP'] as const;
 const NATIONAL_GEOZONE_SOURCES=[
  {id:'netherlands',file:'NL.geojson',bounds:[3.2,50.7,7.25,53.7],minzoom:5,attribution:'<a href="https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone" target="_blank">UAS zones © Ministerie van Infrastructuur en Waterstaat</a>'},
  {id:'finland',file:'FI.geojson',bounds:[19,59.5,31.6,70.2],minzoom:4,attribution:'<a href="https://www.traficom.fi/en/news/spatial-dataset-material/use-and-licences-data" target="_blank">Source: Traficom · modified · CC BY 4.0</a>'},
- {id:'estonia',url:'https://utm.eans.ee/avm/utm/uas.geojson',bounds:[21.5,57.3,28.3,60.1],minzoom:5,attribution:'<a href="https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones" target="_blank">Live UAS zones © Transport Administration / EANS</a>'}
+ {id:'estonia',url:'https://utm.eans.ee/avm/utm/uas.geojson',bounds:[21.5,57.3,28.3,60.1],minzoom:5,attribution:'<a href="https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones" target="_blank">Live UAS zones © Transport Administration / EANS</a>'},
+ {id:'portugal',url:latestPortugalEd269Url,bounds:[-31.5,30,-6,42.3],minzoom:4,attribution:'<a href="https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx" target="_blank">Live ED-269 UAS zones © ANAC Portugal</a>',transform:normalizeEd269}
 ] as const;
 const ZONE_LAYER_IDS = ['dipul-zones','dipul-detail','enaire-infrastructure-fill','enaire-infrastructure-line','enaire-aero-fill','enaire-aero-line','enaire-urban-fill','enaire-urban-line','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
 const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
@@ -59,7 +61,7 @@ function swedenDisplayFilter(id:typeof SWEDEN_POLYGON_SOURCES[number]):FilterSpe
  return undefined;
 }
 
-type VectorSourceConfig={id:string;url:string;bounds:[number,number,number,number]};
+type VectorSourceConfig={id:string;url:string|(()=>Promise<string>);bounds:[number,number,number,number];transform?:(data:any)=>any};
 const vectorSources=():VectorSourceConfig[]=>[
  {id:'luxembourg',url:`${import.meta.env.BASE_URL}data/zones/LU.geojson`,bounds:[5.65,49.35,6.65,50.25]},
  {id:'ireland',url:`${import.meta.env.BASE_URL}data/zones/IE.geojson`,bounds:[-11,51.2,-5,55.6]},
@@ -67,7 +69,7 @@ const vectorSources=():VectorSourceConfig[]=>[
  {id:'switzerland',url:SWISS_UAS,bounds:[5.75,45.75,10.65,47.85]},
  {id:'denmark',url:DENMARK_ZONES,bounds:[7.8,54.4,15.3,58]},
  {id:'denmark-nature',url:DENMARK_NATURE,bounds:[7.8,54.4,15.3,58]},
- ...NATIONAL_GEOZONE_SOURCES.map(source=>({id:source.id,url:'url' in source?source.url:`${import.meta.env.BASE_URL}data/zones/${source.file}`,bounds:source.bounds as [number,number,number,number]})),
+ ...NATIONAL_GEOZONE_SOURCES.map(source=>({id:source.id,url:'url' in source?source.url:`${import.meta.env.BASE_URL}data/zones/${source.file}`,bounds:source.bounds as [number,number,number,number],...('transform' in source?{transform:source.transform}:{})})),
  ...SWEDEN_SOURCE_IDS.map(id=>({id:`sweden-${id}`,url:`${import.meta.env.BASE_URL}data/zones/sweden/${id}.geojson`,bounds:[10.4,55,24.5,69.2] as [number,number,number,number]}))
 ];
 
@@ -192,8 +194,8 @@ function loadVisibleVectorSources(map:MapLibreMap,hooks?:OverlayHooks){
    if(!source)continue;
    const key=`vector:${config.id}`;
    hooks?.start(key,config.id.replaceAll('-',' '));
-   void fetch(config.url).then(response=>{if(!response.ok)throw new Error(`${config.id} failed (${response.status})`);return response.json()}).then(data=>{
-     source.setData(data);loaded.add(config.id);
+   void Promise.resolve(typeof config.url==='function'?config.url():config.url).then(url=>fetch(url)).then(response=>{if(!response.ok)throw new Error(`${config.id} failed (${response.status})`);return response.json()}).then(data=>{
+     source.setData(config.transform?config.transform(data):data);loaded.add(config.id);
    }).catch(error=>console.warn(error)).finally(()=>hooks?.finish(key));
  }
 }
@@ -311,12 +313,17 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
     const filter=source.id==='estonia'?{filter:['!=',['get','identifier'],'EERZout'] as FilterSpecification}:{};
     const fillColor=source.id==='estonia'
       ? ['match',['get','restriction'],'PROHIBITED','#ff6670','REQ_AUTHORISATION','#f4dc4b','REQ_AUTHORIZATION','#f4dc4b','NO_RESTRICTION','#60c878','#9db7d8']
+      : source.id==='portugal'
+        ? ['match',['get','restriction'],'PROHIBITED','#ff2a35','#ffeb19']
       : geozoneColor;
     const lineColor=source.id==='estonia'
       ? ['match',['get','restriction'],'PROHIBITED','#ff2f3f','REQ_AUTHORISATION','#235bd6','REQ_AUTHORIZATION','#235bd6','NO_RESTRICTION','#2c9d52','#5479a8']
+      : source.id==='portugal'
+        ? ['match',['get','restriction'],'PROHIBITED','#ff1f2d','#fff000']
       : geozoneColor;
+    const fillOpacity=source.id==='portugal'?.07:geozoneOpacity;
     return[
-      {id:`${source.id}-zones`,type:'fill' as const,source:source.id,minzoom:source.minzoom,...filter,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'fill-color':fillColor as any,'fill-opacity':geozoneOpacity}},
+      {id:`${source.id}-zones`,type:'fill' as const,source:source.id,minzoom:source.minzoom,...filter,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'fill-color':fillColor as any,'fill-opacity':fillOpacity}},
       {id:`${source.id}-lines`,type:'line' as const,source:source.id,minzoom:source.minzoom,...filter,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'line-color':lineColor as any,'line-width':['interpolate',['linear'],['zoom'],source.minzoom,.7,12,2.2] as any,'line-opacity':.94}}
     ];
   });

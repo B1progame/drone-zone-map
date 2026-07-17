@@ -56,6 +56,8 @@ def main() -> None:
     subparsers.add_parser("update-netherlands", help="Fetch and normalize the Dutch government's official ED-269 zones")
     subparsers.add_parser("update-estonia", help="Export EANS' official live UAS GeoJSON for local inspection")
     subparsers.add_parser("update-bulgaria", help="Export the latest Bulgarian CAA UAS ZIP for local inspection")
+    slovakia = subparsers.add_parser("inspect-slovakia", help="Inventory the latest Slovak Transport Authority KML package")
+    slovakia.add_argument("--output", type=Path, help="Write the structured package inventory to JSON")
     subparsers.add_parser("update-public-geozones", help="Refresh redistributable Finland and Netherlands snapshots")
     spain=subparsers.add_parser("fetch-spain-bbox",help="Download official ENAIRE GeoJSON for a small WGS84 viewport")
     spain.add_argument("--bbox",required=True,help="west,south,east,north within Spain service extent")
@@ -117,6 +119,17 @@ def main() -> None:
             encoding="utf-8",
         )
         print(f"Wrote {len(result.features)} official NATS UK zones to {target}")
+        return
+    if args.command == "inspect-slovakia":
+        from adapters.public_uas_feeds import SlovakiaTransportAuthorityInspector
+        report = SlovakiaTransportAuthorityInspector().inspect()
+        output = json.dumps(report, indent=2, ensure_ascii=False)
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(output + "\n", encoding="utf-8")
+            print(f"Wrote Slovak KML package inventory to {args.output}")
+        else:
+            print(output)
         return
     if args.command == "update-canada-open":
         from adapters.canada_open_data import CanadaOpenDataAdapter
