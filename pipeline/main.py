@@ -26,7 +26,10 @@ def main() -> None:
     wms.add_argument("url", help="Known public WMS service URL")
     wms.add_argument("--output", type=Path, help="Write JSON report to this path")
     subparsers.add_parser("update-luxembourg", help="Fetch and normalize Luxembourg's official CC0 UAS zones")
+    subparsers.add_parser("update-ireland", help="Fetch Ireland's official published UAS GeoJSON")
+    subparsers.add_parser("update-uk", help="Fetch and normalize NATS' official UK UAS KML")
     subparsers.add_parser("publish-sweden", help="Publish previously downloaded, unmodified LFV Dronechart GeoJSON layers")
+    subparsers.add_parser("update-sweden", help="Fetch all documented LFV Dronechart WFS layers without modifying geometry")
     spain=subparsers.add_parser("fetch-spain-bbox",help="Download official ENAIRE GeoJSON for a small WGS84 viewport")
     spain.add_argument("--bbox",required=True,help="west,south,east,north within Spain service extent")
     spain.add_argument("--output",type=Path,required=True,help="Output .geojson path")
@@ -60,6 +63,34 @@ def main() -> None:
         target.write_text(json.dumps({"type":"FeatureCollection","features":result.features,"warnings":result.warnings},ensure_ascii=False,separators=(",",":")),encoding="utf-8")
         print(f"Wrote {len(result.features)} Luxembourg zone volumes to {target}")
         return
+    if args.command == "update-ireland":
+        from adapters.ireland_iaa import IrelandIaaAdapter
+        result = IrelandIaaAdapter().fetch()
+        target = ROOT / "public" / "data" / "zones" / "IE.geojson"
+        target.write_text(
+            json.dumps(
+                {"type": "FeatureCollection", "features": result.features, "warnings": result.warnings},
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ),
+            encoding="utf-8",
+        )
+        print(f"Wrote {len(result.features)} official IAA zones to {target}")
+        return
+    if args.command == "update-uk":
+        from adapters.uk_nats import UkNatsAdapter
+        result = UkNatsAdapter().fetch()
+        target = ROOT / "public" / "data" / "zones" / "GB.geojson"
+        target.write_text(
+            json.dumps(
+                {"type": "FeatureCollection", "features": result.features, "warnings": result.warnings},
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ),
+            encoding="utf-8",
+        )
+        print(f"Wrote {len(result.features)} official NATS UK zones to {target}")
+        return
     if args.command == "publish-sweden":
         source = ROOT / "exports" / "requested" / "sweden"
         target = ROOT / "public" / "data" / "zones" / "sweden"
@@ -71,6 +102,12 @@ def main() -> None:
             # Keep LFV output unmodified; its published terms prohibit derivatives.
             shutil.copyfile(item, target / item.name)
         print(f"Published {len(files)} unmodified LFV layers to {target}")
+        return
+    if args.command == "update-sweden":
+        from adapters.sweden_lfv import SwedenLfvAdapter
+        target = ROOT / "public" / "data" / "zones" / "sweden"
+        counts = SwedenLfvAdapter().update(target)
+        print(f"Wrote {sum(counts.values())} features across {len(counts)} official LFV layers to {target}")
         return
     if args.command == "fetch-spain-bbox":
         from adapters.spain_enaire import SpainEnaireAdapter

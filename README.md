@@ -19,16 +19,24 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 
 | Country | Source | Status | Offline/vector claim |
 |---|---|---|---|
-| Germany | DIPUL | WMS configuration status | No vector/offline zone claim |
-| Spain | ENAIRE servAIS / ED-318 | Live MapServer overlay and point identify | No offline bulk export |
-| France | Géoportail | Official-link-only fallback | None |
+| Germany | DIPUL | Live official WMS and point identify | No vector/offline zone claim |
+| Spain | ENAIRE servAIS / ED-318 | Live viewport vectors and point identify | Urban coverage appears only at useful local zoom |
+| France | IGN / Géoportail | Live official UAS-restriction WMTS | No vector/offline zone claim |
+| United Kingdom | NATS UK AIS | AIRAC KML visualization and local point checks | Permanent restrictions; check NOTAMs |
+| United States | FAA UAS Facility Maps | Live viewport grids and point checks | Authorization ceilings, not complete clearance |
+| Canada | NRC / Transport Canada | Live official map embedded from NRC | Underlying NAV CANADA data cannot be redistributed |
+| Denmark | Trafikstyrelsen Dronezoner | Live official GeoJSON and point lookup | Loaded on demand; not cached |
 | Luxembourg | DAC Geoportal | Normalized official CC0 vector zones | Offline pack supported |
+| Ireland | Irish Aviation Authority | Published official GeoJSON | Bundled reference copy |
+| Sweden | LFV Dronechart | Published official WFS | Bundled unmodified layers |
 
-The app bundles only Luxembourg's verified CC0 geometry. Germany stays live WMS and Spain uses live viewport-bounded GeoJSON queries. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and is the traceable record of verified services, freshness, attribution, capabilities, warnings, and terms notes.
+Germany and France use bounded live raster sources. Spain loads current ENAIRE vectors by viewport: infrastructure and aeronautical boundaries remain legible at national scale, while the province-sized urban coverage that caused the opaque pink patchwork appears only at local zoom. The UK uses NATS' AIRAC visualization KML, and US FAA facility grids load only near the viewed area. Denmark's stable official GeoJSON URLs load only when Denmark enters the viewport. Ireland, Luxembourg, and Sweden use verified vector files; Sweden's raw files remain unmodified and the frontend applies LFV's ground-level display filters. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and records verified services, freshness, attribution, capabilities, warnings, and terms notes.
+
+Norway and Italy resolve to their correct official source but do not display copied geometry. Avinor prohibits presenting its service data in another application, and Italy's ED-269 download requires an authenticated D-Flight operator subscription. Canada is rendered through an official NRC-hosted embedded map so NAV CANADA's restricted database is not copied.
 
 ### Expanded coverage directory
 
-The registry now links to official planners or aviation authorities for 37 countries: Germany, Spain, France, Ireland, the UK, Benelux, the Nordics, central/eastern/southern Europe, plus the United States, Canada, Australia, New Zealand, Japan, Brazil, India, Singapore, and South Africa. Germany uses its documented live WMS; every other entry remains `official_link_only` or `needs_endpoint_discovery` until its public endpoint, licence, update model, and caching permissions have been verified.
+The registry links to official planners or aviation authorities for 37 countries: Germany, Spain, France, Ireland, the UK, Benelux, the Nordics, central/eastern/southern Europe, plus the United States, Canada, Australia, New Zealand, Japan, Brazil, India, Singapore, and South Africa. Entries are marked active only after their endpoint, licence, update model, attribution, and caching behavior have been verified.
 
 ## Run locally
 

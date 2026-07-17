@@ -7,3 +7,9 @@ vite.config.d.ts
 .DS_Store
 __pycache__/
 .venv/
+output/playwright/
+.playwright/
+.playwright-cli/
+playwright-report/
+test-results/
+exports/
