@@ -181,6 +181,16 @@ function applyWeather(map:MapLibreMap,location?:Location,weather?:Weather,hourIn
  source?.setData(weatherData(location,weather,hourIndex,visible));
 }
 
+function flightPlanData(points:Location[]){
+ const pointFeatures=points.map((point,index)=>({type:'Feature' as const,properties:{index:index+1,last:index===points.length-1},geometry:{type:'Point' as const,coordinates:[point.lng,point.lat]}}));
+ const line=points.length>1?[{type:'Feature' as const,properties:{},geometry:{type:'LineString' as const,coordinates:points.map(point=>[point.lng,point.lat])}}]:[];
+ return{type:'FeatureCollection' as const,features:[...line,...pointFeatures]};
+}
+
+function applyFlightPlan(map:MapLibreMap,points:Location[]){
+ (map.getSource('flight-plan') as maplibregl.GeoJSONSource|undefined)?.setData(flightPlanData(points));
+}
+
 async function latestRadar(){
  if(!radarMetadata)radarMetadata=fetch('https://api.rainviewer.com/public/weather-maps.json').then(async response=>{
    if(!response.ok)throw new Error(`radar metadata failed (${response.status})`);
@@ -311,7 +321,8 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       'denmark-nature':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://www.droneregler.dk/dronezoner/dronezoner-data-vejledninger/data-downloads" target="_blank">Nature zones © Trafikstyrelsen</a>'},
       ...swedenSources,
       'weather-grid': { type:'geojson', data:emptyGeoJson, attribution:'Forecast field © Open-Meteo' },
-      'weather-location': { type:'geojson', data:emptyGeoJson }
+      'weather-location': { type:'geojson', data:emptyGeoJson },
+      'flight-plan': { type:'geojson', data:emptyGeoJson }
     },
     layers: [
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
@@ -349,16 +360,21 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:'weather-wind',type:'line',source:'weather-grid',filter:['==',['get','kind'],'wind'],paint:{'line-color':['interpolate',['linear'],['get','wind'],0,'#c7f4ff',20,'#79ddff',40,'#ffd267',65,'#ff795f'] as any,'line-width':['interpolate',['linear'],['zoom'],0,.45,8,1.15,14,2.1] as any,'line-opacity':.78,'line-dasharray':[1.2,2.4]}},
       { id:'weather-field', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,28,10,150,15,280],'circle-color':['get','color'],'circle-opacity':.1,'circle-blur':.82} },
       { id:'weather-halo', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,12,10,56,15,105],'circle-color':['get','color'],'circle-opacity':.17,'circle-blur':.45,'circle-stroke-width':2,'circle-stroke-color':['get','color'],'circle-stroke-opacity':.7} },
-      { id:'weather-core', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,3,10,8,15,13],'circle-color':['get','color'],'circle-opacity':.9,'circle-stroke-width':3,'circle-stroke-color':'#ffffff','circle-stroke-opacity':.85} }
+      { id:'weather-core', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,3,10,8,15,13],'circle-color':['get','color'],'circle-opacity':.9,'circle-stroke-width':3,'circle-stroke-color':'#ffffff','circle-stroke-opacity':.85} },
+      {id:'flight-plan-halo',type:'line',source:'flight-plan',filter:['==',['geometry-type'],'LineString'],paint:{'line-color':'#07120f','line-width':['interpolate',['linear'],['zoom'],3,5,14,10],'line-opacity':.75}},
+      {id:'flight-plan-line',type:'line',source:'flight-plan',filter:['==',['geometry-type'],'LineString'],paint:{'line-color':'#b7ff9c','line-width':['interpolate',['linear'],['zoom'],3,2,14,4],'line-opacity':.98,'line-dasharray':[2,1.1]}},
+      {id:'flight-plan-points',type:'circle',source:'flight-plan',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':['interpolate',['linear'],['zoom'],3,5,14,10],'circle-color':['case',['get','last'],'#ffffff','#b7ff9c'],'circle-stroke-color':'#102017','circle-stroke-width':3}}
     ]
   };
 }
 
-export function MapCanvas({ location, weather, weatherError='', onPick, settings }: { location?: Location; weather?:Weather; weatherError?:string; onPick: (location: Location) => void; settings:AppSettings }) {
+export function MapCanvas({ location, weather, weatherError='', onPick, settings, planPoints=[], plannerMode=false, onPlanPoint }: { location?: Location; weather?:Weather; weatherError?:string; onPick: (location: Location) => void; settings:AppSettings; planPoints?:Location[]; plannerMode?:boolean; onPlanPoint?:(location:Location)=>void }) {
   const mapRef = useRef<MapLibreMap | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<Marker | null>(null);
   const onPickRef = useRef(onPick);
+  const plannerRef=useRef({active:plannerMode,onPoint:onPlanPoint});
+  const planPointsRef=useRef(planPoints);
   const weatherStateRef=useRef({location,weather,hour:0,visible:true});
   const settingsRef=useRef(settings);
   const overlayTasksRef=useRef({pending:new Set<string>(),done:0,total:0,label:'official overlays'});
@@ -385,6 +401,8 @@ export function MapCanvas({ location, weather, weatherError='', onPick, settings
   };
 
   useEffect(() => { onPickRef.current = onPick; }, [onPick]);
+  useEffect(()=>{plannerRef.current={active:plannerMode,onPoint:onPlanPoint}},[plannerMode,onPlanPoint]);
+  useEffect(()=>{planPointsRef.current=planPoints},[planPoints]);
   useEffect(()=>{settingsRef.current=settings},[settings]);
 
   useEffect(() => {
@@ -404,14 +422,13 @@ export function MapCanvas({ location, weather, weatherError='', onPick, settings
     map.touchZoomRotate.enable();
     map.dragPan.enable();
     const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)};
-    map.on('load', () => { map.setProjection({type:'globe'});setLoaded(true); setError(''); map.resize();refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible); });
-    map.on('style.load',()=>{map.setProjection({type:'globe'});loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible)});
+    map.on('load', () => { map.setProjection({type:'globe'});setLoaded(true); setError(''); map.resize();refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightPlan(map,planPointsRef.current); });
+    map.on('style.load',()=>{map.setProjection({type:'globe'});loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightPlan(map,planPointsRef.current)});
     map.on('moveend',refresh);
-    map.on('click', event => onPickRef.current({
-      lat: event.lngLat.lat,
-      lng: event.lngLat.lng,
-      name: `${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`
-    }));
+    map.on('click', event => {
+      const point={lat:event.lngLat.lat,lng:event.lngLat.lng,name:`${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`};
+      if(plannerRef.current.active)plannerRef.current.onPoint?.(point);else onPickRef.current(point);
+    });
     map.on('error', event => {
       if (!map.loaded()) setError(event.error?.message || 'The basemap could not load.');
     });
@@ -449,6 +466,8 @@ export function MapCanvas({ location, weather, weatherError='', onPick, settings
   useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);ensureRadar(map,weatherVisible,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined)}},[location,weather,weatherHour,weatherVisible]);
 
   useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks)},[settings.renderDetail,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
+
+  useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded())applyFlightPlan(map,planPoints)},[planPoints,loaded,baseMap]);
 
   useEffect(()=>{if(weatherHour>8)setWeatherHour(8)},[weatherHour]);
 

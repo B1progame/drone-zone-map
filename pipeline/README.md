@@ -9,6 +9,7 @@ python pipeline/main.py inspect-wms "https://uas-betrieb.de/geoservices/dipul/wm
 python pipeline/main.py update-ireland
 python pipeline/main.py update-uk
 python pipeline/main.py update-sweden
+python pipeline/main.py update-canada-open --output pipeline/reports/canada-open-data.geojson
 python pipeline/validate_geojson.py "public/data/zones/*.geojson" "public/data/zones/sweden/*.geojson"
 ```
 
@@ -26,4 +27,6 @@ France is rendered directly from IGN's public `TRANSPORTS.DRONES.RESTRICTIONS` W
 
 The UK adapter downloads NATS' official AIRAC KML visualization and retains its effective date and warnings. The KML is a visualization aid; the UK AIP and current NOTAMs remain authoritative.
 
-Denmark's stable GeoJSON URLs are loaded directly from Trafikstyrelsen only when the viewport reaches Denmark. They are not copied by the pipeline. US FAA Facility Map grids load live by viewport. Italy remains an official link because D-Flight restricts ED-269 downloads to subscribed operators. Canada uses the official NRC-hosted map in an iframe so NAV CANADA's underlying database is rendered without being copied.
+Denmark's stable GeoJSON URLs are loaded directly from Trafikstyrelsen only when the viewport reaches Denmark. They are not copied by the pipeline. US FAA Facility Map grids load live by viewport. Italy is intentionally absent from the country renderer.
+
+`update-canada-open` downloads the official Transport Canada airport layer and NRCan national-park boundaries under the Open Government Licence. It deliberately does not inspect or export the NRC tool's NAV CANADA-derived shapes: the NRC FAQ says the licence prohibits redistribution. The live app combines those lawful open layers with a handoff to the complete official NRC tool.

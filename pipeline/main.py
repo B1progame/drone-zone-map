@@ -28,6 +28,8 @@ def main() -> None:
     subparsers.add_parser("update-luxembourg", help="Fetch and normalize Luxembourg's official CC0 UAS zones")
     subparsers.add_parser("update-ireland", help="Fetch Ireland's official published UAS GeoJSON")
     subparsers.add_parser("update-uk", help="Fetch and normalize NATS' official UK UAS KML")
+    canada=subparsers.add_parser("update-canada-open", help="Fetch redistributable Canadian federal airport and national-park GeoJSON")
+    canada.add_argument("--output",type=Path,required=True,help="Output .geojson path; protected NAV CANADA shapes are never included")
     subparsers.add_parser("publish-sweden", help="Publish previously downloaded, unmodified LFV Dronechart GeoJSON layers")
     subparsers.add_parser("update-sweden", help="Fetch all documented LFV Dronechart WFS layers without modifying geometry")
     spain=subparsers.add_parser("fetch-spain-bbox",help="Download official ENAIRE GeoJSON for a small WGS84 viewport")
@@ -90,6 +92,26 @@ def main() -> None:
             encoding="utf-8",
         )
         print(f"Wrote {len(result.features)} official NATS UK zones to {target}")
+        return
+    if args.command == "update-canada-open":
+        from adapters.canada_open_data import CanadaOpenDataAdapter
+        result=CanadaOpenDataAdapter().fetch()
+        args.output.parent.mkdir(parents=True,exist_ok=True)
+        args.output.write_text(
+            json.dumps(
+                {
+                    "type":"FeatureCollection",
+                    "features":result.features,
+                    "warnings":result.warnings,
+                    "officialMap":"https://nrc.canada.ca/en/drone-tool-2/map.html",
+                },
+                ensure_ascii=False,
+                separators=(",",":"),
+            ),
+            encoding="utf-8",
+        )
+        print(f"Wrote {len(result.features)} redistributable Canadian open-data features to {args.output}")
+        print("Protected NAV CANADA-derived shapes were not requested or exported.")
         return
     if args.command == "publish-sweden":
         source = ROOT / "exports" / "requested" / "sweden"

@@ -1,6 +1,6 @@
 # Drone Zone Map
 
-A privacy-friendly, static drone planning map built for GitHub Pages. It combines map exploration, honest official-source status, live weather context, saved locations, and an optional future AI explainer in a polished responsive interface.
+A privacy-friendly, static drone planning map built for GitHub Pages. It combines map exploration, multi-point route planning, honest official-source status, live weather context, local accounts, saved locations, and an optional OpenRouter copilot in a polished responsive interface.
 
 > **Planning and situational awareness only.** This project is not an official aviation authority and does not grant permission to fly. Check the official national aviation source before takeoff.
 
@@ -8,11 +8,13 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 
 - Interactive MapLibre globe/map with click, touch, pinch zoom, and 100 km+ country-scale overlays
 - Coordinate search, browser geolocation, and animated map fly-to
-- Current Open-Meteo conditions plus a cached viewport field for cloud, rain, and wind-flow rendering
+- Current Open-Meteo conditions plus a cached viewport field for cloud, rain, wind flow, and RainViewer radar
+- Multi-point flight routes with persisted waypoints, map/search entry, and geodesic distance
+- Device-local accounts: the first identifier becomes local admin and later identifiers become members
 - Local-only saved places and preference notice
 - Responsive liquid-glass UI with adjustable transparency, reduced motion, and overlay-detail budgets
 - Source registry and official links; no fake zones or derived legal claims
-- Optional AI page is explicitly disabled until a secure user-provided or proxied provider is configured
+- Optional OpenRouter free-router copilot using a user-provided key kept only in memory
 - GitHub Pages deployment and a safe metadata-validation workflow
 
 ## Official-source coverage
@@ -69,6 +71,18 @@ If you name the repository differently, update `base` in `vite.config.ts`.
 
 The scheduled workflow validates metadata and refreshes Luxembourg's CC0 feed. Add a verified adapter and exporter before enabling retrieval for another country.
 
+### Canadian open-data export
+
+Export the two redistributable federal layers used by Aeris:
+
+```bash
+python pipeline/main.py update-canada-open --output canada-open-data.geojson
+```
+
+The command downloads Transport Canada airports and NRCan national parks under
+the Open Government Licence. It intentionally excludes the NRC tool's protected
+NAV CANADA-derived database and records that limitation in the export.
+
 ### Personal Spanish GeoJSON snapshot
 
 Download a small ENAIRE viewport as official, paged GeoJSON:
@@ -86,12 +100,12 @@ national service.
 - Weather is forecast context, not a go/no-go decision; temporary restrictions can change.
 - Cross-origin map tiles may block screenshot canvas export. A production export must retain required attribution.
 - Offline packs are UI architecture only until each source’s caching terms and data format are verified.
-- AI is disabled by default. Do not expose API keys in browser code; use a user-owned key or a secure proxy.
-- Translations expose an extensible settings surface; production translation catalogs are the next implementation step.
+- OpenRouter is disconnected by default. User keys stay only in React memory and are cleared on reload or sign-out; a server proxy is still recommended for a public multi-user deployment.
+- Primary home, weather, search, planner, settings, result, and login flows are translated into English, German, Spanish, French, and Italian. Other listed search languages use English UI fallback while still localizing geocoding and supported official-map handoffs.
 
 ## Privacy
 
-The basic app has no analytics. Saved places and the acknowledgement are stored in browser localStorage; clearing browser site data removes them. The app only calls Open-Meteo after you select a point.
+The basic app has no analytics. Device-local accounts, route points, saved places, preferences, and the acknowledgement are stored in browser localStorage; clearing browser site data removes them. These local accounts are convenience profiles, not secure server authentication. The app only calls Open-Meteo after you select a point. An OpenRouter key is never written to localStorage.
 
 ## License
 
