@@ -1,6 +1,6 @@
 import type { Location, ZoneDetail, ZoneInfo } from './types';
 
-const DIPUL_LAYERS=['flugbeschraenkungsgebiete','temporaere_betriebseinschraenkungen','kontrollzonen','flughaefen','flugplaetze','militaerische_anlagen','nationalparks','naturschutzgebiete','vogelschutzgebiete','ffh-gebiete','krankenhaeuser','polizei','justizvollzugsanstalten','industrieanlagen','kraftwerke','windkraftanlagen','modellflugplaetze'];
+const DIPUL_LAYERS=['bahnanlagen','behoerden','binnenwasserstrassen','bundesautobahnen','bundesstrassen','diplomatische_vertretungen','ffh-gebiete','flugbeschraenkungsgebiete','flughaefen','flugplaetze','freibaeder','haengegleiter','industrieanlagen','internationale_organisationen','justizvollzugsanstalten','kontrollzonen','kraftwerke','krankenhaeuser','labore','militaerische_anlagen','modellflugplaetze','nationalparks','naturschutzgebiete','polizei','schifffahrtsanlagen','seewasserstrassen','sicherheitsbehoerden','stromleitungen','temporaere_betriebseinschraenkungen','umspannwerke','vogelschutzgebiete','windkraftanlagen','wohngrundstuecke'];
 const language=()=>navigator.language.toLowerCase().split('-')[0];
 const COUNTRY_SOURCES={
  GB:{name:'United Kingdom',source:'NATS UK AIS',url:'https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/',warning:'Official permanent NATS UAS restrictions render from the current AIRAC visualization dataset. Check the UK AIP and current NOTAMs before flight.'},
@@ -10,7 +10,7 @@ const COUNTRY_SOURCES={
  NO:{name:'Norway',source:'Avinor drone map',url:'https://www.avinor.no/en/practical-info/drone/dronekart/',warning:'Avinor prohibits presenting its service data in another application, so Aeris links to the official map instead of copying its zones.'},
  IT:{name:'Italy',source:'D-Flight / ENAC',url:'https://www.d-flight.it/web-app/',warning:'Italy provides its ED-269 zone download only to authenticated D-Flight operator subscriptions. Use the official D-Flight map.'},
  US:{name:'United States',source:'FAA UAS Facility Maps',url:'https://www.faa.gov/uas/getting_started/b4ufly',warning:'FAA UAS Facility Map grids render live and show pre-coordinated authorization altitudes, not permission or every restriction. Check B4UFLY and current TFRs.'},
- CA:{name:'Canada',source:'NRC / Transport Canada',url:'https://www.nrc.canada.ca/en/drone-tool-2/',warning:'The official NRC Drone Site Selection Tool is embedded on the map. Its underlying NAV CANADA database cannot be redistributed or queried by Aeris.'}
+ CA:{name:'Canada',source:'Transport Canada Open Government',url:'https://open.canada.ca/data/en/dataset/3a1eb6ef-6054-4f9d-b1f6-c30322cd7abf',warning:'Aeris renders the reusable Government of Canada airport dataset and 5.6 km orientation rings. It is not the complete NRC/NAV CANADA airspace database; check the official Drone Site Selection Tool before flight.'}
 } as const;
 type CountryCode=keyof typeof COUNTRY_SOURCES|'DE'|'ES'|'LU'|'IE'|'XX';
 function countryAt(p:Location):CountryCode{
@@ -70,6 +70,16 @@ async function unitedStates(point:Location):Promise<ZoneInfo>{
  const data=await response.json();
  result.zones=(data.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{};return{id:`US-${p.OBJECTID??index}`,name:p.APT1_NAME??p.APT1_ICAO??'FAA UAS Facility Map grid',type:`${p.CEILING??0} ${p.UNIT??'Feet'} authorization ceiling`,message:p.APT1_LAANC?'LAANC-enabled facility grid. This value is not an authorization.':'Facility-map planning grid. This value is not an authorization.',upper:`${p.CEILING??0} ${p.UNIT??'Feet'} AGL`,source:source.source,updated:p.MAP_EFF??p.LAST_EDIT}});result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
 }
+const distanceKm=(a:Location,b:{lat:number;lng:number})=>{const radius=6371,toRad=(value:number)=>value*Math.PI/180,dLat=toRad(b.lat-a.lat),dLng=toRad(b.lng-a.lng),lat1=toRad(a.lat),lat2=toRad(b.lat);const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;return radius*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))};
+async function canada(point:Location):Promise<ZoneInfo>{
+ const source=COUNTRY_SOURCES.CA,result=base('CA',source.name,source.source,source.url),d=.12;
+ const params=new URLSearchParams({where:'1=1',geometry:`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,geometryType:'esriGeometryEnvelope',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outSR:'4326',outFields:'OBJECTID,TC_ID,IATA,ICAO,TYPE,AIRPORT,CITY,PROVINCE,LATTITUDE,LONGITUDE',returnGeometry:'true',f:'json'});
+ const response=await fetch(`https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0/query?${params}`);
+ if(!response.ok)throw new Error('Transport Canada airport query failed');
+ const data=await response.json();
+ result.zones=(data.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{},coordinates=feature.geometry??{},lat=Number(coordinates.y??p.LATTITUDE),lng=Number(coordinates.x??p.LONGITUDE),distance=distanceKm(point,{lat,lng});return{distance,zone:{id:`CA-${p.OBJECTID??index}`,name:p.AIRPORT??p.ICAO??'Canadian airport',type:'5.6 km airport advisory area',message:`${p.TYPE??'Airport'}${p.CITY?` · ${p.CITY}, ${p.PROVINCE}`:''}. Approximately ${distance.toFixed(1)} km from the selected point. This orientation ring is not a complete legal airspace check.`,source:source.source}}}).filter((item:any)=>item.distance<=5.6).map((item:any)=>item.zone);
+ result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
+}
 async function denmark(point:Location):Promise<ZoneInfo>{
  const source=COUNTRY_SOURCES.DK,result=base('DK',source.name,source.source,source.url);
  const [zones,nature]=await Promise.all([fetchGeoJson('https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/980697acd04d4a9bb1fd34bbefab924a/data'),fetchGeoJson('https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/ff657943724944faaf19807380f5e24a/data')]);
@@ -77,8 +87,20 @@ async function denmark(point:Location):Promise<ZoneInfo>{
  result.zones=matches;result.status=matches.length?'loaded':'none';result.warning=source.warning;return result;
 }
 
+async function resolvedCountryAt(point:Location):Promise<CountryCode>{
+ const initial=countryAt(point);
+ if(initial!=='US'||point.lat<41||point.lat>50||point.lng<-141||point.lng>-52)return initial;
+ try{
+  const response=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${point.lat}&lon=${point.lng}&zoom=3&format=json&accept-language=en`);
+  if(!response.ok)return initial;
+  const country=String((await response.json()).address?.country_code??'').toUpperCase();
+  if(country==='CA'||country==='US')return country;
+ }catch{return initial}
+ return initial;
+}
+
 export async function getOfficialZoneInfo(point:Location):Promise<ZoneInfo>{
- const code=countryAt(point);
+ const code=await resolvedCountryAt(point);
  try{
   if(code==='DE')return await dipul(point);
   if(code==='ES')return await enaire(point);
@@ -87,6 +109,7 @@ export async function getOfficialZoneInfo(point:Location):Promise<ZoneInfo>{
   if(code==='GB')return await uk(point);
   if(code==='DK')return await denmark(point);
   if(code==='US')return await unitedStates(point);
+  if(code==='CA')return await canada(point);
   if(code in COUNTRY_SOURCES){const source=COUNTRY_SOURCES[code as keyof typeof COUNTRY_SOURCES];return{...base(code,source.name,source.source,source.url),status:'unsupported',warning:source.warning}}
   return{...base(code,'Unknown','Official source directory','#'),status:'unsupported'};
  }catch{

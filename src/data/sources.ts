@@ -12,7 +12,7 @@ export const sources: Source[] = [
  { code:'SE', country:'Sweden', name:'LFV Dronechart', status:'Official WFS', updated:'2026', url:'https://daim.lfv.se/echarts/dronechart/API/', detail:'Raw CC BY-NC-ND geometry is preserved. Published ground-level display filters exclude oversized non-drone layers.' },
  { code:'NO', country:'Norway', name:'Avinor drone map', status:'Official link only', updated:'2026', url:'https://www.avinor.no/en/practical-info/drone/dronekart/', detail:'Avinor expressly prohibits presenting its service data through another application.' },
  { code:'IT', country:'Italy', name:'D-Flight / ENAC', status:'Authenticated source only', updated:'2026', url:'https://www.d-flight.it/web-app/', detail:'The ED-269 download is available only to authenticated D-Flight operators with an active subscription.' },
- { code:'CA', country:'Canada', name:'NRC / Transport Canada', status:'Live official embedded map', updated:'6 Nov 2025', url:'https://www.nrc.canada.ca/en/drone-tool-2/', detail:'Aeris embeds the official NRC tool so Canada renders without redistributing NAV CANADA’s restricted database.' }
+ { code:'CA', country:'Canada', name:'Transport Canada Open Government', status:'Open airport vectors + advisory rings', updated:'2021', url:'https://open.canada.ca/data/en/dataset/3a1eb6ef-6054-4f9d-b1f6-c30322cd7abf', detail:'Aeris renders openly licensed airports and 5.6 km orientation rings. The restricted NAV CANADA database is not copied; the NRC tool remains the authoritative check.' }
 ];
 
 export const sourceFor = (lat:number, lng:number) =>

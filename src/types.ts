@@ -1,4 +1,10 @@
 export type Page = 'home' | 'map' | 'weather' | 'ai' | 'saved';
+export type RenderDetail = 'efficient' | 'balanced' | 'maximum';
+export type AppSettings = {
+  renderDetail: RenderDetail;
+  glassOpacity: number;
+  reducedMotion: boolean;
+};
 export type Location = { lat: number; lng: number; name: string };
 export type WeatherHour = { time:string; temperature:number; wind:number; gusts:number; rain:number; rainProbability:number; cloud:number; visibility:number; score:number; isDay:boolean };
 export type Weather = { temperature: number; wind: number; gusts: number; rain: number; rainProbability:number; cloud: number; visibility:number; score: number; hourly:WeatherHour[]; timezone:string };
