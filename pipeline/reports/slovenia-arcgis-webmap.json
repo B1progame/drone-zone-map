@@ -1,0 +1,3619 @@
+{
+  "auditedItem": {
+    "id": "25ba69037c264c5faa5381174f76f861",
+    "title": "GEOGRAFSKA OBMOČJA UAS GEO ZONES - Maj 2026",
+    "owner": "CAA_SLO",
+    "type": "Web Mapping Application",
+    "modified": 1779355299000,
+    "access": "public",
+    "licenseInfo": null,
+    "termsOfUse": null
+  },
+  "webMap": {
+    "id": "14c35a6c4d5a472ea2ed5b2a75abc690",
+    "title": "UAS GEO ZONES - May 2026",
+    "owner": "CAA_SLO",
+    "modified": 1779356051000,
+    "access": "public",
+    "licenseInfo": "",
+    "termsOfUse": null
+  },
+  "layerCount": 21,
+  "layers": [
+    {
+      "position": 0,
+      "id": "bdd0342f7dc544e6a59ceb697f524448",
+      "title": "Triglav National Park",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/UAS_GEO_ZONES___March_2022_WFL1/FeatureServer/12",
+      "itemId": "5057b40b6b3e4431b75c45e45c67ad73",
+      "visibility": true,
+      "opacity": 0.5,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            232,
+            72,
+            72,
+            196
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              110,
+              110,
+              110,
+              255
+            ],
+            "width": 0.7,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "OBJECTID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": true,
+                "label": "FID",
+                "visible": true
+              },
+              {
+                "fieldName": "IME_ZNAMEN",
+                "isEditable": true,
+                "label": "IME_ZNAMEN",
+                "visible": true
+              },
+              {
+                "fieldName": "Subject",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_omejitve",
+                "isEditable": true,
+                "label": "UAS omejitve",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_restriction",
+                "isEditable": true,
+                "label": "UAS restriction",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjeme_odprta_posebna_kat",
+                "isEditable": true,
+                "label": "Izjeme za odprto in posebno UAS kategorijo",
+                "visible": true
+              },
+              {
+                "fieldName": "Exceptions_open_specific_cat",
+                "isEditable": true,
+                "label": "Exceptions for open and specific UAS category",
+                "visible": true
+              },
+              {
+                "fieldName": "Informacije",
+                "isEditable": true,
+                "label": "Informacije",
+                "visible": true
+              },
+              {
+                "fieldName": "Information",
+                "isEditable": true,
+                "label": "Information",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "OBJECTID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "FID",
+            "visible": true
+          },
+          {
+            "fieldName": "IME_ZNAMEN",
+            "isEditable": true,
+            "label": "IME_ZNAMEN",
+            "visible": true
+          },
+          {
+            "fieldName": "Subject",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_omejitve",
+            "isEditable": true,
+            "label": "UAS omejitve",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_restriction",
+            "isEditable": true,
+            "label": "UAS restriction",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjeme_odprta_posebna_kat",
+            "isEditable": true,
+            "label": "Izjeme za odprto in posebno UAS kategorijo",
+            "visible": true
+          },
+          {
+            "fieldName": "Exceptions_open_specific_cat",
+            "isEditable": true,
+            "label": "Exceptions for open and specific UAS category",
+            "visible": true
+          },
+          {
+            "fieldName": "Informacije",
+            "isEditable": true,
+            "label": "Informacije",
+            "visible": true
+          },
+          {
+            "fieldName": "Information",
+            "isEditable": true,
+            "label": "Information",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "{IME_ZNAMEN}"
+      }
+    },
+    {
+      "position": 1,
+      "id": "1912c339284-layer-18",
+      "title": "CTR",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/CTR_WGS_24/FeatureServer/0",
+      "itemId": "c880ccc3071e45d391c8c23ce942e882",
+      "visibility": true,
+      "opacity": 0.45,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            218,
+            232,
+            58,
+            99
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              255,
+              255,
+              115,
+              255
+            ],
+            "width": 1.313,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldName": "OBMOCJE",
+                "isEditable": true,
+                "label": "Območje",
+                "visible": true
+              },
+              {
+                "fieldName": "Subject",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "OMEJITEV",
+                "isEditable": true,
+                "label": "Omejitev",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_restriction2",
+                "isEditable": true,
+                "label": "Restriction",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjeme_obratuje",
+                "isEditable": true,
+                "label": "Izjeme med obratovalnim časom letališča",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjeme_ne_obr",
+                "isEditable": true,
+                "label": "Izjeme izven obratovalnega časa letališča",
+                "visible": true
+              },
+              {
+                "fieldName": "Exceptions_oper",
+                "isEditable": true,
+                "label": "Exceptions during operational hours of aerodrome",
+                "visible": true
+              },
+              {
+                "fieldName": "Exceptions_outs",
+                "isEditable": true,
+                "label": "Exceptions outside operational hours of aerodrome",
+                "visible": true
+              },
+              {
+                "fieldName": "Kontakt_Co",
+                "isEditable": true,
+                "label": "Kontakt/Contact",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "OBMOCJE",
+            "isEditable": true,
+            "label": "Območje",
+            "visible": true
+          },
+          {
+            "fieldName": "Subject",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "OMEJITEV",
+            "isEditable": true,
+            "label": "Omejitev",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_restriction2",
+            "isEditable": true,
+            "label": "Restriction",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjeme_obratuje",
+            "isEditable": true,
+            "label": "Izjeme med obratovalnim časom letališča",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjeme_ne_obr",
+            "isEditable": true,
+            "label": "Izjeme izven obratovalnega časa letališča",
+            "visible": true
+          },
+          {
+            "fieldName": "Exceptions_oper",
+            "isEditable": true,
+            "label": "Exceptions during operational hours of aerodrome",
+            "visible": true
+          },
+          {
+            "fieldName": "Exceptions_outs",
+            "isEditable": true,
+            "label": "Exceptions outside operational hours of aerodrome",
+            "visible": true
+          },
+          {
+            "fieldName": "Kontakt_Co",
+            "isEditable": true,
+            "label": "Kontakt/Contact",
+            "visible": true
+          },
+          {
+            "fieldName": "OBJECTID",
+            "isEditable": true,
+            "label": "OBJECTID",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Area",
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "{OBMOCJE}"
+      }
+    },
+    {
+      "position": 2,
+      "id": "029d79db6c404e2fbc4b573015b47892",
+      "title": "Restricted - Area",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/UAS_GEO_ZONES___March_2022_WFL1/FeatureServer/11",
+      "itemId": "5057b40b6b3e4431b75c45e45c67ad73",
+      "visibility": true,
+      "opacity": 0.3,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            252,
+            204,
+            207,
+            255
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              0,
+              0,
+              0,
+              255
+            ],
+            "width": 1,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "OBJECTID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": true,
+                "label": "FID",
+                "visible": true
+              },
+              {
+                "fieldName": "IME",
+                "isEditable": true,
+                "label": "IME",
+                "visible": true
+              },
+              {
+                "fieldName": "glej_NOTAM",
+                "isEditable": true,
+                "label": "Pred letom glej NOTAM",
+                "visible": true
+              },
+              {
+                "fieldName": "Check_NOTAM",
+                "isEditable": true,
+                "label": "Check NOTAM before fly",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "OBJECTID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "FID",
+            "visible": true
+          },
+          {
+            "fieldName": "IME",
+            "isEditable": true,
+            "label": "IME",
+            "visible": true
+          },
+          {
+            "fieldName": "glej_NOTAM",
+            "isEditable": true,
+            "label": "Pred letom glej NOTAM",
+            "visible": true
+          },
+          {
+            "fieldName": "Check_NOTAM",
+            "isEditable": true,
+            "label": "Check NOTAM before fly",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "{IME}"
+      }
+    },
+    {
+      "position": 3,
+      "id": "94c64fbf1a5b4129abf0d8db2b5984ab",
+      "title": "TEŠ power plant",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/UAS_GEO_ZONES___March_2022_WFL1/FeatureServer/8",
+      "itemId": "5057b40b6b3e4431b75c45e45c67ad73",
+      "visibility": true,
+      "opacity": 0.5,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            222,
+            34,
+            9,
+            255
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              0,
+              0,
+              0,
+              255
+            ],
+            "width": 1,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "FID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": true,
+                "label": "FID",
+                "visible": true
+              },
+              {
+                "fieldName": "Naziv",
+                "isEditable": true,
+                "label": "Naziv",
+                "visible": true
+              },
+              {
+                "fieldName": "Subject",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "Omejitev",
+                "isEditable": true,
+                "label": "Omejitev",
+                "visible": true
+              },
+              {
+                "fieldName": "Restrict_",
+                "isEditable": true,
+                "label": "Restrict",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjema",
+                "isEditable": true,
+                "label": "Izjema",
+                "visible": true
+              },
+              {
+                "fieldName": "Exception",
+                "isEditable": true,
+                "label": "Exception",
+                "visible": true
+              },
+              {
+                "fieldName": "Zakonodaja",
+                "isEditable": true,
+                "label": "Zakonodaja",
+                "visible": true
+              },
+              {
+                "fieldName": "Regulation",
+                "isEditable": true,
+                "label": "Regulation",
+                "visible": true
+              },
+              {
+                "fieldName": "Razlog",
+                "isEditable": true,
+                "label": "Razlog",
+                "visible": true
+              },
+              {
+                "fieldName": "Reason",
+                "isEditable": true,
+                "label": "Reason",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "FID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "FID",
+            "visible": true
+          },
+          {
+            "fieldName": "Naziv",
+            "isEditable": true,
+            "label": "Naziv",
+            "visible": true
+          },
+          {
+            "fieldName": "Subject",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "Omejitev",
+            "isEditable": true,
+            "label": "Omejitev",
+            "visible": true
+          },
+          {
+            "fieldName": "Restrict_",
+            "isEditable": true,
+            "label": "Restrict",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjema",
+            "isEditable": true,
+            "label": "Izjema",
+            "visible": true
+          },
+          {
+            "fieldName": "Exception",
+            "isEditable": true,
+            "label": "Exception",
+            "visible": true
+          },
+          {
+            "fieldName": "Zakonodaja",
+            "isEditable": true,
+            "label": "Zakonodaja",
+            "visible": true
+          },
+          {
+            "fieldName": "Regulation",
+            "isEditable": true,
+            "label": "Regulation",
+            "visible": true
+          },
+          {
+            "fieldName": "Razlog",
+            "isEditable": true,
+            "label": "Razlog",
+            "visible": true
+          },
+          {
+            "fieldName": "Reason",
+            "isEditable": true,
+            "label": "Reason",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "{Shape_Leng}"
+      }
+    },
+    {
+      "position": 4,
+      "id": "4a11cb5bc56b4a0aa74dc244f56d1548",
+      "title": "Coal mine Premogovnik Velenje",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/UAS_GEO_ZONES___March_2022_WFL1/FeatureServer/7",
+      "itemId": "5057b40b6b3e4431b75c45e45c67ad73",
+      "visibility": true,
+      "opacity": 0.5,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            230,
+            46,
+            0,
+            255
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              0,
+              0,
+              0,
+              255
+            ],
+            "width": 1,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "FID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": true,
+                "label": "FID",
+                "visible": true
+              },
+              {
+                "fieldName": "Naziv",
+                "isEditable": true,
+                "label": "Naziv",
+                "visible": true
+              },
+              {
+                "fieldName": "Subject",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "Omejitev",
+                "isEditable": true,
+                "label": "Omejitev",
+                "visible": true
+              },
+              {
+                "fieldName": "Restrict_",
+                "isEditable": true,
+                "label": "Restrict",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjema",
+                "isEditable": true,
+                "label": "Izjema",
+                "visible": true
+              },
+              {
+                "fieldName": "Exception",
+                "isEditable": true,
+                "label": "Exception",
+                "visible": true
+              },
+              {
+                "fieldName": "Zakonodaja",
+                "isEditable": true,
+                "label": "Zakonodaja",
+                "visible": true
+              },
+              {
+                "fieldName": "Regulation",
+                "isEditable": true,
+                "label": "Regulation",
+                "visible": true
+              },
+              {
+                "fieldName": "Razlog",
+                "isEditable": true,
+                "label": "Razlog",
+                "visible": true
+              },
+              {
+                "fieldName": "Reason",
+                "isEditable": true,
+                "label": "Reason",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "FID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "FID",
+            "visible": true
+          },
+          {
+            "fieldName": "Naziv",
+            "isEditable": true,
+            "label": "Naziv",
+            "visible": true
+          },
+          {
+            "fieldName": "Subject",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "Omejitev",
+            "isEditable": true,
+            "label": "Omejitev",
+            "visible": true
+          },
+          {
+            "fieldName": "Restrict_",
+            "isEditable": true,
+            "label": "Restrict",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjema",
+            "isEditable": true,
+            "label": "Izjema",
+            "visible": true
+          },
+          {
+            "fieldName": "Exception",
+            "isEditable": true,
+            "label": "Exception",
+            "visible": true
+          },
+          {
+            "fieldName": "Zakonodaja",
+            "isEditable": true,
+            "label": "Zakonodaja",
+            "visible": true
+          },
+          {
+            "fieldName": "Regulation",
+            "isEditable": true,
+            "label": "Regulation",
+            "visible": true
+          },
+          {
+            "fieldName": "Razlog",
+            "isEditable": true,
+            "label": "Razlog",
+            "visible": true
+          },
+          {
+            "fieldName": "Reason",
+            "isEditable": true,
+            "label": "Reason",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "{Shape_Leng}"
+      }
+    },
+    {
+      "position": 5,
+      "id": "82e56d2134f94b649ab59ab6775260ba",
+      "title": "Nuclear power plant - prohibited",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/UAS_GEO_ZONES___March_2022_WFL1/FeatureServer/0",
+      "itemId": "5057b40b6b3e4431b75c45e45c67ad73",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              230,
+              0,
+              0,
+              255
+            ],
+            "width": 2,
+            "style": "esriSLSDash"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "OBJECTID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": true,
+                "label": "FID",
+                "visible": true
+              },
+              {
+                "fieldName": "Zone",
+                "isEditable": true,
+                "label": "Zone",
+                "visible": true
+              },
+              {
+                "fieldName": "Naziv",
+                "isEditable": true,
+                "label": "Naziv",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_omejitve",
+                "isEditable": true,
+                "label": "UAS omejitve",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_restrictions",
+                "isEditable": true,
+                "label": "UAS restrictions",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjeme_posebna",
+                "isEditable": true,
+                "label": "Izjeme za odprto in posebno UAS kategorijo",
+                "visible": true
+              },
+              {
+                "fieldName": "Exceptions_specific",
+                "isEditable": true,
+                "label": "Exceptions open and specific UAS category",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "OBJECTID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "FID",
+            "visible": true
+          },
+          {
+            "fieldName": "Zone",
+            "isEditable": true,
+            "label": "Zone",
+            "visible": true
+          },
+          {
+            "fieldName": "Naziv",
+            "isEditable": true,
+            "label": "Naziv",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_omejitve",
+            "isEditable": true,
+            "label": "UAS omejitve",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_restrictions",
+            "isEditable": true,
+            "label": "UAS restrictions",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjeme_posebna",
+            "isEditable": true,
+            "label": "Izjeme za odprto in posebno UAS kategorijo",
+            "visible": true
+          },
+          {
+            "fieldName": "Exceptions_specific",
+            "isEditable": true,
+            "label": "Exceptions open and specific UAS category",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "{Zone}"
+      }
+    },
+    {
+      "position": 6,
+      "id": "17f69237481-layer-15",
+      "title": "FIR",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/FIR2/FeatureServer/0",
+      "itemId": "68e784b6e2c94601b98f94b17dec4dcb",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": null,
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields"
+          },
+          {
+            "type": "attachments",
+            "displayType": "auto"
+          }
+        ],
+        "showAttachments": true,
+        "fieldInfos": [
+          {
+            "fieldName": "FID",
+            "isEditable": true,
+            "label": "FID",
+            "visible": false
+          },
+          {
+            "fieldName": "Drzava",
+            "isEditable": true,
+            "label": "Drzava",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": true,
+              "places": 2
+            },
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "FIR2"
+      }
+    },
+    {
+      "position": 7,
+      "id": "e1a294f4cf2644b99e8c2de7fe57740c",
+      "title": "Danger area",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/UAS_GEO_ZONES___March_2022_WFL1/FeatureServer/10",
+      "itemId": "5057b40b6b3e4431b75c45e45c67ad73",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            252,
+            207,
+            179,
+            0
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              0,
+              0,
+              0,
+              255
+            ],
+            "width": 2,
+            "style": "esriSLSDash"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "OBJECTID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": true,
+                "label": "FID",
+                "visible": true
+              },
+              {
+                "fieldName": "Naziv",
+                "isEditable": true,
+                "label": "Naziv",
+                "visible": true
+              },
+              {
+                "fieldName": "Check_NOTAM",
+                "isEditable": true,
+                "label": "Check NOTAM before fly",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "OBJECTID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "FID",
+            "visible": true
+          },
+          {
+            "fieldName": "Naziv",
+            "isEditable": true,
+            "label": "Naziv",
+            "visible": true
+          },
+          {
+            "fieldName": "Check_NOTAM",
+            "isEditable": true,
+            "label": "Check NOTAM before fly",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "{OBJECTID}"
+      }
+    },
+    {
+      "position": 8,
+      "id": "185a07ff570-layer-28",
+      "title": "ELES",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/ELES_2023/FeatureServer/0",
+      "itemId": "9dadb8d149bd4c0ebf3cbfd68a954cd5",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            235,
+            40,
+            40,
+            166
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              235,
+              56,
+              56,
+              255
+            ],
+            "width": 0.563,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldName": "NAZIV",
+                "isEditable": true,
+                "label": "Naziv",
+                "visible": true
+              },
+              {
+                "fieldName": "SUBJECT",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "OMEJITEV",
+                "isEditable": true,
+                "label": "UAS omejitev",
+                "visible": true
+              },
+              {
+                "fieldName": "RESTRICT_",
+                "isEditable": true,
+                "label": "UAS restriction",
+                "visible": true
+              },
+              {
+                "fieldName": "IZJEMA",
+                "isEditable": true,
+                "label": "Izjema",
+                "visible": true
+              },
+              {
+                "fieldName": "EXCEPTION",
+                "isEditable": true,
+                "label": "Exception",
+                "visible": true
+              },
+              {
+                "fieldName": "Obrazec",
+                "isEditable": true,
+                "label": "Odobritev/Form",
+                "visible": true
+              },
+              {
+                "fieldName": "RAZLOG",
+                "isEditable": true,
+                "label": "Razlog",
+                "visible": true
+              },
+              {
+                "fieldName": "REASON",
+                "isEditable": true,
+                "label": "Reason",
+                "visible": true
+              },
+              {
+                "fieldName": "ZAKON",
+                "isEditable": true,
+                "label": "Zakonodaja",
+                "visible": true
+              },
+              {
+                "fieldName": "REGUL",
+                "isEditable": true,
+                "label": "Regulation",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "ID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "ID",
+            "visible": false
+          },
+          {
+            "fieldName": "NAZIV",
+            "isEditable": true,
+            "label": "Naziv",
+            "visible": true
+          },
+          {
+            "fieldName": "SUBJECT",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "OMEJITEV",
+            "isEditable": true,
+            "label": "UAS omejitev",
+            "visible": true
+          },
+          {
+            "fieldName": "RESTRICT_",
+            "isEditable": true,
+            "label": "UAS restriction",
+            "visible": true
+          },
+          {
+            "fieldName": "IZJEMA",
+            "isEditable": true,
+            "label": "Izjema",
+            "visible": true
+          },
+          {
+            "fieldName": "EXCEPTION",
+            "isEditable": true,
+            "label": "Exception",
+            "visible": true
+          },
+          {
+            "fieldName": "RAZLOG",
+            "isEditable": true,
+            "label": "Razlog",
+            "visible": true
+          },
+          {
+            "fieldName": "REASON",
+            "isEditable": true,
+            "label": "Reason",
+            "visible": true
+          },
+          {
+            "fieldName": "ZAKON",
+            "isEditable": true,
+            "label": "Zakonodaja",
+            "visible": true
+          },
+          {
+            "fieldName": "REGUL",
+            "isEditable": true,
+            "label": "Regulation",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 2
+            },
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          },
+          {
+            "fieldName": "OBJECTID",
+            "isEditable": true,
+            "label": "OBJECTID",
+            "visible": false
+          },
+          {
+            "fieldName": "Obrazec",
+            "isEditable": true,
+            "label": "Odobritev/Form",
+            "visible": true
+          }
+        ],
+        "title": "{ID}"
+      }
+    },
+    {
+      "position": 9,
+      "id": "185ab6530ef-layer-17",
+      "title": "Aerodrome VFR",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/letalisca_VFR_jan2023/FeatureServer/0",
+      "itemId": "f48da03f2e5d44709908e62cc9a85333",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": null,
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldName": "letalisce",
+                "isEditable": true,
+                "label": "letalisce",
+                "visible": true
+              },
+              {
+                "fieldName": "Subject",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_omejitve",
+                "isEditable": true,
+                "label": "Omejitve",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_restriction",
+                "isEditable": true,
+                "label": "Restrictions",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjeme_odprta_posebna",
+                "isEditable": true,
+                "label": "Izjeme",
+                "visible": true
+              },
+              {
+                "fieldName": "Exceptions_open_specific",
+                "isEditable": true,
+                "label": "Exceptions",
+                "visible": true
+              },
+              {
+                "fieldName": "kontakt",
+                "isEditable": true,
+                "label": "Kontakt / Contact",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "letalisce",
+            "isEditable": true,
+            "label": "letalisce",
+            "visible": true
+          },
+          {
+            "fieldName": "Subject",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_omejitve",
+            "isEditable": true,
+            "label": "Omejitve",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_restriction",
+            "isEditable": true,
+            "label": "Restrictions",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjeme_odprta_posebna",
+            "isEditable": true,
+            "label": "Izjeme",
+            "visible": true
+          },
+          {
+            "fieldName": "Exceptions_open_specific",
+            "isEditable": true,
+            "label": "Exceptions",
+            "visible": true
+          },
+          {
+            "fieldName": "kontakt",
+            "isEditable": true,
+            "label": "Kontakt / Contact",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          },
+          {
+            "fieldName": "OBJECTID",
+            "isEditable": true,
+            "label": "FID",
+            "visible": false
+          }
+        ],
+        "title": "{letalisce}"
+      }
+    },
+    {
+      "position": 10,
+      "id": "185ab5a2118-layer-17",
+      "title": "Aerodrome IFR",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/letalisca_IFR_jan23/FeatureServer/0",
+      "itemId": "50f5d5999a6c4580b86b0df7ae13a875",
+      "visibility": true,
+      "opacity": 0.41,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": null,
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldName": "LETALISCE",
+                "isEditable": true,
+                "label": "Letališče",
+                "visible": true
+              },
+              {
+                "fieldName": "Subject",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_omejitve",
+                "isEditable": true,
+                "label": "Omejitve",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_restriction",
+                "isEditable": true,
+                "label": "Restrictions",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjeme_deluje",
+                "isEditable": true,
+                "label": "Izjeme med obratovalnim časom letališča",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjeme_zaprto",
+                "isEditable": true,
+                "label": "Izjeme izven obratovalnega časa letališča",
+                "visible": true
+              },
+              {
+                "fieldName": "Exceptionsopen",
+                "isEditable": true,
+                "label": "Exceptions during operational hours of aerodrome",
+                "visible": true
+              },
+              {
+                "fieldName": "Except_closed",
+                "isEditable": true,
+                "label": "Exceptions outside operational hours of aerodrome",
+                "visible": true
+              },
+              {
+                "fieldName": "Kontakt",
+                "isEditable": true,
+                "label": "Kontakt / Contact",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "OBJECTID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "FID",
+            "visible": false
+          },
+          {
+            "fieldName": "LETALISCE",
+            "isEditable": true,
+            "label": "Letališče",
+            "visible": true
+          },
+          {
+            "fieldName": "Subject",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_omejitve",
+            "isEditable": true,
+            "label": "Omejitve",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_restriction",
+            "isEditable": true,
+            "label": "Restrictions",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjeme_deluje",
+            "isEditable": true,
+            "label": "Izjeme med obratovalnim časom letališča",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjeme_zaprto",
+            "isEditable": true,
+            "label": "Izjeme izven obratovalnega časa letališča",
+            "visible": true
+          },
+          {
+            "fieldName": "Exceptionsopen",
+            "isEditable": true,
+            "label": "Exceptions during operational hours of aerodrome",
+            "visible": true
+          },
+          {
+            "fieldName": "Except_closed",
+            "isEditable": true,
+            "label": "Exceptions outside operational hours of aerodrome",
+            "visible": true
+          },
+          {
+            "fieldName": "Kontakt",
+            "isEditable": true,
+            "label": "Kontakt / Contact",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "{LETALISCE}"
+      }
+    },
+    {
+      "position": 11,
+      "id": "1864aab8847-layer-17",
+      "title": "airfield",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/airfields_WGS_jan23/FeatureServer/0",
+      "itemId": "e8825e9c1f764dd691fa5ee40d6ea2e9",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": null,
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "OBJECTID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": true,
+                "label": "OBJECTID",
+                "visible": true
+              },
+              {
+                "fieldName": "Ime",
+                "isEditable": true,
+                "label": "Ime",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_omejit",
+                "isEditable": true,
+                "label": "UAS_omejit",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_restri",
+                "isEditable": true,
+                "label": "UAS_restri",
+                "visible": true
+              },
+              {
+                "fieldName": "izjeme",
+                "isEditable": true,
+                "label": "izjeme",
+                "visible": true
+              },
+              {
+                "fieldName": "exceptions",
+                "isEditable": true,
+                "label": "exceptions",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "OBJECTID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "OBJECTID",
+            "visible": true
+          },
+          {
+            "fieldName": "Ime",
+            "isEditable": true,
+            "label": "Ime",
+            "visible": true
+          },
+          {
+            "fieldName": "lat_dec",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "lat_dec",
+            "visible": false
+          },
+          {
+            "fieldName": "lon_dec",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "lon_dec",
+            "visible": false
+          },
+          {
+            "fieldName": "UAS_omejit",
+            "isEditable": true,
+            "label": "UAS_omejit",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_restri",
+            "isEditable": true,
+            "label": "UAS_restri",
+            "visible": true
+          },
+          {
+            "fieldName": "izjeme",
+            "isEditable": true,
+            "label": "izjeme",
+            "visible": true
+          },
+          {
+            "fieldName": "exceptions",
+            "isEditable": true,
+            "label": "exceptions",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "{Ime}"
+      }
+    },
+    {
+      "position": 12,
+      "id": "18683346848-layer-17",
+      "title": "Public interest sites - heliports",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/PIS_feb_23/FeatureServer/0",
+      "itemId": "4fab4307986a44ae9e68e50b11323f26",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            255,
+            81,
+            0,
+            158
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              13,
+              12,
+              12,
+              255
+            ],
+            "width": 0.7,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "OBJECTID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": true,
+                "label": "OBJECTID",
+                "visible": true
+              },
+              {
+                "fieldName": "Naziv",
+                "isEditable": true,
+                "label": "Naziv",
+                "visible": true
+              },
+              {
+                "fieldName": "Subject",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_omejit",
+                "isEditable": true,
+                "label": "UAS omejitev",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_restri",
+                "isEditable": true,
+                "label": "UAS restriction",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjeme_za",
+                "isEditable": true,
+                "label": "Izjeme posebna kategorija",
+                "visible": true
+              },
+              {
+                "fieldName": "Exceptions",
+                "isEditable": true,
+                "label": "Exceptions specific category",
+                "visible": true
+              },
+              {
+                "fieldName": "lat",
+                "isEditable": true,
+                "label": "lat",
+                "visible": true
+              },
+              {
+                "fieldName": "lon",
+                "isEditable": true,
+                "label": "lon",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "OBJECTID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "OBJECTID",
+            "visible": true
+          },
+          {
+            "fieldName": "Naziv",
+            "isEditable": true,
+            "label": "Naziv",
+            "visible": true
+          },
+          {
+            "fieldName": "Subject",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_omejit",
+            "isEditable": true,
+            "label": "UAS omejitev",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_restri",
+            "isEditable": true,
+            "label": "UAS restriction",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjeme_za",
+            "isEditable": true,
+            "label": "Izjeme posebna kategorija",
+            "visible": true
+          },
+          {
+            "fieldName": "Exceptions",
+            "isEditable": true,
+            "label": "Exceptions specific category",
+            "visible": true
+          },
+          {
+            "fieldName": "lat",
+            "isEditable": true,
+            "label": "lat",
+            "visible": true
+          },
+          {
+            "fieldName": "lon",
+            "isEditable": true,
+            "label": "lon",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          }
+        ],
+        "title": "{Naziv}"
+      }
+    },
+    {
+      "position": 13,
+      "id": "18fbdedf178-layer-17",
+      "title": "Heliport",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/Heliports_May_24/FeatureServer/0",
+      "itemId": "02288f0e382a405f906fe51767f2b350",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": null,
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldName": "Obmocje",
+                "isEditable": true,
+                "label": "Območje",
+                "visible": true
+              },
+              {
+                "fieldName": "Contact_approval",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_omejitve",
+                "isEditable": true,
+                "label": "UAS omejitve",
+                "visible": true
+              },
+              {
+                "fieldName": "UAS_restriction",
+                "isEditable": true,
+                "label": "UAS restriction",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjeme",
+                "isEditable": true,
+                "label": "Izjeme",
+                "visible": true
+              },
+              {
+                "fieldName": "Exceptions",
+                "isEditable": true,
+                "label": "Exceptions",
+                "visible": true
+              },
+              {
+                "fieldName": "Kontakt",
+                "isEditable": true,
+                "label": "Kontact/Contact",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "Obmocje",
+            "isEditable": true,
+            "label": "Območje",
+            "visible": true
+          },
+          {
+            "fieldName": "Contact_approval",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_omejitve",
+            "isEditable": true,
+            "label": "UAS omejitve",
+            "visible": true
+          },
+          {
+            "fieldName": "UAS_restriction",
+            "isEditable": true,
+            "label": "UAS restriction",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjeme",
+            "isEditable": true,
+            "label": "Izjeme",
+            "visible": true
+          },
+          {
+            "fieldName": "Exceptions",
+            "isEditable": true,
+            "label": "Exceptions",
+            "visible": true
+          },
+          {
+            "fieldName": "Kontakt",
+            "isEditable": true,
+            "label": "Kontact/Contact",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Area",
+            "isEditable": true,
+            "label": "Shape__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "isEditable": true,
+            "label": "Shape__Length",
+            "visible": false
+          },
+          {
+            "fieldName": "OBJECTID",
+            "isEditable": true,
+            "label": "FID",
+            "visible": false
+          }
+        ],
+        "title": "{Heliport}"
+      }
+    },
+    {
+      "position": 14,
+      "id": "19137071a47-layer-18",
+      "title": "Pozidano-built",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/Pozidano_built_May24/FeatureServer/0",
+      "itemId": "2055d52e1fe74e0aa96dc87b2a83902d",
+      "visibility": true,
+      "opacity": 0.93,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            242,
+            184,
+            75,
+            117
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              0,
+              0,
+              0,
+              255
+            ],
+            "width": 0,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "FID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": false,
+                "label": "FID",
+                "visible": true
+              },
+              {
+                "fieldName": "NAZIV",
+                "isEditable": true,
+                "label": "NAZIV",
+                "visible": true
+              },
+              {
+                "fieldName": "SUBJECT",
+                "isEditable": true,
+                "label": "SUBJECT",
+                "visible": true
+              },
+              {
+                "fieldName": "OMEJITEV",
+                "isEditable": true,
+                "label": "OMEJITEV",
+                "visible": true
+              },
+              {
+                "fieldName": "RESTRICTIO",
+                "isEditable": true,
+                "label": "RESTRICTION",
+                "visible": true
+              },
+              {
+                "fieldName": "IZJEME_OPN",
+                "isEditable": true,
+                "label": "IZJEME ODPRTA KAT.",
+                "visible": true
+              },
+              {
+                "fieldName": "EXCEPT_OPN",
+                "isEditable": true,
+                "label": "EXCEPTION OPEN CAT.",
+                "visible": true
+              },
+              {
+                "fieldName": "IZJEME_SPC",
+                "isEditable": true,
+                "label": "IZJEME POSEBNA KAT.",
+                "visible": true
+              },
+              {
+                "fieldName": "EXCEPT_SPC",
+                "isEditable": true,
+                "label": "EXCEPTEPTION SPECIFIC CAT.",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "FID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": false,
+            "label": "FID",
+            "visible": true
+          },
+          {
+            "fieldName": "NAZIV",
+            "isEditable": true,
+            "label": "NAZIV",
+            "visible": true
+          },
+          {
+            "fieldName": "SUBJECT",
+            "isEditable": true,
+            "label": "SUBJECT",
+            "visible": true
+          },
+          {
+            "fieldName": "OMEJITEV",
+            "isEditable": true,
+            "label": "OMEJITEV",
+            "visible": true
+          },
+          {
+            "fieldName": "RESTRICTIO",
+            "isEditable": true,
+            "label": "RESTRICTION",
+            "visible": true
+          },
+          {
+            "fieldName": "IZJEME_OPN",
+            "isEditable": true,
+            "label": "IZJEME ODPRTA KAT.",
+            "visible": true
+          },
+          {
+            "fieldName": "EXCEPT_OPN",
+            "isEditable": true,
+            "label": "EXCEPTION OPEN CAT.",
+            "visible": true
+          },
+          {
+            "fieldName": "IZJEME_SPC",
+            "isEditable": true,
+            "label": "IZJEME POSEBNA KAT.",
+            "visible": true
+          },
+          {
+            "fieldName": "EXCEPT_SPC",
+            "isEditable": true,
+            "label": "EXCEPTEPTION SPECIFIC CAT.",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Length",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Area",
+            "visible": false
+          }
+        ],
+        "title": "{NAZIV}"
+      }
+    },
+    {
+      "position": 15,
+      "id": "197599c38b2-layer-17",
+      "title": "Port of Koper - 2025",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/Luka_Koper_25/FeatureServer/0",
+      "itemId": "77100913a7f349f6b8bfa93de9ca7c9f",
+      "visibility": true,
+      "opacity": 0.81,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            232,
+            73,
+            56,
+            117
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              0,
+              0,
+              0,
+              255
+            ],
+            "width": 0.75,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "FID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": false,
+                "label": "FID",
+                "visible": true
+              },
+              {
+                "fieldName": "Naziv",
+                "isEditable": true,
+                "label": "Naziv",
+                "visible": true
+              },
+              {
+                "fieldName": "Subject",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "omejitev",
+                "isEditable": true,
+                "label": "UAS omejitev",
+                "visible": true
+              },
+              {
+                "fieldName": "Restric",
+                "isEditable": true,
+                "label": "Restriction",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjema",
+                "isEditable": true,
+                "label": "Izjema",
+                "visible": true
+              },
+              {
+                "fieldName": "Exempt",
+                "isEditable": true,
+                "label": "Exemptions",
+                "visible": true
+              },
+              {
+                "fieldName": "Kontakt",
+                "isEditable": true,
+                "label": "Kontakt za izjeme",
+                "visible": true
+              },
+              {
+                "fieldName": "Contact",
+                "isEditable": true,
+                "label": "Contact for exemptions",
+                "visible": true
+              },
+              {
+                "fieldName": "Razlog",
+                "isEditable": true,
+                "label": "Razlog",
+                "visible": true
+              },
+              {
+                "fieldName": "Reason",
+                "isEditable": true,
+                "label": "Reason",
+                "visible": true
+              },
+              {
+                "fieldName": "Zakonodaja",
+                "isEditable": true,
+                "label": "Zakonodaja",
+                "visible": true
+              },
+              {
+                "fieldName": "Regul",
+                "isEditable": true,
+                "label": "Regulation",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "FID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": false,
+            "label": "FID",
+            "visible": true
+          },
+          {
+            "fieldName": "id",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": false,
+            "label": "id",
+            "visible": false
+          },
+          {
+            "fieldName": "Naziv",
+            "isEditable": true,
+            "label": "Naziv",
+            "visible": true
+          },
+          {
+            "fieldName": "Subject",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "omejitev",
+            "isEditable": true,
+            "label": "UAS omejitev",
+            "visible": true
+          },
+          {
+            "fieldName": "Restric",
+            "isEditable": true,
+            "label": "Restriction",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjema",
+            "isEditable": true,
+            "label": "Izjema",
+            "visible": true
+          },
+          {
+            "fieldName": "Exempt",
+            "isEditable": true,
+            "label": "Exemptions",
+            "visible": true
+          },
+          {
+            "fieldName": "Kontakt",
+            "isEditable": true,
+            "label": "Kontakt za izjeme",
+            "visible": true
+          },
+          {
+            "fieldName": "Contact",
+            "isEditable": true,
+            "label": "Contact for exemptions",
+            "visible": true
+          },
+          {
+            "fieldName": "Razlog",
+            "isEditable": true,
+            "label": "Razlog",
+            "visible": true
+          },
+          {
+            "fieldName": "Reason",
+            "isEditable": true,
+            "label": "Reason",
+            "visible": true
+          },
+          {
+            "fieldName": "Zakonodaja",
+            "isEditable": true,
+            "label": "Zakonodaja",
+            "visible": true
+          },
+          {
+            "fieldName": "Regul",
+            "isEditable": true,
+            "label": "Regulation",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Length",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Area",
+            "visible": false
+          }
+        ],
+        "title": "{id}"
+      }
+    },
+    {
+      "position": 16,
+      "id": "198cbc8534f-layer-18",
+      "title": "GO_07_SERMIN",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/GO_07_SERMIN/FeatureServer/0",
+      "itemId": "764e91f7ee024991a5d9a6bd30e92535",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            245,
+            113,
+            234,
+            102
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              0,
+              0,
+              0,
+              255
+            ],
+            "width": 1.313,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "FID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": false,
+                "label": "FID",
+                "visible": true
+              },
+              {
+                "fieldName": "Naziv",
+                "isEditable": true,
+                "label": "Naziv",
+                "visible": true
+              },
+              {
+                "fieldName": "Subject",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "omejitev",
+                "isEditable": true,
+                "label": "UAS omejitev",
+                "visible": true
+              },
+              {
+                "fieldName": "Restrict_",
+                "isEditable": true,
+                "label": "Restriction",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjema",
+                "isEditable": true,
+                "label": "Izjema",
+                "visible": true
+              },
+              {
+                "fieldName": "Exception",
+                "isEditable": true,
+                "label": "Exception",
+                "visible": true
+              },
+              {
+                "fieldName": "Kontakt",
+                "isEditable": true,
+                "label": "Kontakt za izjeme",
+                "visible": true
+              },
+              {
+                "fieldName": "Contact",
+                "isEditable": true,
+                "label": "Contact for exemption",
+                "visible": true
+              },
+              {
+                "fieldName": "Razlog",
+                "isEditable": true,
+                "label": "Razlog",
+                "visible": true
+              },
+              {
+                "fieldName": "Reason",
+                "isEditable": true,
+                "label": "Reason",
+                "visible": true
+              },
+              {
+                "fieldName": "Zakonodaja",
+                "isEditable": true,
+                "label": "Zakonodaja",
+                "visible": true
+              },
+              {
+                "fieldName": "Regulation",
+                "isEditable": true,
+                "label": "Regulation",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "FID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": false,
+            "label": "FID",
+            "visible": true
+          },
+          {
+            "fieldName": "Naziv",
+            "isEditable": true,
+            "label": "Naziv",
+            "visible": true
+          },
+          {
+            "fieldName": "Subject",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "omejitev",
+            "isEditable": true,
+            "label": "UAS omejitev",
+            "visible": true
+          },
+          {
+            "fieldName": "Restrict_",
+            "isEditable": true,
+            "label": "Restriction",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjema",
+            "isEditable": true,
+            "label": "Izjema",
+            "visible": true
+          },
+          {
+            "fieldName": "Exception",
+            "isEditable": true,
+            "label": "Exception",
+            "visible": true
+          },
+          {
+            "fieldName": "Kontakt",
+            "isEditable": true,
+            "label": "Kontakt za izjeme",
+            "visible": true
+          },
+          {
+            "fieldName": "Contact",
+            "isEditable": true,
+            "label": "Contact for exemption",
+            "visible": true
+          },
+          {
+            "fieldName": "Razlog",
+            "isEditable": true,
+            "label": "Razlog",
+            "visible": true
+          },
+          {
+            "fieldName": "Reason",
+            "isEditable": true,
+            "label": "Reason",
+            "visible": true
+          },
+          {
+            "fieldName": "Zakonodaja",
+            "isEditable": true,
+            "label": "Zakonodaja",
+            "visible": true
+          },
+          {
+            "fieldName": "Regulation",
+            "isEditable": true,
+            "label": "Regulation",
+            "visible": true
+          },
+          {
+            "fieldName": "NAME",
+            "isEditable": true,
+            "label": "NAME",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Length",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Area",
+            "visible": false
+          }
+        ],
+        "title": "{NAME}"
+      }
+    },
+    {
+      "position": 17,
+      "id": "19995294bae-layer-19",
+      "title": "ModelarskeCone",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/ModelarskeCone/FeatureServer/0",
+      "itemId": "751bbb8059124e2d9ac2ac6a917737a7",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            16,
+            232,
+            56,
+            163
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              0,
+              0,
+              0,
+              255
+            ],
+            "width": 0.563,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "Id",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": true,
+                "label": "Id",
+                "visible": true
+              },
+              {
+                "fieldName": "Obmocje",
+                "isEditable": true,
+                "label": "Obmocje",
+                "visible": true
+              },
+              {
+                "fieldName": "Subject",
+                "isEditable": true,
+                "label": "Subject",
+                "visible": true
+              },
+              {
+                "fieldName": "Omejitve",
+                "isEditable": true,
+                "label": "Omejitve",
+                "visible": true
+              },
+              {
+                "fieldName": "Restrict_",
+                "isEditable": true,
+                "label": "Restrict_",
+                "visible": true
+              },
+              {
+                "fieldName": "Kontakt",
+                "isEditable": true,
+                "label": "Kontakt",
+                "visible": true
+              },
+              {
+                "fieldName": "Contact",
+                "isEditable": true,
+                "label": "Contact",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "FID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": false,
+            "label": "FID",
+            "visible": false
+          },
+          {
+            "fieldName": "Id",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": true,
+            "label": "Id",
+            "visible": true
+          },
+          {
+            "fieldName": "Obmocje",
+            "isEditable": true,
+            "label": "Obmocje",
+            "visible": true
+          },
+          {
+            "fieldName": "Subject",
+            "isEditable": true,
+            "label": "Subject",
+            "visible": true
+          },
+          {
+            "fieldName": "Omejitve",
+            "isEditable": true,
+            "label": "Omejitve",
+            "visible": true
+          },
+          {
+            "fieldName": "Restrict_",
+            "isEditable": true,
+            "label": "Restrict_",
+            "visible": true
+          },
+          {
+            "fieldName": "Kontakt",
+            "isEditable": true,
+            "label": "Kontakt",
+            "visible": true
+          },
+          {
+            "fieldName": "Contact",
+            "isEditable": true,
+            "label": "Contact",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Length",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Area",
+            "visible": false
+          }
+        ],
+        "title": "{Obmocje}"
+      }
+    },
+    {
+      "position": 18,
+      "id": "19cada79502-layer-19",
+      "title": "GO.08 URSIKS",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/UAS_URSIKS/FeatureServer/0",
+      "itemId": "bf632b72401e4032bb15a7edcf002cea",
+      "visibility": true,
+      "opacity": 0.48,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            242,
+            101,
+            7,
+            128
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              0,
+              0,
+              0,
+              255
+            ],
+            "width": 1.5,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldFormat": {
+                  "type": "number",
+                  "maximumFractionDigits": 0,
+                  "useGrouping": "never"
+                },
+                "fieldName": "FID",
+                "format": {
+                  "digitSeparator": false,
+                  "places": 0
+                },
+                "isEditable": false,
+                "label": "FID",
+                "visible": true
+              },
+              {
+                "fieldName": "naziv",
+                "isEditable": true,
+                "label": "naziv",
+                "visible": true
+              },
+              {
+                "fieldName": "subject",
+                "isEditable": true,
+                "label": "subject",
+                "visible": true
+              },
+              {
+                "fieldName": "omejitev",
+                "isEditable": true,
+                "label": "omejitev",
+                "visible": true
+              },
+              {
+                "fieldName": "Restrict_",
+                "isEditable": true,
+                "label": "Restrict_",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjema",
+                "isEditable": true,
+                "label": "Izjema",
+                "visible": true
+              },
+              {
+                "fieldName": "Exception",
+                "isEditable": true,
+                "label": "Exception",
+                "visible": true
+              },
+              {
+                "fieldName": "Kontakt",
+                "isEditable": true,
+                "label": "Kontakt",
+                "visible": true
+              },
+              {
+                "fieldName": "Contact",
+                "isEditable": true,
+                "label": "Contact",
+                "visible": true
+              },
+              {
+                "fieldName": "Razlog",
+                "isEditable": true,
+                "label": "Razlog",
+                "visible": true
+              },
+              {
+                "fieldName": "Reason",
+                "isEditable": true,
+                "label": "Reason",
+                "visible": true
+              },
+              {
+                "fieldName": "Zakonodaja",
+                "isEditable": true,
+                "label": "Zakonodaja",
+                "visible": true
+              },
+              {
+                "fieldName": "Regulation",
+                "isEditable": true,
+                "label": "Regulation",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "FID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": false,
+            "label": "FID",
+            "visible": true
+          },
+          {
+            "fieldName": "naziv",
+            "isEditable": true,
+            "label": "naziv",
+            "visible": true
+          },
+          {
+            "fieldName": "subject",
+            "isEditable": true,
+            "label": "subject",
+            "visible": true
+          },
+          {
+            "fieldName": "omejitev",
+            "isEditable": true,
+            "label": "omejitev",
+            "visible": true
+          },
+          {
+            "fieldName": "Restrict_",
+            "isEditable": true,
+            "label": "Restrict_",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjema",
+            "isEditable": true,
+            "label": "Izjema",
+            "visible": true
+          },
+          {
+            "fieldName": "Exception",
+            "isEditable": true,
+            "label": "Exception",
+            "visible": true
+          },
+          {
+            "fieldName": "Kontakt",
+            "isEditable": true,
+            "label": "Kontakt",
+            "visible": true
+          },
+          {
+            "fieldName": "Contact",
+            "isEditable": true,
+            "label": "Contact",
+            "visible": true
+          },
+          {
+            "fieldName": "Razlog",
+            "isEditable": true,
+            "label": "Razlog",
+            "visible": true
+          },
+          {
+            "fieldName": "Reason",
+            "isEditable": true,
+            "label": "Reason",
+            "visible": true
+          },
+          {
+            "fieldName": "Zakonodaja",
+            "isEditable": true,
+            "label": "Zakonodaja",
+            "visible": true
+          },
+          {
+            "fieldName": "Regulation",
+            "isEditable": true,
+            "label": "Regulation",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Length",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Area",
+            "visible": false
+          }
+        ],
+        "title": "{naziv}"
+      }
+    },
+    {
+      "position": 19,
+      "id": "19cadaaaf76-layer-20",
+      "title": "Skiciraj",
+      "url": null,
+      "itemId": null,
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": null,
+      "labelingInfo": null,
+      "popupInfo": null
+    },
+    {
+      "position": 20,
+      "id": "19e49c0e1f7-layer-31",
+      "title": "GO_09_SND",
+      "url": "https://services6.arcgis.com/1F2lR3M9nMUYDj5l/arcgis/rest/services/GO_09_SND/FeatureServer/0",
+      "itemId": "391b2b2a105e4ed89e9a7a9dd84efff0",
+      "visibility": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "type": "esriSFS",
+          "color": [
+            212,
+            74,
+            74,
+            189
+          ],
+          "outline": {
+            "type": "esriSLS",
+            "color": [
+              0,
+              0,
+              0,
+              255
+            ],
+            "width": 2.25,
+            "style": "esriSLSSolid"
+          },
+          "style": "esriSFSSolid"
+        }
+      },
+      "labelingInfo": null,
+      "popupInfo": {
+        "popupElements": [
+          {
+            "type": "fields",
+            "description": "",
+            "fieldInfos": [
+              {
+                "fieldName": "NAZIV",
+                "isEditable": true,
+                "label": "NAZIV",
+                "visible": true
+              },
+              {
+                "fieldName": "SUBJECT",
+                "isEditable": true,
+                "label": "SUBJECT",
+                "visible": true
+              },
+              {
+                "fieldName": "Omejitev",
+                "isEditable": true,
+                "label": "Omejitev",
+                "visible": true
+              },
+              {
+                "fieldName": "Restrict_",
+                "isEditable": true,
+                "label": "Restrict_",
+                "visible": true
+              },
+              {
+                "fieldName": "Izjema",
+                "isEditable": true,
+                "label": "Izjema",
+                "visible": true
+              },
+              {
+                "fieldName": "Exception",
+                "isEditable": true,
+                "label": "Exception",
+                "visible": true
+              },
+              {
+                "fieldName": "Kontakt",
+                "isEditable": true,
+                "label": "Kontakt za izjeme",
+                "visible": true
+              },
+              {
+                "fieldName": "Contact",
+                "isEditable": true,
+                "label": "Contact for exemption",
+                "visible": true
+              },
+              {
+                "fieldName": "RAZLOG",
+                "isEditable": true,
+                "label": "RAZLOG",
+                "visible": true
+              },
+              {
+                "fieldName": "REASON",
+                "isEditable": true,
+                "label": "REASON",
+                "visible": true
+              },
+              {
+                "fieldName": "Regulation",
+                "isEditable": true,
+                "label": "Regulation",
+                "visible": true
+              },
+              {
+                "fieldName": "Zakonodaja",
+                "isEditable": true,
+                "label": "Zakonodaja",
+                "visible": true
+              }
+            ],
+            "title": ""
+          }
+        ],
+        "expressionInfos": [],
+        "fieldInfos": [
+          {
+            "fieldName": "FID",
+            "format": {
+              "digitSeparator": false,
+              "places": 0
+            },
+            "isEditable": false,
+            "label": "FID",
+            "visible": false
+          },
+          {
+            "fieldName": "NAZIV",
+            "isEditable": true,
+            "label": "NAZIV",
+            "visible": true
+          },
+          {
+            "fieldName": "SUBJECT",
+            "isEditable": true,
+            "label": "SUBJECT",
+            "visible": true
+          },
+          {
+            "fieldName": "Omejitev",
+            "isEditable": true,
+            "label": "Omejitev",
+            "visible": true
+          },
+          {
+            "fieldName": "Restrict_",
+            "isEditable": true,
+            "label": "Restrict_",
+            "visible": true
+          },
+          {
+            "fieldName": "Izjema",
+            "isEditable": true,
+            "label": "Izjema",
+            "visible": true
+          },
+          {
+            "fieldName": "Exception",
+            "isEditable": true,
+            "label": "Exception",
+            "visible": true
+          },
+          {
+            "fieldName": "RAZLOG",
+            "isEditable": true,
+            "label": "RAZLOG",
+            "visible": true
+          },
+          {
+            "fieldName": "REASON",
+            "isEditable": true,
+            "label": "REASON",
+            "visible": true
+          },
+          {
+            "fieldName": "Zakonodaja",
+            "isEditable": true,
+            "label": "Zakonodaja",
+            "visible": true
+          },
+          {
+            "fieldName": "Regulation",
+            "isEditable": true,
+            "label": "Regulation",
+            "visible": true
+          },
+          {
+            "fieldName": "Shape__Length",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Length",
+            "visible": false
+          },
+          {
+            "fieldName": "Shape__Area",
+            "format": {
+              "digitSeparator": false,
+              "places": 6
+            },
+            "isEditable": false,
+            "label": "SHAPE__Area",
+            "visible": false
+          },
+          {
+            "fieldName": "Kontakt",
+            "isEditable": true,
+            "label": "Kontakt za izjeme",
+            "visible": true
+          },
+          {
+            "fieldName": "Contact",
+            "isEditable": true,
+            "label": "Contact for exemption",
+            "visible": true
+          }
+        ],
+        "title": "{NAZIV}"
+      }
+    }
+  ],
+  "notice": "Structured metadata inventory only; no geometry or map pixels were copied."
+}

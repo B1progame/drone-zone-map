@@ -9,7 +9,9 @@ python pipeline/main.py inspect-wms "https://uas-betrieb.de/geoservices/dipul/wm
 python pipeline/main.py update-ireland
 python pipeline/main.py update-uk
 python pipeline/main.py update-sweden
+python pipeline/main.py update-public-geozones
 python pipeline/main.py update-canada-open --output pipeline/reports/canada-open-data.geojson
+python pipeline/discovery/arcgis_webmap_inventory.py 25ba69037c264c5faa5381174f76f861 --output pipeline/reports/slovenia-arcgis-webmap.json
 python pipeline/validate_geojson.py "public/data/zones/*.geojson" "public/data/zones/sweden/*.geojson"
 ```
 
@@ -28,5 +30,13 @@ France is rendered directly from IGN's public `TRANSPORTS.DRONES.RESTRICTIONS` W
 The UK adapter downloads NATS' official AIRAC KML visualization and retains its effective date and warnings. The KML is a visualization aid; the UK AIP and current NOTAMs remain authoritative.
 
 Denmark's stable GeoJSON URLs are loaded directly from Trafikstyrelsen only when the viewport reaches Denmark. They are not copied by the pipeline. US FAA Facility Map grids load live by viewport. Italy is intentionally absent from the country renderer.
+
+`update-public-geozones` refreshes the two redistributable machine-readable snapshots: Finland's Traficom feed under CC BY 4.0 and the Dutch government's current ED-269 download under the Rijksoverheid CC0 open-data terms. The shared normalizer retains the original restriction, reason, applicability, authority and vertical-volume fields. ED-269 circles become 96-segment geodesic polygons because GeoJSON has no native circle type; their exact center and radius remain in properties. The Traficom attribution explicitly records this modification.
+
+The former Dutch PDOK Drone No-Fly Zone services are not used because PDOK retired them on 1 July 2026. Estonia loads its public EANS GeoJSON live rather than bundling it. Its `EERZout` record is a deliberate global polygon with Estonia as a hole and is excluded from rendering so it cannot cover the globe.
+
+`update-estonia` and `update-bulgaria` are inspection exports written below ignored `exports/requested/` paths. The Bulgarian tool discovers the newest CAA `BGR_ZONES` link and normalizes its contents, but that geometry must not be published until the CAA's public-sector reuse process grants or clearly establishes reuse permission.
+
+For public ArcGIS maps without stated reuse terms, `arcgis_webmap_inventory.py` records the public item, operational-layer URLs, popups, opacity, renderer symbols and label definitions without downloading geometry or tracing pixels. The checked-in Slovenia report demonstrates this audit path and keeps the official map link-only until reuse terms are clear.
 
 `update-canada-open` downloads the official Transport Canada airport layer and NRCan national-park boundaries under the Open Government Licence. It deliberately does not inspect or export the NRC tool's NAV CANADA-derived shapes: the NRC FAQ says the licence prohibits redistribution. The live app combines those lawful open layers with a handoff to the complete official NRC tool.

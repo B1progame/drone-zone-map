@@ -33,8 +33,12 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 | Luxembourg | DAC Geoportal | Normalized official CC0 vector zones | Offline pack supported |
 | Ireland | Irish Aviation Authority | Published official GeoJSON | Bundled reference copy |
 | Sweden | LFV Dronechart | Published official WFS | Bundled unmodified layers |
+| Netherlands | Ministry of Infrastructure and Water Management | Current ED-269 government download | Bundled normalized snapshot |
+| Finland | Traficom | Machine-readable official UAS zones, CC BY 4.0 | Bundled normalized snapshot with modification notice |
+| Estonia | Transport Administration / EANS | Live official UAS GeoJSON | No copied snapshot |
+| Bulgaria | Civil Aviation Administration | Official map/package handoff plus local audit tool | Geometry not redistributed without explicit reuse permission |
 
-Germany loads every active layer advertised by DIPUL, separating country-scale safety layers from dense local infrastructure so the national view remains readable. France uses its bounded live raster source. Spain loads current ENAIRE vectors by viewport and colors `PROHIBITED`, `REQ_AUTHORIZATION`, `CONDITIONAL`, and `NO_RESTRICTION` distinctly; very large TMA/regional polygons are softly filled while local restrictions remain prominent, including the Canary Islands. The UK uses NATS' AIRAC visualization KML, and US FAA facility grids load only near the viewed area. Denmark's stable official GeoJSON URLs load only when Denmark enters the viewport. Ireland, Luxembourg, and Sweden use verified vector files; Sweden's raw files remain unmodified and the frontend applies LFV's ground-level display filters. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and records verified services, freshness, attribution, capabilities, warnings, and terms notes.
+Germany loads every active layer advertised by DIPUL, separating country-scale safety layers from dense local infrastructure so the national view remains readable. France uses its bounded live raster source. Spain loads current ENAIRE vectors by viewport and colors `PROHIBITED`, `REQ_AUTHORIZATION`, `CONDITIONAL`, and `NO_RESTRICTION` distinctly; very large TMA/regional polygons are softly filled while local restrictions remain prominent, including the Canary Islands. The UK uses NATS' AIRAC visualization KML, and US FAA facility grids load only near the viewed area. Denmark and Estonia load official GeoJSON live. Ireland, Luxembourg, Finland, and the Netherlands use verified vector files. Sweden's raw files remain unmodified and the frontend applies LFV's ground-level display filters. ED-269 circles are converted to geodesic polygons while their exact source center and radius remain in properties. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and records verified services, freshness, attribution, capabilities, warnings, and terms notes.
 
 Norway resolves to its official source but does not display copied geometry because Avinor prohibits presenting its service data in another application. Italy was removed from the map and source directory. Canada renders openly licensed federal airports, clearly labelled 5.6 km advisory rings, and national-park boundaries; NRC explicitly states that its NAV CANADA-derived database cannot be redistributed, so the complete official map remains a direct handoff.
 
@@ -69,7 +73,7 @@ If you name the repository differently, update `base` in `vite.config.ts`.
 4. Normalize verified features into the project zone schema with source URL, timestamp, warnings, and attribution.
 5. Never infer polygons from pixels, bypass access controls, or silently replace missing data.
 
-The scheduled workflow validates metadata and refreshes Luxembourg's CC0 feed. Add a verified adapter and exporter before enabling retrieval for another country.
+The scheduled workflow runs adapter tests, validates every GeoJSON file, refreshes Luxembourg, and updates the redistributable Finnish and Dutch public feeds. Estonia stays live. Bulgaria's local audit export remains ignored until reuse permission is explicit. Add a verified adapter and exporter before enabling retrieval for another country.
 
 ### Canadian open-data export
 

@@ -10,7 +10,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
+      - run: python -m pip install httpx
+      - run: python -m unittest discover -s pipeline/tests -v
       - run: python pipeline/main.py
       - run: python pipeline/main.py update-luxembourg
+      - run: python pipeline/main.py update-public-geozones
+      - run: python pipeline/validate_geojson.py "public/data/zones/*.geojson" "public/data/zones/sweden/*.geojson"
       - run: |
           git diff --quiet || (git config user.name 'github-actions[bot]' && git config user.email '41898282+github-actions[bot]@users.noreply.github.com' && git add public/data && git commit -m 'chore(data): update verified source metadata' && git push)

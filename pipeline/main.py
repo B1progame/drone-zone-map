@@ -5,6 +5,7 @@ official public endpoint terms and schema before fetching or publishing geometry
 """
 from pathlib import Path
 import argparse
+from datetime import datetime, timezone
 import json
 import shutil
 
@@ -14,6 +15,25 @@ REGISTRY = ROOT / "public" / "data" / "sources" / "countries.json"
 def validate_registry() -> None:
     countries = json.loads(REGISTRY.read_text(encoding="utf-8"))
     print(f"Validated {len(countries)} country source records; no network fetching configured.")
+
+def write_zone_file(country_code: str, result, *, source_page: str, endpoint: str | None = None) -> Path:
+    target = ROOT / "public" / "data" / "zones" / f"{country_code}.geojson"
+    target.write_text(
+        json.dumps(
+            {
+                "type": "FeatureCollection",
+                "generatedAt": datetime.now(timezone.utc).isoformat(),
+                "sourcePage": source_page,
+                **({"endpoint": endpoint} if endpoint else {}),
+                "warnings": result.warnings,
+                "features": result.features,
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ),
+        encoding="utf-8",
+    )
+    return target
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Drone Zone Map source pipeline")
@@ -32,6 +52,11 @@ def main() -> None:
     canada.add_argument("--output",type=Path,required=True,help="Output .geojson path; protected NAV CANADA shapes are never included")
     subparsers.add_parser("publish-sweden", help="Publish previously downloaded, unmodified LFV Dronechart GeoJSON layers")
     subparsers.add_parser("update-sweden", help="Fetch all documented LFV Dronechart WFS layers without modifying geometry")
+    subparsers.add_parser("update-finland", help="Fetch and normalize Traficom's official machine-readable UAS zones")
+    subparsers.add_parser("update-netherlands", help="Fetch and normalize the Dutch government's official ED-269 zones")
+    subparsers.add_parser("update-estonia", help="Export EANS' official live UAS GeoJSON for local inspection")
+    subparsers.add_parser("update-bulgaria", help="Export the latest Bulgarian CAA UAS ZIP for local inspection")
+    subparsers.add_parser("update-public-geozones", help="Refresh redistributable Finland and Netherlands snapshots")
     spain=subparsers.add_parser("fetch-spain-bbox",help="Download official ENAIRE GeoJSON for a small WGS84 viewport")
     spain.add_argument("--bbox",required=True,help="west,south,east,north within Spain service extent")
     spain.add_argument("--output",type=Path,required=True,help="Output .geojson path")
@@ -130,6 +155,52 @@ def main() -> None:
         target = ROOT / "public" / "data" / "zones" / "sweden"
         counts = SwedenLfvAdapter().update(target)
         print(f"Wrote {sum(counts.values())} features across {len(counts)} official LFV layers to {target}")
+        return
+    if args.command in {"update-finland", "update-netherlands", "update-estonia", "update-bulgaria", "update-public-geozones"}:
+        from adapters.public_uas_feeds import (
+            BulgariaCaaAdapter,
+            EstoniaEansAdapter,
+            FinlandTraficomAdapter,
+            NetherlandsIenwAdapter,
+        )
+        adapters = {
+            "update-finland": [FinlandTraficomAdapter()],
+            "update-netherlands": [NetherlandsIenwAdapter()],
+            "update-estonia": [EstoniaEansAdapter()],
+            "update-bulgaria": [BulgariaCaaAdapter()],
+            "update-public-geozones": [
+                FinlandTraficomAdapter(),
+                NetherlandsIenwAdapter(),
+            ],
+        }[args.command]
+        for adapter in adapters:
+            endpoint = getattr(adapter, "endpoint", None)
+            result = adapter.fetch()
+            if adapter.country_code in {"EE", "BG"}:
+                target = ROOT / "exports" / "requested" / adapter.country_code.lower() / f"{adapter.country_code}.geojson"
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(
+                    json.dumps(
+                        {
+                            "type": "FeatureCollection",
+                            "generatedAt": datetime.now(timezone.utc).isoformat(),
+                            "sourcePage": adapter.source_page,
+                            "warnings": result.warnings,
+                            "features": result.features,
+                        },
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    ),
+                    encoding="utf-8",
+                )
+            else:
+                target = write_zone_file(
+                    adapter.country_code,
+                    result,
+                    source_page=adapter.source_page,
+                    endpoint=endpoint,
+                )
+            print(f"Wrote {len(result.features)} official {adapter.country_code} zone volumes to {target}")
         return
     if args.command == "fetch-spain-bbox":
         from adapters.spain_enaire import SpainEnaireAdapter

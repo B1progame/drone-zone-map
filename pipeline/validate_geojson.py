@@ -46,13 +46,31 @@ def renderer_includes(path: Path, feature: dict) -> bool:
 
 def audit(path: Path) -> None:
     payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("type") != "FeatureCollection":
+        raise ValueError(f"{path}: root is not a GeoJSON FeatureCollection")
     features = payload.get("features", [])
+    if not isinstance(features, list) or not features:
+        raise ValueError(f"{path}: no features")
+    allowed_geometry = {"Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon"}
+    for index, feature in enumerate(features):
+        geometry = feature.get("geometry") or {}
+        if feature.get("type") != "Feature" or geometry.get("type") not in allowed_geometry:
+            raise ValueError(f"{path}: feature {index} has invalid GeoJSON geometry")
+        pairs = list(coordinate_pairs(geometry.get("coordinates")))
+        if not pairs or any(not (-180 <= lng <= 180 and -90 <= lat <= 90) for lng, lat in pairs):
+            raise ValueError(f"{path}: feature {index} has missing or out-of-range coordinates")
     ranked = sorted(((max(feature_span(item)), item) for item in features), key=lambda row: row[0], reverse=True)
     print(f"{path.name}: {len(features)} features; maximum coordinate span {ranked[0][0]:.3f}°" if ranked else f"{path.name}: empty")
     visible = [feature for feature in features if renderer_includes(path, feature)]
     visible_span = max((max(feature_span(feature)) for feature in visible), default=0.0)
     if len(visible) != len(features):
         print(f"  renderer: {len(visible)} visible; maximum visible span {visible_span:.3f}°")
+    world_masks = [
+        feature for span, feature in ranked
+        if span >= 300 and (feature.get("properties") or {}).get("identifier") == "EERZout"
+    ]
+    if world_masks:
+        print("  renderer: EERZout outside-country mask is retained but excluded by MapCanvas")
     for span, feature in ranked[:3]:
         properties = feature.get("properties", {})
         keys = ("NAME", "LOCATION", "LOWER", "LOW_UOM", "CODE23", "CODE45", "RADIUS", "STARTVALIDITY", "ENDVALIDITY")

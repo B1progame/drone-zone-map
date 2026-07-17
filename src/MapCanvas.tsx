@@ -38,7 +38,12 @@ const DENMARK_ZONES='https://trafikstyrelsen.maps.arcgis.com/sharing/rest/conten
 const DENMARK_NATURE='https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/ff657943724944faaf19807380f5e24a/data';
 const SWEDEN_POLYGON_SOURCES = ['mais-TIZ','mais-RSTA','mais-DNGA','mais-CTR','mais-ATZ','dynais-NOTAM','DAIM_TOPO-SUP','DAIM_TOPO-RWY5K','DAIM_TOPO-HKP1K'] as const;
 const SWEDEN_SOURCE_IDS=[...SWEDEN_POLYGON_SOURCES,'mais-ARP'] as const;
-const ZONE_LAYER_IDS = ['dipul-zones','dipul-detail','enaire-infrastructure-fill','enaire-infrastructure-line','enaire-aero-fill','enaire-aero-line','enaire-urban-fill','enaire-urban-line','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
+const NATIONAL_GEOZONE_SOURCES=[
+ {id:'netherlands',file:'NL.geojson',bounds:[3.2,50.7,7.25,53.7],minzoom:5,attribution:'<a href="https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone" target="_blank">UAS zones © Ministerie van Infrastructuur en Waterstaat</a>'},
+ {id:'finland',file:'FI.geojson',bounds:[19,59.5,31.6,70.2],minzoom:4,attribution:'<a href="https://www.traficom.fi/en/news/spatial-dataset-material/use-and-licences-data" target="_blank">Source: Traficom · modified · CC BY 4.0</a>'},
+ {id:'estonia',url:'https://utm.eans.ee/avm/utm/uas.geojson',bounds:[21.5,57.3,28.3,60.1],minzoom:5,attribution:'<a href="https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones" target="_blank">Live UAS zones © Transport Administration / EANS</a>'}
+] as const;
+const ZONE_LAYER_IDS = ['dipul-zones','dipul-detail','enaire-infrastructure-fill','enaire-infrastructure-line','enaire-aero-fill','enaire-aero-line','enaire-urban-fill','enaire-urban-line','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
 const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const dynamicRequestKeys=new WeakMap<MapLibreMap,Map<string,string>>();
 const radarUnavailableMaps=new WeakSet<MapLibreMap>();
@@ -62,6 +67,7 @@ const vectorSources=():VectorSourceConfig[]=>[
  {id:'switzerland',url:SWISS_UAS,bounds:[5.75,45.75,10.65,47.85]},
  {id:'denmark',url:DENMARK_ZONES,bounds:[7.8,54.4,15.3,58]},
  {id:'denmark-nature',url:DENMARK_NATURE,bounds:[7.8,54.4,15.3,58]},
+ ...NATIONAL_GEOZONE_SOURCES.map(source=>({id:source.id,url:'url' in source?source.url:`${import.meta.env.BASE_URL}data/zones/${source.file}`,bounds:source.bounds as [number,number,number,number]})),
  ...SWEDEN_SOURCE_IDS.map(id=>({id:`sweden-${id}`,url:`${import.meta.env.BASE_URL}data/zones/sweden/${id}.geojson`,bounds:[10.4,55,24.5,69.2] as [number,number,number,number]}))
 ];
 
@@ -288,6 +294,8 @@ function loadWeatherGrid(map:MapLibreMap,hourIndex:number,visible:boolean,detail
 }
 
 const spainColor=['match',['get','type'],'PROHIBITED','#ff405b','REQ_AUTHORIZATION','#ffad3d','CONDITIONAL','#f2ce50','NO_RESTRICTION','#5ce09a','#69bff5'] as any;
+const geozoneColor=['match',['get','restriction'],'PROHIBITED','#ff405d','REQ_AUTHORISATION','#ff9e43','REQ_AUTHORIZATION','#ff9e43','CONDITIONAL','#ffd45d','NO_RESTRICTION','#56d78d','#7fb4ff'] as any;
+const geozoneOpacity=['match',['get','restriction'],'NO_RESTRICTION',.075,'CONDITIONAL',.16,.24] as any;
 const enaireOpacityAt=(localOpacity:number)=>['case',
  ['>', ['coalesce',['get','_aerisAreaKm2'],0],2500],.035,
  ['>', ['coalesce',['get','_aerisAreaKm2'],0],600],.075,
@@ -298,6 +306,20 @@ const enaireFillOpacity=['interpolate',['linear'],['zoom'],3,enaireOpacityAt(.13
 function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
   const satellite = baseMap === 'satellite';
   const swedenSources=Object.fromEntries(SWEDEN_SOURCE_IDS.map(id=>[`sweden-${id}`,{type:'geojson' as const,data:emptyGeoJson,attribution:'<a href="https://daim.lfv.se/echarts/dronechart/API/" target="_blank">LFV Dronechart · CC BY-NC-ND 4.0</a>'}]));
+  const nationalGeozoneSources=Object.fromEntries(NATIONAL_GEOZONE_SOURCES.map(source=>[source.id,{type:'geojson' as const,data:emptyGeoJson,attribution:source.attribution}]));
+  const nationalGeozoneLayers=NATIONAL_GEOZONE_SOURCES.flatMap(source=>{
+    const filter=source.id==='estonia'?{filter:['!=',['get','identifier'],'EERZout'] as FilterSpecification}:{};
+    const fillColor=source.id==='estonia'
+      ? ['match',['get','restriction'],'PROHIBITED','#ff6670','REQ_AUTHORISATION','#f4dc4b','REQ_AUTHORIZATION','#f4dc4b','NO_RESTRICTION','#60c878','#9db7d8']
+      : geozoneColor;
+    const lineColor=source.id==='estonia'
+      ? ['match',['get','restriction'],'PROHIBITED','#ff2f3f','REQ_AUTHORISATION','#235bd6','REQ_AUTHORIZATION','#235bd6','NO_RESTRICTION','#2c9d52','#5479a8']
+      : geozoneColor;
+    return[
+      {id:`${source.id}-zones`,type:'fill' as const,source:source.id,minzoom:source.minzoom,...filter,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'fill-color':fillColor as any,'fill-opacity':geozoneOpacity}},
+      {id:`${source.id}-lines`,type:'line' as const,source:source.id,minzoom:source.minzoom,...filter,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'line-color':lineColor as any,'line-width':['interpolate',['linear'],['zoom'],source.minzoom,.7,12,2.2] as any,'line-opacity':.94}}
+    ];
+  });
   const swedenLayers=SWEDEN_POLYGON_SOURCES.flatMap((id,index)=>{
     const filter=swedenDisplayFilter(id),filterProperty=filter?{filter}:{};
     return[
@@ -348,6 +370,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       ireland: { type:'geojson', data:emptyGeoJson, attribution:'<a href="https://www.iaa.ie/general-aviation/drones/uas-geographic-zones" target="_blank">Irish Aviation Authority UAS zones</a>' },
       denmark:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://www.droneregler.dk/dronezoner/dronezoner-data-vejledninger/data-downloads" target="_blank">Drone zones © Trafikstyrelsen</a>'},
       'denmark-nature':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://www.droneregler.dk/dronezoner/dronezoner-data-vejledninger/data-downloads" target="_blank">Nature zones © Trafikstyrelsen</a>'},
+      ...nationalGeozoneSources,
       ...swedenSources,
       'weather-grid': { type:'geojson', data:emptyGeoJson, attribution:'Forecast field © Open-Meteo' },
       'weather-location': { type:'geojson', data:emptyGeoJson },
@@ -382,6 +405,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:'denmark-lines',type:'line',source:'denmark',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['match',['to-string',['get','Farve']],'1','#ff7182','4','#73a5ff','5','#ffb56f','#ffe08a'],'line-width':['interpolate',['linear'],['zoom'],5,.7,12,2.2],'line-opacity':.92}},
       {id:'denmark-nature',type:'fill',source:'denmark-nature',minzoom:7,filter:['==',['get','Aktiv'],'JA'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':'#50d982','fill-opacity':.13}},
       {id:'denmark-nature-lines',type:'line',source:'denmark-nature',minzoom:7,filter:['==',['get','Aktiv'],'JA'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':'#78efa0','line-width':1.1,'line-opacity':.85}},
+      ...nationalGeozoneLayers,
       ...swedenLayers,
       {id:'sweden-airports',type:'circle',source:'sweden-mais-ARP',minzoom:8,layout:{visibility:zonesVisible?'visible':'none'},paint:{'circle-radius':['interpolate',['linear'],['zoom'],8,2.5,11,6],'circle-color':'#ffdc69','circle-stroke-color':'#2b2110','circle-stroke-width':1}},
       {id:'weather-clouds',type:'heatmap',source:'weather-grid',filter:['==',['get','kind'],'cell'],paint:{'heatmap-weight':['/', ['get','clouds'],100] as any,'heatmap-intensity':['interpolate',['linear'],['zoom'],0,.45,8,.75,14,1.05] as any,'heatmap-radius':['interpolate',['linear'],['zoom'],0,80,6,115,12,150] as any,'heatmap-opacity':.46,'heatmap-color':['interpolate',['linear'],['heatmap-density'],0,'rgba(255,255,255,0)',.18,'rgba(218,233,238,.15)',.45,'rgba(230,241,244,.38)',.75,'rgba(255,255,255,.64)',1,'rgba(255,255,255,.82)'] as any}},
