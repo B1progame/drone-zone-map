@@ -1,9 +1,10 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import maplibregl, { Map as MapLibreMap, Marker, type FilterSpecification, type StyleSpecification } from 'maplibre-gl';
-import { CloudRain, CloudSun, Layers3, Map as MapIcon, Pause, Play, Satellite, Wind } from 'lucide-react';
+import { CloudRain, CloudSun, Layers3, Map as MapIcon, Pause, Play, Satellite, WifiOff, Wind } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
+import { getBestOfflinePack } from './offline';
 
 type BaseMap = 'satellite' | 'streets';
 
@@ -69,7 +70,7 @@ const FRANCE_EXTENTS:[number,number,number,number][]=[
  [-56.6,46.7,-55.8,47.3],[44.9,-13.1,45.4,-12.5],[55,-21.6,56,-20.7],
  [39,-50,78,-11]
 ];
-const ZONE_LAYER_IDS = ['dipul-zones','dipul-detail','enaire-infrastructure-fill','enaire-infrastructure-line','enaire-aero-fill','enaire-aero-line','enaire-urban-fill','enaire-urban-line','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
+const ZONE_LAYER_IDS = ['offline-package-fill','offline-package-line','offline-package-points','dipul-zones','dipul-detail','enaire-infrastructure-fill','enaire-infrastructure-line','enaire-aero-fill','enaire-aero-line','enaire-urban-fill','enaire-urban-line','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
 const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const dynamicRequestKeys=new WeakMap<MapLibreMap,Map<string,string>>();
 const radarUnavailableMaps=new WeakSet<MapLibreMap>();
@@ -425,9 +426,13 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       'weather-location': { type:'geojson', data:emptyGeoJson },
       'flight-range': { type:'geojson', data:emptyGeoJson },
       'flight-plan': { type:'geojson', data:emptyGeoJson }
+      ,'offline-package':{type:'geojson',data:emptyGeoJson,attribution:'Offline package · DIPUL WFS · CC BY-ND 4.0'}
     },
     layers: [
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
+      {id:'offline-package-fill',type:'fill',source:'offline-package',filter:['match',['geometry-type'],['Polygon','MultiPolygon'],true,false] as any,paint:{'fill-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff'] as any,'fill-opacity':.27}},
+      {id:'offline-package-line',type:'line',source:'offline-package',paint:{'line-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff7182','airports','#ffd078','controlled','#e5a2ff','nature','#80efa4','warnings','#ffea94','basic','#b1cbc5','#9ee3ff'] as any,'line-width':['interpolate',['linear'],['zoom'],4,.7,12,2.2] as any,'line-opacity':.96}},
+      {id:'offline-package-points',type:'circle',source:'offline-package',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,2.5,12,6] as any,'circle-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff'] as any,'circle-stroke-color':'#06100d','circle-stroke-width':1.2}},
       { id: 'dipul-zones', type: 'raster', source: 'dipul', layout: { visibility: zonesVisible ? 'visible' : 'none' }, paint: { 'raster-opacity': 0.78, 'raster-fade-duration': 150 } },
       { id:'dipul-detail',type:'raster',source:'dipul-detail',minzoom:8.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.76,'raster-fade-duration':120}},
       {id:'enaire-infrastructure-fill',type:'fill',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainColor,'fill-opacity':enaireFillOpacity}},
@@ -661,6 +666,8 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   const [error, setError] = useState('');
   const [overlayProgress,setOverlayProgress]=useState<{done:number;total:number;label:string}|null>(null);
   const [radarNotice,setRadarNotice]=useState('');
+  const [offlineNotice,setOfflineNotice]=useState('');
+  const offlineRequestRef=useRef(0);
   const hooksRef=useRef<OverlayHooks|null>(null);
   if(!hooksRef.current)hooksRef.current={
     start:(id,label)=>{
@@ -680,6 +687,24 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useEffect(()=>{planPointsRef.current=planPoints},[planPoints]);
   useEffect(()=>{flightRadiusRef.current=flightRadiusKm},[flightRadiusKm]);
   useEffect(()=>{settingsRef.current=settings},[settings]);
+  const syncOfflinePackage=async(point?:{lat:number;lng:number})=>{
+    const map=mapRef.current;
+    if(!map?.isStyleLoaded())return;
+    const source=map.getSource('offline-package') as maplibregl.GeoJSONSource|undefined;
+    if(!source)return;
+    const request=++offlineRequestRef.current;
+    if(navigator.onLine){source.setData(emptyGeoJson);setOfflineNotice('');return}
+    const pack=await getBestOfflinePack(point??map.getCenter());
+    if(request!==offlineRequestRef.current)return;
+    if(pack){source.setData(pack.data as any);setOfflineNotice(`Offline · ${pack.name} · ${pack.metadata.itemCount.toLocaleString()} saved items`)}
+    else{source.setData(emptyGeoJson);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
+  };
+  useEffect(()=>{void syncOfflinePackage(location)},[location?.lat,location?.lng]);
+  useEffect(()=>{
+    const update=()=>void syncOfflinePackage(location);
+    window.addEventListener('online',update);window.addEventListener('offline',update);window.addEventListener('aeris-offline-packages-changed',update);
+    return()=>{window.removeEventListener('online',update);window.removeEventListener('offline',update);window.removeEventListener('aeris-offline-packages-changed',update)};
+  },[location?.lat,location?.lng]);
   useEffect(()=>{
     const map=mapRef.current;
     windAnimationRef.current?.();
@@ -709,9 +734,9 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
     map.touchZoomRotate.enable();
     map.dragPan.enable();
-    const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,state.hour,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)};
-    map.on('load', () => { map.setProjection({type:'globe'});setLoaded(true); setError(''); map.resize();refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current);if(!settingsRef.current.reducedMotion&&!windAnimationRef.current)windAnimationRef.current=startWindLineAnimation(map); });
-    map.on('style.load',()=>{map.setProjection({type:'globe'});loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current)});
+    const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;if(navigator.onLine){loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,state.hour,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)}else void syncOfflinePackage()};
+    map.on('load', () => { map.setProjection({type:'globe'});setLoaded(true); setError(''); map.resize();refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current);if(!settingsRef.current.reducedMotion&&!windAnimationRef.current)windAnimationRef.current=startWindLineAnimation(map); });
+    map.on('style.load',()=>{map.setProjection({type:'globe'});loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current)});
     map.on('moveend',refresh);
     map.on('click', event => {
       const point={lat:event.lngLat.lat,lng:event.lngLat.lng,name:`${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`};
@@ -782,6 +807,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     {weatherVisible&&location&&!weather&&!weatherError&&<div className="mapWeatherStatus loading"><span/> Loading live weather…</div>}
     {weatherVisible&&weatherError&&<div className="mapWeatherStatus error"><CloudRain/> {weatherError}</div>}
     {weatherVisible&&radarNotice&&<div className="mapWeatherStatus warning"><CloudRain/> {radarNotice}</div>}
+    {offlineNotice&&<div className="mapOfflineStatus"><WifiOff/> {offlineNotice}</div>}
     <div className="mapStyleControl" aria-label="Map display controls">
       <button className={baseMap === 'satellite' ? 'active' : ''} onClick={() => setBaseMap('satellite')} aria-label="Satellite map"><Satellite size={16}/><span>Satellite</span></button>
       <button className={baseMap === 'streets' ? 'active' : ''} onClick={() => setBaseMap('streets')} aria-label="Street map"><MapIcon size={16}/><span>Streets</span></button>

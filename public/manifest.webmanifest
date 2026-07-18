@@ -1,0 +1,29 @@
+{
+  "name": "Aeris Drone Airspace",
+  "short_name": "Aeris",
+  "description": "Offline-capable drone airspace and weather planning context.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07120f",
+  "theme_color": "#07120f",
+  "icons": [
+    {
+      "src": "./icons/aeris-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/aeris-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/aeris-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
