@@ -1,14 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Check, Database, Download, MapPin, X } from 'lucide-react';
 import type { Location, Weather, ZoneInfo } from './types';
-import { createOfflineConfig, createOfflinePack, estimateOfflinePackage, GERMAN_STATES, OFFLINE_LAYERS, type OfflineDownloadProgress, type OfflineLayerId, type OfflineScope } from './offline';
+import { createOfflineConfig, createOfflinePack, estimateOfflinePackage, estimateOfflinePackageFromSource, GERMAN_STATES, OFFLINE_LAYERS, type OfflineDownloadProgress, type OfflineLayerId, type OfflineScope } from './offline';
 
 const layerIds=Object.keys(OFFLINE_LAYERS) as OfflineLayerId[];
 
 export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}:{location:Location;weather?:Weather;zoneInfo?:ZoneInfo;onClose:()=>void;onSaved:()=>void}){
- const[scope,setScope]=useState<OfflineScope>('radius'),[stateName,setStateName]=useState('Berlin'),[radius,setRadius]=useState(20),[layers,setLayers]=useState<OfflineLayerId[]>(layerIds),[progress,setProgress]=useState<OfflineDownloadProgress>(),[error,setError]=useState('');
+ const[scope,setScope]=useState<OfflineScope>('radius'),[stateName,setStateName]=useState('Berlin'),[radius,setRadius]=useState(20),[layers,setLayers]=useState<OfflineLayerId[]>(layerIds),[progress,setProgress]=useState<OfflineDownloadProgress>(),[error,setError]=useState(''),[sourceEstimate,setSourceEstimate]=useState<{bytes:number;items:number;label:string}>();
  const config=useMemo(()=>createOfflineConfig(scope,location,layers,stateName,radius),[scope,location,layers,stateName,radius]);
  const estimate=useMemo(()=>estimateOfflinePackage(config),[config]);
+ const shownEstimate=sourceEstimate??estimate;
+ useEffect(()=>{let active=true;setSourceEstimate(undefined);void estimateOfflinePackageFromSource(config).then(value=>{if(active)setSourceEstimate(value)}).catch(()=>{});return()=>{active=false}},[config]);
  const toggle=(id:OfflineLayerId)=>setLayers(value=>value.includes(id)?value.filter(item=>item!==id):[...value,id]);
  const download=async()=>{
   setError('');
@@ -28,10 +30,10 @@ export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}
    {(scope==='radius'||scope==='city')&&<label className="offlineRadius"><span>{scope==='city'?'City coverage':'Radius'} <b>{scope==='city'?Math.min(25,Math.max(5,radius)):radius} km</b></span><input type="range" min={scope==='city'?5:1} max={scope==='city'?25:100} value={radius} onChange={event=>setRadius(Number(event.target.value))}/></label>}
    <div className="offlineCenter"><MapPin/><span><b>{config.region}</b>{config.bounds.map(value=>value.toFixed(2)).join(' · ')}</span></div>
    <fieldset className="offlineLayerList" disabled={Boolean(progress)}><legend>Layers</legend>{layerIds.map(id=><label key={id}><input type="checkbox" checked={layers.includes(id)} onChange={()=>toggle(id)}/><span><Check/><b>{OFFLINE_LAYERS[id].label}</b></span></label>)}</fieldset>
-   <div className="offlineEstimate"><Database/><span><small>ESTIMATED PACKAGE</small><b>{estimate.label}</b><i>about {estimate.items.toLocaleString()} items · final size depends on source density</i></span></div>
+   <div className="offlineEstimate"><Database/><span><small>{sourceEstimate?'SOURCE-CHECKED ESTIMATE':'ESTIMATING PACKAGE'}</small><b>{shownEstimate.label}</b><i>about {shownEstimate.items.toLocaleString()} items · final size depends on feature geometry</i></span></div>
    {progress&&<div className="offlineBuildProgress" role="status" aria-live="polite"><span><b>{progress.percent}%</b>{progress.stage}</span><i><b style={{width:`${progress.percent}%`}}/></i><small>{progress.items.toLocaleString()} items received</small></div>}
    {error&&<div className="offlineError">{error}</div>}
-   <button className="primary offlineDownload" disabled={Boolean(progress)||!layers.length} onClick={()=>void download()}><Download/>{progress?'Downloading package…':`Download about ${estimate.label}`}</button>
+   <button className="primary offlineDownload" disabled={Boolean(progress)||!layers.length} onClick={()=>void download()}><Download/>{progress?'Downloading package…':`Download about ${shownEstimate.label}`}</button>
    <small>Official source: DIPUL WFS. Offline data is planning support, not legal clearance. Temporary restrictions can change after download.</small>
   </section>
  </div>;

@@ -4,7 +4,7 @@ import { CloudRain, CloudSun, Layers3, Map as MapIcon, Pause, Play, Satellite, W
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
-import { getBestOfflinePack } from './offline';
+import { getBestOfflinePack, getOfflinePackageData } from './offline';
 
 type BaseMap = 'satellite' | 'streets';
 
@@ -694,9 +694,15 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     if(!source)return;
     const request=++offlineRequestRef.current;
     if(navigator.onLine){source.setData(emptyGeoJson);setOfflineNotice('');return}
-    const pack=await getBestOfflinePack(point??map.getCenter());
+    const center=point??map.getCenter(),pack=await getBestOfflinePack(center);
     if(request!==offlineRequestRef.current)return;
-    if(pack){source.setData(pack.data as any);setOfflineNotice(`Offline · ${pack.name} · ${pack.metadata.itemCount.toLocaleString()} saved items`)}
+    if(pack){
+      const visible=map.getBounds(),span=point?Math.min(2,Math.max(.2,8/2**Math.max(0,map.getZoom()-5))):0;
+      const bounds=point?[center.lng-span,center.lat-span,center.lng+span,center.lat+span] as [number,number,number,number]:[visible.getWest(),visible.getSouth(),visible.getEast(),visible.getNorth()] as [number,number,number,number];
+      const data=await getOfflinePackageData(pack,bounds);
+      if(request!==offlineRequestRef.current)return;
+      source.setData(data as any);setOfflineNotice(`Offline · ${pack.name} · ${data.features.length.toLocaleString()} nearby of ${pack.metadata.itemCount.toLocaleString()} saved items`);
+    }
     else{source.setData(emptyGeoJson);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
   };
   useEffect(()=>{void syncOfflinePackage(location)},[location?.lat,location?.lng]);
