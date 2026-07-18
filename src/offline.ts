@@ -1,8 +1,11 @@
 import type { Location, Weather, ZoneInfo } from './types';
+import { PMTiles } from 'pmtiles';
 
-export const OFFLINE_PACKAGE_VERSION=3;
-const DB_NAME='aeris-offline',PACKAGES='packages',CHUNKS='chunks',DB_VERSION=3;
+export const OFFLINE_PACKAGE_VERSION=4;
+const DB_NAME='aeris-offline',PACKAGES='packages',CHUNKS='chunks',TILES='mapTiles',DB_VERSION=4;
 const DIPUL_WFS='https://uas-betrieb.de/geoservices/dipul/wfs';
+const FRANCE_WFS='https://data.geopf.fr/wfs/ows';
+const FRANCE_WFS_LAYER='TRANSPORTS.DRONES.RESTRICTIONS:carte_restriction_drones_lf';
 const GERMANY_BOUNDS:[number,number,number,number]=[5.5,47,15.5,55.2];
 const EMPTY_DATA={type:'FeatureCollection' as const,features:[],properties:{}};
 
@@ -19,15 +22,23 @@ export const OFFLINE_LAYERS={
 export type OfflineLayerId=keyof typeof OFFLINE_LAYERS;
 export type OfflineScope='country'|'state'|'city'|'radius';
 export type OfflineBounds=[number,number,number,number];
-export type OfflinePackConfig={scope:OfflineScope;country:'DE';region:string;center:Location;radiusKm?:number;bounds:OfflineBounds;layers:OfflineLayerId[]};
-export type OfflinePackMetadata={country:string;region:string;center:Location;radiusKm?:number;bounds:OfflineBounds;layers:OfflineLayerId[];version:number;downloadedAt:string;updatedAt:string;sizeBytes:number;itemCount:number;sourceUpdatedAt:string};
+export type OfflineCountryCode='DE'|'FR'|'IE';
+export type OfflinePackConfig={scope:OfflineScope;country:OfflineCountryCode;region:string;center:Location;radiusKm?:number;bounds:OfflineBounds;layers:OfflineLayerId[];basemapMaxZoom:number};
+export type OfflinePackMetadata={country:string;countryCode?:OfflineCountryCode;region:string;center:Location;radiusKm?:number;bounds:OfflineBounds;layers:OfflineLayerId[];version:number;downloadedAt:string;updatedAt:string;sizeBytes:number;itemCount:number;sourceUpdatedAt:string;tileCount?:number;basemapMaxZoom?:number};
 export type OfflineGeoJson={type:'FeatureCollection';features:any[];properties:Record<string,unknown>};
 export type OfflinePack={
  id:string;name:string;location:Location;savedAt:string;weather?:Weather;zoneInfo?:ZoneInfo;notice:string;
  config:OfflinePackConfig;metadata:OfflinePackMetadata;generation?:string;data?:OfflineGeoJson;
 };
 type OfflineChunk={id:string;packageId:string;generation:string;cell:string;cellKeys:string[];features:any[];sizeBytes:number};
+type OfflineTile={id:string;packageId:string;generation:string;z:number;x:number;y:number;data:ArrayBuffer;sizeBytes:number};
 export type OfflineDownloadProgress={percent:number;stage:string;items:number};
+
+export const OFFLINE_COUNTRIES:Record<OfflineCountryCode,{name:string;bounds:OfflineBounds;center:Location;source:string;sourceUrl:string;layers:OfflineLayerId[]}>={
+ DE:{name:'Germany',bounds:GERMANY_BOUNDS,center:{lat:51.1657,lng:10.4515,name:'Germany'},source:'DIPUL WFS',sourceUrl:'https://dipul.bund.de/',layers:Object.keys(OFFLINE_LAYERS) as OfflineLayerId[]},
+ FR:{name:'France',bounds:[-5.5,41,10,51.6],center:{lat:46.6034,lng:1.8883,name:'France'},source:'IGN / Géoportail WFS',sourceUrl:'https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme',layers:['restricted']},
+ IE:{name:'Ireland',bounds:[-11,51.2,-5,55.6],center:{lat:53.1424,lng:-7.6921,name:'Ireland'},source:'Irish Aviation Authority',sourceUrl:'https://www.iaa.ie/general-aviation/drones/uas-geographic-zones',layers:['restricted']}
+};
 
 export const GERMAN_STATES:{name:string;bounds:OfflineBounds}[]=[
  {name:'Baden-Württemberg',bounds:[7.5,47.5,10.6,49.8]},{name:'Bavaria',bounds:[8.9,47.2,13.9,50.6]},
@@ -54,6 +65,10 @@ const openDb=()=>new Promise<IDBDatabase>((resolve,reject)=>{
    const chunks=request.transaction!.objectStore(CHUNKS);
    if(!chunks.indexNames.contains('cellKeys'))chunks.createIndex('cellKeys','cellKeys',{multiEntry:true});
   }
+  if(!database.objectStoreNames.contains(TILES)){
+   const tiles=database.createObjectStore(TILES,{keyPath:'id'});
+   tiles.createIndex('packageId','packageId');
+  }
  };
  request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
 });
@@ -71,26 +86,46 @@ async function putChunks(chunks:OfflineChunk[]){
   transaction.oncomplete=()=>{database.close();resolve()};transaction.onerror=()=>{database.close();reject(transaction.error)};transaction.onabort=()=>{database.close();reject(transaction.error)};
  });
 }
-async function deleteChunks(packageId:string,generation?:string){
+async function putTiles(tiles:OfflineTile[]){
+ if(!tiles.length)return;
  const database=await openDb();
  await new Promise<void>((resolve,reject)=>{
-  const transaction=database.transaction(CHUNKS,'readwrite'),store=transaction.objectStore(CHUNKS),request=store.index('packageId').openCursor(IDBKeyRange.only(packageId));
-  request.onsuccess=()=>{const cursor=request.result;if(!cursor)return;const chunk=cursor.value as OfflineChunk;if(!generation||chunk.generation===generation)cursor.delete();cursor.continue()};
+  const transaction=database.transaction(TILES,'readwrite'),store=transaction.objectStore(TILES);
+  tiles.forEach(tile=>store.put(tile));
+  transaction.oncomplete=()=>{database.close();resolve()};transaction.onerror=()=>{database.close();reject(transaction.error)};transaction.onabort=()=>{database.close();reject(transaction.error)};
+ });
+}
+async function deleteByPackage(storeName:string,packageId:string,generation?:string){
+ const database=await openDb();
+ await new Promise<void>((resolve,reject)=>{
+  const transaction=database.transaction(storeName,'readwrite'),store=transaction.objectStore(storeName),request=store.index('packageId').openCursor(IDBKeyRange.only(packageId));
+  request.onsuccess=()=>{const cursor=request.result;if(!cursor)return;const item=cursor.value as {generation:string};if(!generation||item.generation===generation)cursor.delete();cursor.continue()};
   transaction.oncomplete=()=>{database.close();resolve()};transaction.onerror=()=>{database.close();reject(transaction.error)};
  });
 }
+const deleteChunks=(packageId:string,generation?:string)=>deleteByPackage(CHUNKS,packageId,generation);
+const deleteTiles=(packageId:string,generation?:string)=>deleteByPackage(TILES,packageId,generation);
 
 const rad=(value:number)=>value*Math.PI/180;
 export const distanceKm=(a:{lat:number;lng:number},b:{lat:number;lng:number})=>{const dLat=rad(b.lat-a.lat),dLng=rad(b.lng-a.lng),h=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;return 6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))};
 export function radiusBounds(center:Location,radiusKm:number):OfflineBounds{const lat=radiusKm/110.574,lng=radiusKm/(111.32*Math.max(.2,Math.cos(rad(center.lat))));return[center.lng-lng,center.lat-lat,center.lng+lng,center.lat+lat]}
-export function createOfflineConfig(scope:OfflineScope,center:Location,layers:OfflineLayerId[],stateName?:string,radiusKm=20):OfflinePackConfig{
- if(scope==='country')return{scope,country:'DE',region:'All Germany',center:{lat:51.1657,lng:10.4515,name:'Germany'},bounds:GERMANY_BOUNDS,layers};
- if(scope==='state'){const state=GERMAN_STATES.find(item=>item.name===stateName)??GERMAN_STATES[2];return{scope,country:'DE',region:state.name,center:{lng:(state.bounds[0]+state.bounds[2])/2,lat:(state.bounds[1]+state.bounds[3])/2,name:state.name},layers,bounds:state.bounds}}
+const basemapZoomFor=()=>8;
+export function createOfflineConfig(scope:OfflineScope,center:Location,layers:OfflineLayerId[],stateName?:string,radiusKm=20,country:OfflineCountryCode='DE'):OfflinePackConfig{
+ const definition=OFFLINE_COUNTRIES[country],allowed=layers.filter(layer=>definition.layers.includes(layer));
+ if(scope==='country')return{scope,country,region:country==='FR'?'Mainland France':`All ${definition.name}`,center:definition.center,bounds:definition.bounds,layers:allowed,basemapMaxZoom:basemapZoomFor()};
+ if(scope==='state'&&country==='DE'){const state=GERMAN_STATES.find(item=>item.name===stateName)??GERMAN_STATES[2];return{scope,country,region:state.name,center:{lng:(state.bounds[0]+state.bounds[2])/2,lat:(state.bounds[1]+state.bounds[3])/2,name:state.name},layers:allowed,bounds:state.bounds,basemapMaxZoom:basemapZoomFor()}}
  const effectiveRadius=scope==='city'?Math.min(25,Math.max(5,radiusKm||15)):Math.min(100,Math.max(1,radiusKm));
- return{scope,country:'DE',region:scope==='city'?center.name:`${effectiveRadius} km around ${center.name}`,center,radiusKm:effectiveRadius,bounds:radiusBounds(center,effectiveRadius),layers};
+ return{scope,country,region:scope==='city'?center.name:`${effectiveRadius} km around ${center.name}`,center,radiusKm:effectiveRadius,bounds:radiusBounds(center,effectiveRadius),layers:allowed,basemapMaxZoom:basemapZoomFor()};
 }
 const areaKm2=([west,south,east,north]:OfflineBounds)=>Math.max(1,(east-west)*111.32*Math.cos(rad((south+north)/2))*(north-south)*110.574);
-export function estimateOfflinePackage(config:OfflinePackConfig){const density:Record<OfflineLayerId,number>={droneZones:120,restricted:55,airports:18,controlled:12,nature:310,warnings:220,basic:530},area=areaKm2(config.bounds),features=Math.round(config.layers.reduce((sum,id)=>sum+density[id]*Math.pow(area/1000,.72),0)),bytes=Math.round(180000+features*1150);return{bytes,items:features,label:formatBytes(bytes)}}
+const lngToTile=(lng:number,z:number)=>Math.floor((lng+180)/360*2**z);
+const latToTile=(lat:number,z:number)=>Math.floor((1-Math.asinh(Math.tan(rad(Math.max(-85.0511,Math.min(85.0511,lat)))))/Math.PI)/2*2**z);
+export function offlineTileCoordinates(bounds:OfflineBounds,maxZoom:number){
+ const tiles:{z:number;x:number;y:number}[]=[];
+ for(let z=4;z<=maxZoom;z++){const limit=2**z-1,x0=Math.max(0,lngToTile(bounds[0],z)),x1=Math.min(limit,lngToTile(bounds[2],z)),y0=Math.max(0,latToTile(bounds[3],z)),y1=Math.min(limit,latToTile(bounds[1],z));for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)tiles.push({z,x,y})}
+ return tiles;
+}
+export function estimateOfflinePackage(config:OfflinePackConfig){const density:Record<OfflineLayerId,number>={droneZones:120,restricted:55,airports:18,controlled:12,nature:310,warnings:220,basic:530},area=areaKm2(config.bounds),features=Math.round(config.layers.reduce((sum,id)=>sum+density[id]*Math.pow(area/1000,.72),0)),tileCount=offlineTileCoordinates(config.bounds,config.basemapMaxZoom).length,bytes=Math.round(180000+features*1150+tileCount*10500);return{bytes,items:features+tileCount,tileCount,label:formatBytes(bytes)}}
 export const formatBytes=(bytes:number)=>bytes<1024*1024?`${Math.max(1,Math.round(bytes/1024))} KB`:`${(bytes/1024/1024).toFixed(bytes<10*1024*1024?1:0)} MB`;
 export const isOfflinePackStale=(pack:OfflinePack)=>Date.now()-new Date(pack.metadata.updatedAt).getTime()>7*86400000||pack.metadata.version<OFFLINE_PACKAGE_VERSION;
 async function layerFeatureStats(layer:string,bounds:OfflineBounds){
@@ -103,14 +138,15 @@ async function layerFeatureStats(layer:string,bounds:OfflineBounds){
 }
 const layerFeatureCount=async(layer:string,bounds:OfflineBounds)=>(await layerFeatureStats(layer,bounds)).count;
 export async function estimateOfflinePackageFromSource(config:OfflinePackConfig){
+ if(config.country!=='DE')return estimateOfflinePackage(config);
  const fallback=estimateOfflinePackage(config),entries=config.layers.flatMap(category=>OFFLINE_LAYERS[category].layers.map(layer=>({category,layer}))),results:{count:number;sampleBytes:number}[]=[];
  for(let offset=0;offset<entries.length;offset+=6){
   const group=entries.slice(offset,offset+6),counts=await Promise.allSettled(group.map(entry=>layerFeatureStats(entry.layer,config.bounds)));
   counts.forEach(result=>{if(result.status==='fulfilled')results.push(result.value)});
  }
  if(!results.length)return fallback;
- const items=results.reduce((sum,item)=>sum+item.count,0),bytes=Math.round(240000+results.reduce((sum,item)=>sum+item.count*(item.sampleBytes+140)*1.08,0));
- return{bytes,items,label:formatBytes(bytes)};
+ const tileCount=offlineTileCoordinates(config.bounds,config.basemapMaxZoom).length,items=results.reduce((sum,item)=>sum+item.count,0)+tileCount,bytes=Math.round(240000+results.reduce((sum,item)=>sum+item.count*(item.sampleBytes+140)*1.08,0)+tileCount*10500);
+ return{bytes,items,tileCount,label:formatBytes(bytes)};
 }
 
 function geometryBounds(geometry:any):OfflineBounds|undefined{
@@ -151,16 +187,50 @@ async function saveLayer(layer:string,category:OfflineLayerId,bounds:OfflineBoun
  return{items:total,sizeBytes:totalSize};
 }
 
+const boundsOverlap=(a:OfflineBounds,b:OfflineBounds)=>a[2]>=b[0]&&a[0]<=b[2]&&a[3]>=b[1]&&a[1]<=b[3];
+async function saveFeatureCollection(features:any[],category:OfflineLayerId,bounds:OfflineBounds,packageId:string,generation:string,sourceName:string){
+ const groups=new Map<string,{features:any[];cells:Set<string>}>();
+ for(const feature of features){
+  const featureBounds=geometryBounds(feature.geometry);if(featureBounds&&!boundsOverlap(bounds,featureBounds))continue;
+  const tagged={...feature,properties:{...feature.properties,_aerisOfflineLayer:sourceName,_aerisOfflineCategory:category}},spatial=cellsForFeature(tagged,bounds),group=groups.get(spatial.primary)??{features:[],cells:new Set<string>()};
+  group.features.push(tagged);spatial.cells.forEach(cell=>group.cells.add(cell));groups.set(spatial.primary,group);
+ }
+ let items=0,sizeBytes=0,index=0;const chunks:OfflineChunk[]=[];
+ for(const [cell,group] of groups){const chunkBytes=new Blob([JSON.stringify(group.features)]).size;items+=group.features.length;sizeBytes+=chunkBytes;chunks.push({id:`${packageId}:${generation}:${sourceName}:${index++}:${cell}`,packageId,generation,cell,cellKeys:[...group.cells].map(value=>`${packageId}|${generation}|${value}`),features:group.features,sizeBytes:chunkBytes})}
+ await putChunks(chunks);return{items,sizeBytes};
+}
+async function saveCountryZones(config:OfflinePackConfig,packageId:string,generation:string){
+ if(config.country==='IE'){
+  const response=await fetch(`${import.meta.env.BASE_URL}data/zones/IE.geojson`);if(!response.ok)throw new Error(`Irish Aviation Authority zones failed (${response.status})`);
+  const payload=await response.json();return saveFeatureCollection(payload.features??[],'restricted',config.bounds,packageId,generation,'iaa-zones');
+ }
+ const firstParams=new URLSearchParams({SERVICE:'WFS',VERSION:'2.0.0',REQUEST:'GetFeature',TYPENAMES:FRANCE_WFS_LAYER,OUTPUTFORMAT:'application/json',SRSNAME:'EPSG:4326',BBOX:[...config.bounds,'EPSG:4326'].join(','),COUNT:'5000',STARTINDEX:'0'});
+ const firstResponse=await fetch(`${FRANCE_WFS}?${firstParams}`);if(!firstResponse.ok)throw new Error(`French Géoportail zones failed (${firstResponse.status})`);
+ const first=await firstResponse.json(),matched=Number(first.numberMatched),features=[...(first.features??[])];
+ for(let start=5000;Number.isFinite(matched)&&start<matched;start+=5000){const params=new URLSearchParams(firstParams);params.set('STARTINDEX',String(start));const response=await fetch(`${FRANCE_WFS}?${params}`);if(!response.ok)throw new Error(`French Géoportail zones failed (${response.status})`);features.push(...((await response.json()).features??[]))}
+ return saveFeatureCollection(features,'restricted',config.bounds,packageId,generation,'geoportail-uas');
+}
+async function saveBasemap(config:OfflinePackConfig,packageId:string,generation:string,onProgress?:(done:number,total:number)=>void){
+ const coordinates=offlineTileCoordinates(config.bounds,config.basemapMaxZoom);if(coordinates.length>3000)throw new Error('This basemap selection is too large. Choose a smaller area.');
+ const archive=new PMTiles(`${location.origin}${import.meta.env.BASE_URL}data/basemap/${config.country}.pmtiles`);let sizeBytes=0,tileCount=0;
+ for(let offset=0;offset<coordinates.length;offset+=8){
+  const group=coordinates.slice(offset,offset+8),results=await Promise.all(group.map(async coordinate=>({coordinate,result:await archive.getZxy(coordinate.z,coordinate.x,coordinate.y)}))),tiles:OfflineTile[]=[];
+  for(const {coordinate,result} of results){if(!result)continue;sizeBytes+=result.data.byteLength;tileCount++;tiles.push({id:`${packageId}:${generation}:${coordinate.z}:${coordinate.x}:${coordinate.y}`,packageId,generation,...coordinate,data:result.data,sizeBytes:result.data.byteLength})}
+  try{await putTiles(tiles)}catch(error){if(error instanceof DOMException&&error.name==='QuotaExceededError')throw new Error('Browser storage is full. Delete an offline package or select a smaller area.');throw error}
+  onProgress?.(Math.min(offset+group.length,coordinates.length),coordinates.length);
+ }
+ return{sizeBytes,tileCount};
+}
+
 export async function createOfflinePack(config:OfflinePackConfig,weather?:Weather,zoneInfo?:ZoneInfo,onProgress?:(value:OfflineDownloadProgress)=>void,replaceId?:string):Promise<OfflinePack>{
  if(!navigator.onLine)throw new Error('Connect to the internet to download or update an offline package.');
- if(!config.layers.length)throw new Error('Select at least one layer.');
  const estimate=await estimateOfflinePackageFromSource(config),storage=await navigator.storage?.estimate?.();
  if(storage?.quota&&storage.usage!=null&&storage.quota-storage.usage<estimate.bytes*1.15)throw new Error(`Not enough browser storage. This package needs about ${estimate.label}.`);
  await navigator.storage?.persist?.().catch(()=>false);
- const entries=config.layers.flatMap(category=>OFFLINE_LAYERS[category].layers.map(layer=>({category,layer}))),featuresByKey=new Set<string>(),warnings:string[]=[];
- const existing=replaceId?await getOfflinePack(replaceId):(await getOfflinePacks()).find(pack=>pack.config.scope===config.scope&&pack.config.region===config.region&&pack.config.layers.length===config.layers.length&&pack.config.layers.every(layer=>config.layers.includes(layer)));
+ const entries=config.country==='DE'?config.layers.flatMap(category=>OFFLINE_LAYERS[category].layers.map(layer=>({category,layer}))):[],featuresByKey=new Set<string>(),warnings:string[]=[];
+ const existing=replaceId?await getOfflinePack(replaceId):(await getOfflinePacks()).find(pack=>pack.config.country===config.country&&pack.config.scope===config.scope&&pack.config.region===config.region&&pack.config.layers.length===config.layers.length&&pack.config.layers.every(layer=>config.layers.includes(layer)));
  const old=existing,id=existing?.id??crypto.randomUUID(),generation=crypto.randomUUID(),previousGeneration=old?.generation;
- let completed=0,itemCount=0,sizeBytes=0;
+ let completed=0,itemCount=0,sizeBytes=0,tileCount=0;
  onProgress?.({percent:1,stage:'Preparing chunked offline storage',items:0});
  try{
   for(const entry of entries){
@@ -171,23 +241,30 @@ export async function createOfflinePack(config:OfflinePackConfig,weather?:Weathe
    }catch(error){warnings.push(error instanceof Error?error.message:`${entry.layer} failed`)}
    completed++;
   }
-  if(!featuresByKey.size&&warnings.length)throw new Error(`No layer could be downloaded. ${warnings[0]}`);
+  if(config.country!=='DE'&&config.layers.length){onProgress?.({percent:8,stage:`Downloading ${OFFLINE_COUNTRIES[config.country].source} zones`,items:itemCount});try{const result=await saveCountryZones(config,id,generation);itemCount+=result.items;sizeBytes+=result.sizeBytes;featuresByKey.add('country-zones')}catch(error){warnings.push(error instanceof Error?error.message:'Official zones failed')}}
+  if(config.layers.length&&!featuresByKey.size&&warnings.length)throw new Error(`No official layer could be downloaded. ${warnings[0]}`);
+  onProgress?.({percent:entries.length?96:15,stage:'Downloading offline street map',items:itemCount});
+  const basemap=await saveBasemap(config,id,generation,(done,total)=>onProgress?.({percent:Math.round((entries.length?96:15)+(done/Math.max(1,total))*(entries.length?3:84)),stage:`Downloading offline street map (${done}/${total} tiles)`,items:itemCount+done}));
+  sizeBytes+=basemap.sizeBytes;tileCount=basemap.tileCount;itemCount+=tileCount;
   const now=new Date().toISOString(),pack:OfflinePack={
    id,name:config.region,location:config.center,savedAt:old?.savedAt??now,weather,zoneInfo,generation,
    notice:'Offline data can become outdated. Temporary restrictions and weather can change. Re-check online before flying.',config,
-   metadata:{country:'Germany',region:config.region,center:config.center,radiusKm:config.radiusKm,bounds:config.bounds,layers:config.layers,version:OFFLINE_PACKAGE_VERSION,downloadedAt:old?.metadata.downloadedAt??now,updatedAt:now,sizeBytes,itemCount,sourceUpdatedAt:now}
+   metadata:{country:OFFLINE_COUNTRIES[config.country].name,countryCode:config.country,region:config.region,center:config.center,radiusKm:config.radiusKm,bounds:config.bounds,layers:config.layers,version:OFFLINE_PACKAGE_VERSION,downloadedAt:old?.metadata.downloadedAt??now,updatedAt:now,sizeBytes,itemCount,sourceUpdatedAt:now,tileCount,basemapMaxZoom:config.basemapMaxZoom}
   };
-  await storeRequest(PACKAGES,'readwrite',store=>store.put(pack));if(previousGeneration)await deleteChunks(id,previousGeneration);
+  await storeRequest(PACKAGES,'readwrite',store=>store.put(pack));if(previousGeneration){await deleteChunks(id,previousGeneration);await deleteTiles(id,previousGeneration)}
   window.dispatchEvent(new CustomEvent('aeris-offline-packages-changed'));onProgress?.({percent:100,stage:`Saved ${formatBytes(sizeBytes)}`,items:itemCount});return pack;
- }catch(error){await deleteChunks(id,generation);throw error}
+ }catch(error){await deleteChunks(id,generation);await deleteTiles(id,generation);throw error}
 }
 export const getOfflinePacks=async():Promise<OfflinePack[]>=>((await storeRequest(PACKAGES,'readonly',store=>store.getAll())) as OfflinePack[]).sort((a,b)=>b.metadata.updatedAt.localeCompare(a.metadata.updatedAt));
 export const getOfflinePack=(id:string)=>storeRequest(PACKAGES,'readonly',store=>store.get(id)) as Promise<OfflinePack|undefined>;
-export async function deleteOfflinePack(id:string){await deleteChunks(id);await storeRequest(PACKAGES,'readwrite',store=>store.delete(id));window.dispatchEvent(new CustomEvent('aeris-offline-packages-changed'))}
-export async function deleteAllOfflinePacks(){const database=await openDb();await new Promise<void>((resolve,reject)=>{const transaction=database.transaction([PACKAGES,CHUNKS],'readwrite');transaction.objectStore(PACKAGES).clear();transaction.objectStore(CHUNKS).clear();transaction.oncomplete=()=>{database.close();resolve()};transaction.onerror=()=>reject(transaction.error)});window.dispatchEvent(new CustomEvent('aeris-offline-packages-changed'))}
-export async function refreshOfflinePack(id:string,onProgress?:(value:OfflineDownloadProgress)=>void){const pack=await getOfflinePack(id);if(!pack)throw new Error('Offline package no longer exists.');return createOfflinePack(pack.config,pack.weather,pack.zoneInfo,onProgress,id)}
+export async function deleteOfflinePack(id:string){await deleteChunks(id);await deleteTiles(id);await storeRequest(PACKAGES,'readwrite',store=>store.delete(id));window.dispatchEvent(new CustomEvent('aeris-offline-packages-changed'))}
+export async function deleteAllOfflinePacks(){const database=await openDb();await new Promise<void>((resolve,reject)=>{const transaction=database.transaction([PACKAGES,CHUNKS,TILES],'readwrite');transaction.objectStore(PACKAGES).clear();transaction.objectStore(CHUNKS).clear();transaction.objectStore(TILES).clear();transaction.oncomplete=()=>{database.close();resolve()};transaction.onerror=()=>reject(transaction.error)});window.dispatchEvent(new CustomEvent('aeris-offline-packages-changed'))}
+export async function refreshOfflinePack(id:string,onProgress?:(value:OfflineDownloadProgress)=>void){const pack=await getOfflinePack(id);if(!pack)throw new Error('Offline package no longer exists.');const config={...pack.config,country:pack.config.country??'DE',basemapMaxZoom:pack.config.basemapMaxZoom??8} as OfflinePackConfig;return createOfflinePack(config,pack.weather,pack.zoneInfo,onProgress,id)}
 const contains=(pack:OfflinePack,point:{lat:number;lng:number})=>{const[west,south,east,north]=pack.metadata.bounds;return point.lng>=west&&point.lng<=east&&point.lat>=south&&point.lat<=north&&(!pack.metadata.radiusKm||distanceKm(pack.metadata.center,point)<=pack.metadata.radiusKm)};
 export async function getBestOfflinePack(point:{lat:number;lng:number}){const matches=(await getOfflinePacks()).filter(pack=>contains(pack,point));return matches.sort((a,b)=>areaKm2(a.metadata.bounds)-areaKm2(b.metadata.bounds)||new Date(b.metadata.updatedAt).getTime()-new Date(a.metadata.updatedAt).getTime())[0]}
+export async function getOfflineMapTile(packageId:string,generation:string,z:number,x:number,y:number){
+ const tile=await storeRequest(TILES,'readonly',store=>store.get(`${packageId}:${generation}:${z}:${x}:${y}`)) as OfflineTile|undefined;return tile?.data;
+}
 const cellsForBounds=([west,south,east,north]:OfflineBounds)=>{const cells:string[]=[];for(let lng=Math.floor(west);lng<=Math.floor(east);lng++)for(let lat=Math.floor(south);lat<=Math.floor(north);lat++)cells.push(`${lng},${lat}`);return cells};
 export async function getOfflinePackageData(packOrId:OfflinePack|string,bounds?:OfflineBounds,maxFeatures=60000):Promise<OfflineGeoJson>{
  const pack=typeof packOrId==='string'?await getOfflinePack(packOrId):packOrId;if(!pack)return EMPTY_DATA;
@@ -208,8 +285,9 @@ export async function getOfflineContext(location:Location){
  const d=.12,data=await getOfflinePackageData(pack,[location.lng-d,location.lat-d,location.lng+d,location.lat+d],30000);
  const insideRing=(ring:number[][])=>{let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const[xi,yi]=ring[i],[xj,yj]=ring[j];if(((yi>location.lat)!==(yj>location.lat))&&(location.lng<(xj-xi)*(location.lat-yi)/(yj-yi)+xi))inside=!inside}return inside};
  const containsGeometry=(geometry:any):boolean=>geometry?.type==='Point'?distanceKm(location,{lng:geometry.coordinates[0],lat:geometry.coordinates[1]})<=1:geometry?.type==='Polygon'?insideRing(geometry.coordinates[0])&&!geometry.coordinates.slice(1).some(insideRing):geometry?.type==='MultiPolygon'?geometry.coordinates.some((polygon:number[][][])=>insideRing(polygon[0])&&!polygon.slice(1).some(insideRing)):false;
- const overlaps=data.features.filter(feature=>containsGeometry(feature.geometry)).slice(0,50).map((feature,index)=>{const properties=feature.properties??{},layer=String(properties._aerisOfflineLayer??'drone zone');return{id:String(feature.id??`offline-${index}`),name:String(properties.generated_name_EN??properties.generated_name_DE??properties.name??layer.replaceAll('_',' ')),type:String(properties.type_code??properties._aerisOfflineCategory??layer).replaceAll('_',' '),lower:properties.lower_limit_altitude!=null?`${properties.lower_limit_altitude} ${properties.lower_limit_unit??''} ${properties.lower_limit_alt_ref??''}`:undefined,upper:properties.upper_limit_altitude!=null?`${properties.upper_limit_altitude} ${properties.upper_limit_unit??''} ${properties.upper_limit_alt_ref??''}`:undefined,legalReference:properties.legal_ref,source:'DIPUL offline package',updated:pack.metadata.sourceUpdatedAt}});
- const zoneInfo:ZoneInfo={countryCode:'DE',countryName:'Germany',sourceName:'DIPUL offline package',sourceUrl:'https://dipul.bund.de/',status:overlaps.length?'loaded':'none',zones:overlaps,checkedAt:pack.metadata.updatedAt,warning:`Offline package “${pack.name}”, downloaded ${new Date(pack.metadata.updatedAt).toLocaleDateString()}. Reconnect before flight to check temporary changes.`};
+ const countryCode=pack.config.country??'DE',country=OFFLINE_COUNTRIES[countryCode];
+ const overlaps=data.features.filter(feature=>containsGeometry(feature.geometry)).slice(0,50).map((feature,index)=>{const properties=feature.properties??{},layer=String(properties._aerisOfflineLayer??'drone zone');return{id:String(feature.id??`offline-${index}`),name:String(properties.generated_name_EN??properties.generated_name_DE??properties.name??layer.replaceAll('_',' ')),type:String(properties.type_code??properties._aerisOfflineCategory??layer).replaceAll('_',' '),lower:properties.lower_limit_altitude!=null?`${properties.lower_limit_altitude} ${properties.lower_limit_unit??''} ${properties.lower_limit_alt_ref??''}`:undefined,upper:properties.upper_limit_altitude!=null?`${properties.upper_limit_altitude} ${properties.upper_limit_unit??''} ${properties.upper_limit_alt_ref??''}`:undefined,legalReference:properties.legal_ref,source:`${country.source} offline package`,updated:pack.metadata.sourceUpdatedAt}});
+ const zoneInfo:ZoneInfo={countryCode,countryName:country.name,sourceName:`${country.source} offline package`,sourceUrl:country.sourceUrl,status:overlaps.length?'loaded':'none',zones:overlaps,checkedAt:pack.metadata.updatedAt,warning:`Offline package “${pack.name}”, downloaded ${new Date(pack.metadata.updatedAt).toLocaleDateString()}. Reconnect before flight to check temporary changes.`};
  return{pack,weather:distanceKm(location,pack.metadata.center)<=1?pack.weather:undefined,zoneInfo};
 }
 export async function downloadGeoJson(pack:OfflinePack){

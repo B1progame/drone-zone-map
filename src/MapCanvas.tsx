@@ -4,7 +4,8 @@ import { CloudRain, CloudSun, Layers3, Map as MapIcon, Pause, Play, Satellite, W
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
-import { getBestOfflinePack, getOfflinePackageData } from './offline';
+import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData } from './offline';
+import { DARK, layers as protomapsLayers } from '@protomaps/basemaps';
 
 type BaseMap = 'satellite' | 'streets';
 
@@ -75,6 +76,18 @@ const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const dynamicRequestKeys=new WeakMap<MapLibreMap,Map<string,string>>();
 const radarUnavailableMaps=new WeakSet<MapLibreMap>();
 const emptyGeoJson={type:'FeatureCollection' as const,features:[]};
+const mapShouldUseOffline=()=>!navigator.onLine||(import.meta.env.DEV&&new URLSearchParams(window.location.search).has('offline-test'));
+let offlineProtocolRegistered=false;
+if(!offlineProtocolRegistered){
+  maplibregl.addProtocol('aeris-offline',async params=>{
+    const match=params.url.match(/^aeris-offline:\/\/([^/]+)\/([^/]+)\/(\d+)\/(\d+)\/(\d+)$/);
+    if(!match)throw new Error('Invalid offline tile URL.');
+    const data=await getOfflineMapTile(decodeURIComponent(match[1]),decodeURIComponent(match[2]),Number(match[3]),Number(match[4]),Number(match[5]));
+    if(!data)throw new Error('Offline tile is outside the downloaded package.');
+    return{data};
+  });
+  offlineProtocolRegistered=true;
+}
 
 // These are LFV's published Dronechart display rules. The underlying files stay
 // byte-for-byte unmodified; MapLibre excludes records the official map excludes.
@@ -377,6 +390,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:`sweden-${id}-line`,type:'line' as const,source:`sweden-${id}`,minzoom:index>=5?5.5:5,...filterProperty,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'line-color':index<5?'#ffb06f':'#e2a1ff','line-width':['interpolate',['linear'],['zoom'],5,.7,12,1.8] as any,'line-opacity':.88}}
     ];
   });
+  const offlineBasemapLayers=protomapsLayers('offline-basemap',DARK).filter(layer=>'source' in layer&&layer.source==='offline-basemap'&&layer.type!=='symbol').map(layer=>({...layer,id:`offline-map-${layer.id}`,layout:{...layer.layout,visibility:'none' as const}}));
   return {
     version: 8,
     projection:{type:'globe'},
@@ -393,6 +407,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
           ? 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
           : '© OpenStreetMap contributors'
       },
+      'offline-basemap':{type:'vector',tiles:['aeris-offline://none/none/{z}/{x}/{y}'],minzoom:4,maxzoom:12,attribution:'© OpenStreetMap contributors · Protomaps'},
       dipul: {
         type: 'raster',
         tiles: [dipulTiles(DIPUL_CORE_LAYERS)],
@@ -426,10 +441,11 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       'weather-location': { type:'geojson', data:emptyGeoJson },
       'flight-range': { type:'geojson', data:emptyGeoJson },
       'flight-plan': { type:'geojson', data:emptyGeoJson }
-      ,'offline-package':{type:'geojson',data:emptyGeoJson,attribution:'Offline package · DIPUL WFS · CC BY-ND 4.0'}
+      ,'offline-package':{type:'geojson',data:emptyGeoJson,attribution:'Downloaded official UAS sources · offline package'}
     },
     layers: [
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
+      ...offlineBasemapLayers as any,
       {id:'offline-package-fill',type:'fill',source:'offline-package',filter:['match',['geometry-type'],['Polygon','MultiPolygon'],true,false] as any,paint:{'fill-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff'] as any,'fill-opacity':.27}},
       {id:'offline-package-line',type:'line',source:'offline-package',paint:{'line-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff7182','airports','#ffd078','controlled','#e5a2ff','nature','#80efa4','warnings','#ffea94','basic','#b1cbc5','#9ee3ff'] as any,'line-width':['interpolate',['linear'],['zoom'],4,.7,12,2.2] as any,'line-opacity':.96}},
       {id:'offline-package-points',type:'circle',source:'offline-package',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,2.5,12,6] as any,'circle-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff'] as any,'circle-stroke-color':'#06100d','circle-stroke-width':1.2}},
@@ -691,9 +707,11 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     const map=mapRef.current;
     if(!map?.isStyleLoaded())return;
     const source=map.getSource('offline-package') as maplibregl.GeoJSONSource|undefined;
-    if(!source)return;
+    const mapSource=map.getSource('offline-basemap') as maplibregl.VectorTileSource|undefined;
+    if(!source||!mapSource)return;
+    const showOfflineMap=(visible:boolean)=>{if(map.getLayer('basemap'))map.setLayoutProperty('basemap','visibility',visible?'none':'visible');for(const layer of map.getStyle().layers??[])if(layer.id.startsWith('offline-map-'))map.setLayoutProperty(layer.id,'visibility',visible?'visible':'none')};
     const request=++offlineRequestRef.current;
-    if(navigator.onLine){source.setData(emptyGeoJson);setOfflineNotice('');return}
+    if(!mapShouldUseOffline()){source.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('');return}
     const center=point??map.getCenter(),pack=await getBestOfflinePack(center);
     if(request!==offlineRequestRef.current)return;
     if(pack){
@@ -701,9 +719,10 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       const bounds=point?[center.lng-span,center.lat-span,center.lng+span,center.lat+span] as [number,number,number,number]:[visible.getWest(),visible.getSouth(),visible.getEast(),visible.getNorth()] as [number,number,number,number];
       const data=await getOfflinePackageData(pack,bounds);
       if(request!==offlineRequestRef.current)return;
-      source.setData(data as any);setOfflineNotice(`Offline · ${pack.name} · ${data.features.length.toLocaleString()} nearby of ${pack.metadata.itemCount.toLocaleString()} saved items`);
+      if(pack.generation&&pack.metadata.tileCount){mapSource.setTiles([`aeris-offline://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`]);showOfflineMap(true)}else showOfflineMap(false);
+      source.setData(data as any);setOfflineNotice(`Offline · ${pack.name} · street map + ${data.features.length.toLocaleString()} nearby official items`);
     }
-    else{source.setData(emptyGeoJson);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
+    else{source.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
   };
   useEffect(()=>{void syncOfflinePackage(location)},[location?.lat,location?.lng]);
   useEffect(()=>{
@@ -740,7 +759,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
     map.touchZoomRotate.enable();
     map.dragPan.enable();
-    const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;if(navigator.onLine){loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,state.hour,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)}else void syncOfflinePackage()};
+    const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;if(!mapShouldUseOffline()){loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,state.hour,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)}else void syncOfflinePackage()};
     map.on('load', () => { map.setProjection({type:'globe'});setLoaded(true); setError(''); map.resize();refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current);if(!settingsRef.current.reducedMotion&&!windAnimationRef.current)windAnimationRef.current=startWindLineAnimation(map); });
     map.on('style.load',()=>{map.setProjection({type:'globe'});loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current)});
     map.on('moveend',refresh);

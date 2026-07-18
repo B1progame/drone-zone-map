@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Check, Database, Download, MapPin, X } from 'lucide-react';
 import type { Location, Weather, ZoneInfo } from './types';
-import { createOfflineConfig, createOfflinePack, estimateOfflinePackage, estimateOfflinePackageFromSource, GERMAN_STATES, OFFLINE_LAYERS, type OfflineDownloadProgress, type OfflineLayerId, type OfflineScope } from './offline';
-
-const layerIds=Object.keys(OFFLINE_LAYERS) as OfflineLayerId[];
+import { createOfflineConfig, createOfflinePack, estimateOfflinePackage, estimateOfflinePackageFromSource, GERMAN_STATES, OFFLINE_COUNTRIES, OFFLINE_LAYERS, type OfflineCountryCode, type OfflineDownloadProgress, type OfflineLayerId, type OfflineScope } from './offline';
 
 export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}:{location:Location;weather?:Weather;zoneInfo?:ZoneInfo;onClose:()=>void;onSaved:()=>void}){
- const[scope,setScope]=useState<OfflineScope>('radius'),[stateName,setStateName]=useState('Berlin'),[radius,setRadius]=useState(20),[layers,setLayers]=useState<OfflineLayerId[]>(layerIds),[progress,setProgress]=useState<OfflineDownloadProgress>(),[error,setError]=useState(''),[sourceEstimate,setSourceEstimate]=useState<{bytes:number;items:number;label:string}>();
- const config=useMemo(()=>createOfflineConfig(scope,location,layers,stateName,radius),[scope,location,layers,stateName,radius]);
+ const detected=(zoneInfo?.countryCode&&zoneInfo.countryCode in OFFLINE_COUNTRIES?zoneInfo.countryCode:'DE') as OfflineCountryCode;
+ const[scope,setScope]=useState<OfflineScope>('radius'),[country,setCountry]=useState<OfflineCountryCode>(detected),[stateName,setStateName]=useState('Berlin'),[radius,setRadius]=useState(20),[layers,setLayers]=useState<OfflineLayerId[]>(OFFLINE_COUNTRIES[detected].layers),[progress,setProgress]=useState<OfflineDownloadProgress>(),[error,setError]=useState(''),[sourceEstimate,setSourceEstimate]=useState<{bytes:number;items:number;tileCount?:number;label:string}>();
+ const availableLayers=OFFLINE_COUNTRIES[country].layers;
+ const config=useMemo(()=>createOfflineConfig(scope,location,layers,stateName,radius,country),[scope,location,layers,stateName,radius,country]);
  const estimate=useMemo(()=>estimateOfflinePackage(config),[config]);
  const shownEstimate=sourceEstimate??estimate;
  useEffect(()=>{let active=true;setSourceEstimate(undefined);void estimateOfflinePackageFromSource(config).then(value=>{if(active)setSourceEstimate(value)}).catch(()=>{});return()=>{active=false}},[config]);
  const toggle=(id:OfflineLayerId)=>setLayers(value=>value.includes(id)?value.filter(item=>item!==id):[...value,id]);
+ const chooseCountry=(next:OfflineCountryCode)=>{setCountry(next);setLayers(OFFLINE_COUNTRIES[next].layers);if(next!=='DE'&&scope==='state')setScope('country')};
  const download=async()=>{
   setError('');
   try{await createOfflinePack(config,weather,zoneInfo,setProgress);onSaved();window.setTimeout(onClose,450)}
@@ -20,21 +21,23 @@ export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}
  return <div className="modalShade offlineShade" role="dialog" aria-modal="true" aria-labelledby="offline-title">
   <section className="settings offlineBuilder liquid">
    <button className="close" onClick={onClose} aria-label="Close offline download"><X/></button>
-   <div className="eyebrow">OFFLINE FLIGHT PACKAGE · GERMANY</div>
+   <div className="eyebrow">OFFLINE FLIGHT PACKAGE · {OFFLINE_COUNTRIES[country].name.toUpperCase()}</div>
    <h2 id="offline-title">Download this area</h2>
    <p>Only the selected area and official layers are stored on this device. The app automatically uses the smallest matching package when there is no connection.</p>
+   <label>Country<select value={country} onChange={event=>chooseCountry(event.target.value as OfflineCountryCode)} disabled={Boolean(progress)}>{(Object.keys(OFFLINE_COUNTRIES) as OfflineCountryCode[]).map(code=><option value={code} key={code}>{OFFLINE_COUNTRIES[code].name}</option>)}</select></label>
    <label>Area<select value={scope} onChange={event=>setScope(event.target.value as OfflineScope)} disabled={Boolean(progress)}>
-    <option value="radius">Custom radius around selected location</option><option value="city">City / place</option><option value="state">Federal state</option><option value="country">All Germany</option>
+    <option value="radius">Custom radius around selected location</option><option value="city">City / place</option>{country==='DE'&&<option value="state">Federal state</option>}<option value="country">{country==='FR'?'Mainland France':`All ${OFFLINE_COUNTRIES[country].name}`}</option>
    </select></label>
    {scope==='state'&&<label>Federal state<select value={stateName} onChange={event=>setStateName(event.target.value)}>{GERMAN_STATES.map(state=><option key={state.name}>{state.name}</option>)}</select></label>}
    {(scope==='radius'||scope==='city')&&<label className="offlineRadius"><span>{scope==='city'?'City coverage':'Radius'} <b>{scope==='city'?Math.min(25,Math.max(5,radius)):radius} km</b></span><input type="range" min={scope==='city'?5:1} max={scope==='city'?25:100} value={radius} onChange={event=>setRadius(Number(event.target.value))}/></label>}
    <div className="offlineCenter"><MapPin/><span><b>{config.region}</b>{config.bounds.map(value=>value.toFixed(2)).join(' · ')}</span></div>
-   <fieldset className="offlineLayerList" disabled={Boolean(progress)}><legend>Layers</legend>{layerIds.map(id=><label key={id}><input type="checkbox" checked={layers.includes(id)} onChange={()=>toggle(id)}/><span><Check/><b>{OFFLINE_LAYERS[id].label}</b></span></label>)}</fieldset>
+   <fieldset className="offlineLayerList" disabled={Boolean(progress)}><legend>Official layers</legend>{availableLayers.map(id=><label key={id}><input type="checkbox" checked={layers.includes(id)} onChange={()=>toggle(id)}/><span><Check/><b>{OFFLINE_LAYERS[id].label}</b></span></label>)}</fieldset>
+   <div className="offlineCenter"><MapPin/><span><b>Offline street map included</b>Vector roads, land, water and buildings through zoom {config.basemapMaxZoom} · {shownEstimate.tileCount?.toLocaleString()??'…'} tiles</span></div>
    <div className="offlineEstimate"><Database/><span><small>{sourceEstimate?'SOURCE-CHECKED ESTIMATE':'ESTIMATING PACKAGE'}</small><b>{shownEstimate.label}</b><i>about {shownEstimate.items.toLocaleString()} items · final size depends on feature geometry</i></span></div>
    {progress&&<div className="offlineBuildProgress" role="status" aria-live="polite"><span><b>{progress.percent}%</b>{progress.stage}</span><i><b style={{width:`${progress.percent}%`}}/></i><small>{progress.items.toLocaleString()} items received</small></div>}
    {error&&<div className="offlineError">{error}</div>}
-   <button className="primary offlineDownload" disabled={Boolean(progress)||!layers.length} onClick={()=>void download()}><Download/>{progress?'Downloading package…':`Download about ${shownEstimate.label}`}</button>
-   <small>Official source: DIPUL WFS. Offline data is planning support, not legal clearance. Temporary restrictions can change after download.</small>
+   <button className="primary offlineDownload" disabled={Boolean(progress)} onClick={()=>void download()}><Download/>{progress?'Downloading package…':`Download about ${shownEstimate.label}`}</button>
+   <small>Official zones: {OFFLINE_COUNTRIES[country].source}. Basemap: © OpenStreetMap contributors via Protomaps. Offline data is planning support, not legal clearance. Temporary restrictions can change after download.</small>
   </section>
  </div>;
 }
