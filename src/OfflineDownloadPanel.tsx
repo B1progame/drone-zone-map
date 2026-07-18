@@ -26,18 +26,18 @@ export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}
    <p>Only the selected area and official layers are stored on this device. The app automatically uses the smallest matching package when there is no connection.</p>
    <label>Country<select value={country} onChange={event=>chooseCountry(event.target.value as OfflineCountryCode)} disabled={Boolean(progress)}>{(Object.keys(OFFLINE_COUNTRIES) as OfflineCountryCode[]).map(code=><option value={code} key={code}>{OFFLINE_COUNTRIES[code].name}</option>)}</select></label>
    <label>Area<select value={scope} onChange={event=>setScope(event.target.value as OfflineScope)} disabled={Boolean(progress)}>
-    <option value="radius">Custom radius around selected location</option><option value="city">City / place</option>{country==='DE'&&<option value="state">Federal state</option>}<option value="country">{country==='FR'?'Mainland France':`All ${OFFLINE_COUNTRIES[country].name}`}</option>
+    <option value="radius">Custom radius around selected location</option><option value="city">City / place</option>{country==='DE'&&<option value="state">Federal state</option>}<option value="country">{OFFLINE_COUNTRIES[country].scopeLabel??`All ${OFFLINE_COUNTRIES[country].name}`}</option>
    </select></label>
    {scope==='state'&&<label>Federal state<select value={stateName} onChange={event=>setStateName(event.target.value)}>{GERMAN_STATES.map(state=><option key={state.name}>{state.name}</option>)}</select></label>}
    {(scope==='radius'||scope==='city')&&<label className="offlineRadius"><span>{scope==='city'?'City coverage':'Radius'} <b>{scope==='city'?Math.min(25,Math.max(5,radius)):radius} km</b></span><input type="range" min={scope==='city'?5:1} max={scope==='city'?25:100} value={radius} onChange={event=>setRadius(Number(event.target.value))}/></label>}
    <div className="offlineCenter"><MapPin/><span><b>{config.region}</b>{config.bounds.map(value=>value.toFixed(2)).join(' · ')}</span></div>
-   <fieldset className="offlineLayerList" disabled={Boolean(progress)}><legend>Official layers</legend>{availableLayers.map(id=><label key={id}><input type="checkbox" checked={layers.includes(id)} onChange={()=>toggle(id)}/><span><Check/><b>{OFFLINE_LAYERS[id].label}</b></span></label>)}</fieldset>
-   <div className="offlineCenter"><MapPin/><span><b>Offline street map included</b>Vector roads, land, water and buildings through zoom {config.basemapMaxZoom} · {shownEstimate.tileCount?.toLocaleString()??'…'} tiles</span></div>
+   {availableLayers.length?<fieldset className="offlineLayerList" disabled={Boolean(progress)}><legend>Official layers</legend>{availableLayers.map(id=><label key={id}><input type="checkbox" checked={layers.includes(id)} onChange={()=>toggle(id)}/><span><Check/><b>{OFFLINE_LAYERS[id].label}</b></span></label>)}</fieldset>:<div className="offlineError">{OFFLINE_COUNTRIES[country].offlineNote}</div>}
+   <div className="offlineCenter"><MapPin/><span><b>Offline street map included</b>Vector roads, land and water through zoom {config.basemapMaxZoom} · {shownEstimate.tileCount?.toLocaleString()??'…'} tiles</span></div>
    <div className="offlineEstimate"><Database/><span><small>{sourceEstimate?'SOURCE-CHECKED ESTIMATE':'ESTIMATING PACKAGE'}</small><b>{shownEstimate.label}</b><i>about {shownEstimate.items.toLocaleString()} items · final size depends on feature geometry</i></span></div>
    {progress&&<div className="offlineBuildProgress" role="status" aria-live="polite"><span><b>{progress.percent}%</b>{progress.stage}</span><i><b style={{width:`${progress.percent}%`}}/></i><small>{progress.items.toLocaleString()} items received</small></div>}
    {error&&<div className="offlineError">{error}</div>}
    <button className="primary offlineDownload" disabled={Boolean(progress)} onClick={()=>void download()}><Download/>{progress?'Downloading package…':`Download about ${shownEstimate.label}`}</button>
-   <small>Official zones: {OFFLINE_COUNTRIES[country].source}. Basemap: © OpenStreetMap contributors via Protomaps. Offline data is planning support, not legal clearance. Temporary restrictions can change after download.</small>
+   <small>Official context: {OFFLINE_COUNTRIES[country].source}. Basemap: OpenFreeMap / OpenMapTiles with © OpenStreetMap contributors. Offline data is planning support, not legal clearance. Temporary restrictions can change after download.</small>
   </section>
  </div>;
 }

@@ -5,7 +5,6 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData } from './offline';
-import { DARK, layers as protomapsLayers } from '@protomaps/basemaps';
 
 type BaseMap = 'satellite' | 'streets';
 
@@ -83,8 +82,9 @@ if(!offlineProtocolRegistered){
     const match=params.url.match(/^aeris-offline:\/\/([^/]+)\/([^/]+)\/(\d+)\/(\d+)\/(\d+)$/);
     if(!match)throw new Error('Invalid offline tile URL.');
     const data=await getOfflineMapTile(decodeURIComponent(match[1]),decodeURIComponent(match[2]),Number(match[3]),Number(match[4]),Number(match[5]));
-    if(!data)throw new Error('Offline tile is outside the downloaded package.');
-    return{data};
+    // An empty protobuf message is a valid empty vector tile. Returning it keeps
+    // MapLibre stable when the viewport extends beyond downloaded coverage.
+    return{data:data??new ArrayBuffer(0)};
   });
   offlineProtocolRegistered=true;
 }
@@ -390,7 +390,18 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:`sweden-${id}-line`,type:'line' as const,source:`sweden-${id}`,minzoom:index>=5?5.5:5,...filterProperty,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'line-color':index<5?'#ffb06f':'#e2a1ff','line-width':['interpolate',['linear'],['zoom'],5,.7,12,1.8] as any,'line-opacity':.88}}
     ];
   });
-  const offlineBasemapLayers=protomapsLayers('offline-basemap',DARK).filter(layer=>'source' in layer&&layer.source==='offline-basemap'&&layer.type!=='symbol').map(layer=>({...layer,id:`offline-map-${layer.id}`,layout:{...layer.layout,visibility:'none' as const}}));
+  const offlineBasemapLayers:any[]=[
+    {id:'offline-map-background',type:'background',layout:{visibility:'none'},paint:{'background-color':'#07130f'}},
+    {id:'offline-map-landcover',type:'fill',source:'offline-basemap','source-layer':'landcover',layout:{visibility:'none'},paint:{'fill-color':['match',['get','class'],'wood','#183d2b','grass','#244834','farmland','#343f2a','ice','#a7c8c3','sand','#655c3a','#173326'],'fill-opacity':.9}},
+    {id:'offline-map-landuse',type:'fill',source:'offline-basemap','source-layer':'landuse',layout:{visibility:'none'},paint:{'fill-color':['match',['get','class'],'residential','#22332d','industrial','#313432','cemetery','#23402f','hospital','#293b35','school','#2d4037','#1d3029'],'fill-opacity':.82}},
+    {id:'offline-map-park',type:'fill',source:'offline-basemap','source-layer':'park',layout:{visibility:'none'},paint:{'fill-color':'#245336','fill-opacity':.72}},
+    {id:'offline-map-water',type:'fill',source:'offline-basemap','source-layer':'water',layout:{visibility:'none'},paint:{'fill-color':'#17495a'}},
+    {id:'offline-map-waterway',type:'line',source:'offline-basemap','source-layer':'waterway',layout:{visibility:'none'},paint:{'line-color':'#26718a','line-width':['interpolate',['linear'],['zoom'],5,.5,12,2]}},
+    {id:'offline-map-building',type:'fill',source:'offline-basemap','source-layer':'building',minzoom:12,layout:{visibility:'none'},paint:{'fill-color':'#647068','fill-opacity':.62,'fill-outline-color':'#89958d'}},
+    {id:'offline-map-road-casing',type:'line',source:'offline-basemap','source-layer':'transportation',minzoom:4,layout:{visibility:'none','line-cap':'round','line-join':'round'},paint:{'line-color':'#101b18','line-width':['interpolate',['linear'],['zoom'],4,1.2,8,2.5,12,7]}},
+    {id:'offline-map-roads',type:'line',source:'offline-basemap','source-layer':'transportation',minzoom:4,layout:{visibility:'none','line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','class'],'motorway','#d9b75e','trunk','#c9a955','primary','#b4a36b','secondary','#89968a','rail','#788b84','#687a73'],'line-width':['interpolate',['linear'],['zoom'],4,.5,8,1.2,12,4.5]}},
+    {id:'offline-map-boundary',type:'line',source:'offline-basemap','source-layer':'boundary',layout:{visibility:'none'},paint:{'line-color':'#7d9b8d','line-width':['interpolate',['linear'],['zoom'],3,.5,10,1.4],'line-dasharray':[3,2],'line-opacity':.65}}
+  ];
   return {
     version: 8,
     projection:{type:'globe'},
@@ -407,7 +418,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
           ? 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
           : '© OpenStreetMap contributors'
       },
-      'offline-basemap':{type:'vector',tiles:['aeris-offline://none/none/{z}/{x}/{y}'],minzoom:4,maxzoom:12,attribution:'© OpenStreetMap contributors · Protomaps'},
+      'offline-basemap':{type:'vector',tiles:['aeris-offline://none/none/{z}/{x}/{y}'],minzoom:2,maxzoom:12,attribution:'<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>'},
       dipul: {
         type: 'raster',
         tiles: [dipulTiles(DIPUL_CORE_LAYERS)],
@@ -441,14 +452,17 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       'weather-location': { type:'geojson', data:emptyGeoJson },
       'flight-range': { type:'geojson', data:emptyGeoJson },
       'flight-plan': { type:'geojson', data:emptyGeoJson }
-      ,'offline-package':{type:'geojson',data:emptyGeoJson,attribution:'Downloaded official UAS sources · offline package'}
+      ,'offline-package':{type:'geojson',data:emptyGeoJson,attribution:'Downloaded official UAS sources · offline package'},
+      'offline-coverage':{type:'geojson',data:emptyGeoJson}
     },
     layers: [
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
-      ...offlineBasemapLayers as any,
+      ...offlineBasemapLayers,
       {id:'offline-package-fill',type:'fill',source:'offline-package',filter:['match',['geometry-type'],['Polygon','MultiPolygon'],true,false] as any,paint:{'fill-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff'] as any,'fill-opacity':.27}},
       {id:'offline-package-line',type:'line',source:'offline-package',paint:{'line-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff7182','airports','#ffd078','controlled','#e5a2ff','nature','#80efa4','warnings','#ffea94','basic','#b1cbc5','#9ee3ff'] as any,'line-width':['interpolate',['linear'],['zoom'],4,.7,12,2.2] as any,'line-opacity':.96}},
       {id:'offline-package-points',type:'circle',source:'offline-package',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,2.5,12,6] as any,'circle-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff'] as any,'circle-stroke-color':'#06100d','circle-stroke-width':1.2}},
+      {id:'offline-coverage-fill',type:'fill',source:'offline-coverage',layout:{visibility:'none'},paint:{'fill-color':'#b7ff9c','fill-opacity':.025}},
+      {id:'offline-coverage-line',type:'line',source:'offline-coverage',layout:{visibility:'none'},paint:{'line-color':'#b7ff9c','line-width':['interpolate',['linear'],['zoom'],2,1,12,2.5] as any,'line-dasharray':[3,2],'line-opacity':.95}},
       { id: 'dipul-zones', type: 'raster', source: 'dipul', layout: { visibility: zonesVisible ? 'visible' : 'none' }, paint: { 'raster-opacity': 0.78, 'raster-fade-duration': 150 } },
       { id:'dipul-detail',type:'raster',source:'dipul-detail',minzoom:8.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.76,'raster-fade-duration':120}},
       {id:'enaire-infrastructure-fill',type:'fill',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainColor,'fill-opacity':enaireFillOpacity}},
@@ -707,11 +721,12 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     const map=mapRef.current;
     if(!map?.isStyleLoaded())return;
     const source=map.getSource('offline-package') as maplibregl.GeoJSONSource|undefined;
+    const coverageSource=map.getSource('offline-coverage') as maplibregl.GeoJSONSource|undefined;
     const mapSource=map.getSource('offline-basemap') as maplibregl.VectorTileSource|undefined;
-    if(!source||!mapSource)return;
-    const showOfflineMap=(visible:boolean)=>{if(map.getLayer('basemap'))map.setLayoutProperty('basemap','visibility',visible?'none':'visible');for(const layer of map.getStyle().layers??[])if(layer.id.startsWith('offline-map-'))map.setLayoutProperty(layer.id,'visibility',visible?'visible':'none')};
+    if(!source||!coverageSource||!mapSource)return;
+    const showOfflineMap=(visible:boolean)=>{if(map.getLayer('basemap'))map.setLayoutProperty('basemap','visibility',visible?'none':'visible');for(const layer of map.getStyle().layers??[])if(layer.id.startsWith('offline-map-')||layer.id.startsWith('offline-coverage-'))map.setLayoutProperty(layer.id,'visibility',visible?'visible':'none')};
     const request=++offlineRequestRef.current;
-    if(!mapShouldUseOffline()){source.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('');return}
+    if(!mapShouldUseOffline()){source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('');return}
     const center=point??map.getCenter(),pack=await getBestOfflinePack(center);
     if(request!==offlineRequestRef.current)return;
     if(pack){
@@ -720,9 +735,11 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       const data=await getOfflinePackageData(pack,bounds);
       if(request!==offlineRequestRef.current)return;
       if(pack.generation&&pack.metadata.tileCount){mapSource.setTiles([`aeris-offline://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`]);showOfflineMap(true)}else showOfflineMap(false);
+      const[west,south,east,north]=pack.metadata.bounds;
+      coverageSource.setData({type:'FeatureCollection',features:[{type:'Feature',properties:{name:pack.name},geometry:{type:'Polygon',coordinates:[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}}]} as any);
       source.setData(data as any);setOfflineNotice(`Offline · ${pack.name} · street map + ${data.features.length.toLocaleString()} nearby official items`);
     }
-    else{source.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
+    else{source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
   };
   useEffect(()=>{void syncOfflinePackage(location)},[location?.lat,location?.lng]);
   useEffect(()=>{

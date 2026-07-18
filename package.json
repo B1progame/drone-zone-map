@@ -9,11 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@protomaps/basemaps": "^5.7.2",
     "@vitejs/plugin-react": "latest",
     "lucide-react": "latest",
     "maplibre-gl": "latest",
-    "pmtiles": "^4.4.1",
     "react": "latest",
     "react-dom": "latest",
     "typescript": "latest",
