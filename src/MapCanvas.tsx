@@ -4,7 +4,7 @@ import { CloudRain, CloudSun, Layers3, Map as MapIcon, Pause, Play, Satellite, W
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
-import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData, getOfflineWorldPack, isOfflineTestMode, setOfflineTestMode, type OfflineBasemapType, type OfflinePack } from './offline';
+import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData, getOfflinePacks, getOfflineWorldPack, isOfflineTestMode, setOfflineTestMode, type OfflineBasemapType, type OfflinePack } from './offline';
 import { enrichZoneSemantics, filterUkDroneRelevant, type ZoneSemantic } from './zoneSemantics';
 
 type BaseMap = 'satellite' | 'streets';
@@ -835,13 +835,19 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     if(map.getLayer('weather-radar'))map.removeLayer('weather-radar');
     if(map.getSource('weather-radar'))map.removeSource('weather-radar');
     const center=point??map.getCenter();
-    let pack:OfflinePack|undefined=await getBestOfflinePack(center),worldOverview=false;
-    if(!pack&&map.getZoom()<=2.5){pack=await getOfflineWorldPack();worldOverview=Boolean(pack)}
+    const downloadedPacks=await getOfflinePacks();
+    if(request!==offlineRequestRef.current)return;
+    coverageSource.setData({type:'FeatureCollection',features:downloadedPacks.map(downloadedPack=>{
+      const[west,south,east,north]=downloadedPack.metadata.bounds;
+      return{type:'Feature' as const,properties:{id:downloadedPack.id,name:downloadedPack.name,country:downloadedPack.metadata.country},geometry:{type:'Polygon' as const,coordinates:[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}};
+    })} as any);
+    let pack:OfflinePack|undefined=await getBestOfflinePack(center,downloadedPacks),worldOverview=false;
+    if(!pack&&map.getZoom()<=2.5){pack=await getOfflineWorldPack(downloadedPacks);worldOverview=Boolean(pack)}
     if(request!==offlineRequestRef.current)return;
     if(pack){
       const basemapType=pack.config.basemapType??pack.metadata.basemapType??'street',protocol=basemapType==='satellite'?'aeris-offline-raster':'aeris-offline';
       if(worldOverview){
-        source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);
+        source.setData(emptyGeoJson);
         if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[`${protocol}://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`],basemapType,2);else showOfflineMap(false);
         setOfflineNotice(`Offline · worldwide overview · ${basemapType} map through zoom 2`);
         return;
@@ -851,12 +857,10 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       const data=await getOfflinePackageData(pack,bounds);
       if(request!==offlineRequestRef.current)return;
       if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[`${protocol}://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`],basemapType,pack.config.basemapMaxZoom??pack.metadata.basemapMaxZoom??12);else showOfflineMap(false);
-      const[west,south,east,north]=pack.metadata.bounds;
-      coverageSource.setData({type:'FeatureCollection',features:[{type:'Feature',properties:{name:pack.name},geometry:{type:'Polygon',coordinates:[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}}]} as any);
       const visibleData=pack.metadata.countryCode==='GB'?filterUkDroneRelevant(data):data;
       source.setData(enrichZoneSemantics(visibleData) as any);setOfflineNotice(`Offline · ${pack.name} · ${basemapType} map + ${visibleData.features.length.toLocaleString()} nearby official items`);
     }
-    else{source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);showOfflineMap(true);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
+    else{source.setData(emptyGeoJson);showOfflineMap(true);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
   };
   useEffect(()=>{void syncOfflinePackage(location)},[location?.lat,location?.lng]);
   useEffect(()=>{
