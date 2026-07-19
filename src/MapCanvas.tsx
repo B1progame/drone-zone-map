@@ -52,12 +52,24 @@ const dipulTiles=(layers:string)=>`https://uas-betrieb.de/geoservices/dipul/wms?
 const ENAIRE_SERVICES='https://servais.enaire.es/insignias/rest/services';
 const ENAIRE_DEFAULT_ALTITUDE_M=120;
 const ENAIRE_RESTRICTION_FILTER=`RESTRICCION_LOWER < ${ENAIRE_DEFAULT_ALTITUDE_M}`;
+const ENAIRE_ALTITUDE_FILTER=`RESTRICCION_LOWER >= ${ENAIRE_DEFAULT_ALTITUDE_M}`;
 const arcGisMapTiles=(service:string,layers:number[],layerDefs?:Record<number,string>)=>{
  const definitions=layerDefs?`&layerDefs=${encodeURIComponent(JSON.stringify(layerDefs))}`:'';
  return `${service}/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&layers=show:${layers.join(',')}${definitions}&f=image`;
 };
+const arcGisSimpleFillLayer=(id:number,definitionExpression:string|undefined,fill:number[],outline:number[])=>({
+ id,source:{type:'mapLayer',mapLayerId:id},...(definitionExpression?{definitionExpression}:{}),
+ drawingInfo:{renderer:{type:'simple',symbol:{type:'esriSFS',style:'esriSFSSolid',color:fill,outline:{type:'esriSLS',style:'esriSLSSolid',color:outline,width:1.4}}}}
+});
+const arcGisDynamicMapTiles=(service:string,dynamicLayers:unknown[])=>`${service}/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&dynamicLayers=${encodeURIComponent(JSON.stringify(dynamicLayers))}&f=image`;
 const ENAIRE_AERO=`${ENAIRE_SERVICES}/NSF/Drones_ZG_Aero_V3/MapServer`;
+const ENAIRE_INFRASTRUCTURE=`${ENAIRE_SERVICES}/NSF/Drones_ZG_Infra_V0/MapServer`;
+const ENAIRE_NOTAM=`${ENAIRE_SERVICES}/NOTAM/NOTAM_UAS_APP_V3/MapServer`;
 const ENAIRE_BOUNDS:[number,number,number,number]=[-18.5,27.5,4.5,44.5];
+const ENAIRE_ALTITUDE_FILL=[55,125,255,55];
+const ENAIRE_ALTITUDE_OUTLINE=[85,165,255,235];
+const ENAIRE_NATURE_FILL=[38,210,105,90];
+const ENAIRE_NATURE_OUTLINE=[90,255,145,240];
 const FAA_UAS='https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0';
 const CANADA_AIRPORTS='https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0';
 const CANADA_NATIONAL_PARKS='https://proxyinternet.nrcan-rncan.gc.ca/arcgis/rest/services/CLSS-SATC/CLSS_Administrative_Boundaries/MapServer/1';
@@ -78,7 +90,7 @@ const FRANCE_EXTENTS:[number,number,number,number][]=[
  [-56.6,46.7,-55.8,47.3],[44.9,-13.1,45.4,-12.5],[55,-21.6,56,-20.7],
  [39,-50,78,-11]
 ];
-const ZONE_LAYER_IDS = ['offline-package-fill','offline-package-line','offline-package-points','dipul-zones','dipul-detail','enaire-nature','enaire-urban','enaire-infrastructure','enaire-aero-zones','enaire-notam','enaire-aero-sites','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
+const ZONE_LAYER_IDS = ['offline-package-fill','offline-package-line','offline-package-points','dipul-zones','dipul-detail','enaire-nature','enaire-urban','enaire-infrastructure','enaire-aero-zones','enaire-notam','enaire-altitude-infrastructure','enaire-altitude-aero','enaire-altitude-notam','enaire-aero-sites','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airports','canada-airport-rings','canada-airport-lines','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
 const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const dynamicRequestKeys=new WeakMap<MapLibreMap,Map<string,string>>();
 const radarUnavailableMaps=new WeakSet<MapLibreMap>();
@@ -412,11 +424,14 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
         bounds:[5.5,47,15.5,55.2],
         attribution:'DIPUL detail objects © DFS, BKG 2026'
       },
-      'enaire-nature':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/ENP/ENP_APP_Local_V4/MapServer`,[0,1])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'<a href="https://drones.enaire.es/" target="_blank">Official UAS map © ENAIRE / AIS</a>'},
+      'enaire-nature':{type:'raster',tiles:[arcGisDynamicMapTiles(`${ENAIRE_SERVICES}/ENP/ENP_APP_Local_V4/MapServer`,[0,1].map(id=>arcGisSimpleFillLayer(id,undefined,ENAIRE_NATURE_FILL,ENAIRE_NATURE_OUTLINE)))],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'<a href="https://drones.enaire.es/" target="_blank">Protected natural areas © ENAIRE / AIS</a>'},
       'enaire-urban':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NSF/Drones_ZG_Urbano_V0/MapServer`,[11])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS urban zones © ENAIRE / AIS'},
-      'enaire-infrastructure':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NSF/Drones_ZG_Infra_V0/MapServer`,[11],{11:ENAIRE_RESTRICTION_FILTER})],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS infrastructure zones © ENAIRE / AIS'},
+      'enaire-infrastructure':{type:'raster',tiles:[arcGisMapTiles(ENAIRE_INFRASTRUCTURE,[11],{11:ENAIRE_RESTRICTION_FILTER})],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS infrastructure zones © ENAIRE / AIS'},
       'enaire-aero-zones':{type:'raster',tiles:[arcGisMapTiles(ENAIRE_AERO,[2,3,10,1,6],{1:ENAIRE_RESTRICTION_FILTER,2:ENAIRE_RESTRICTION_FILTER,10:ENAIRE_RESTRICTION_FILTER})],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS aeronautical zones © ENAIRE / AIS'},
-      'enaire-notam':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NOTAM/NOTAM_UAS_APP_V3/MapServer`,[1],{1:`LOWER_VAL_AGL is null or LOWER_VAL_AGL < ${ENAIRE_DEFAULT_ALTITUDE_M}`})],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Prototype NOTAM display © ENAIRE / AIS · verify operationally in ICARO'},
+      'enaire-notam':{type:'raster',tiles:[arcGisMapTiles(ENAIRE_NOTAM,[1],{1:`LOWER_VAL_AGL is null or LOWER_VAL_AGL < ${ENAIRE_DEFAULT_ALTITUDE_M}`})],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Prototype NOTAM display © ENAIRE / AIS · verify operationally in ICARO'},
+      'enaire-altitude-infrastructure':{type:'raster',tiles:[arcGisDynamicMapTiles(ENAIRE_INFRASTRUCTURE,[arcGisSimpleFillLayer(11,ENAIRE_ALTITUDE_FILTER,ENAIRE_ALTITUDE_FILL,ENAIRE_ALTITUDE_OUTLINE)])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Altitude-only infrastructure zones © ENAIRE / AIS'},
+      'enaire-altitude-aero':{type:'raster',tiles:[arcGisDynamicMapTiles(ENAIRE_AERO,[1,2,10].map(id=>arcGisSimpleFillLayer(id,ENAIRE_ALTITUDE_FILTER,ENAIRE_ALTITUDE_FILL,ENAIRE_ALTITUDE_OUTLINE)))],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Altitude-only airspace © ENAIRE / AIS'},
+      'enaire-altitude-notam':{type:'raster',tiles:[arcGisDynamicMapTiles(ENAIRE_NOTAM,[arcGisSimpleFillLayer(1,`LOWER_VAL_AGL >= ${ENAIRE_DEFAULT_ALTITUDE_M}`,ENAIRE_ALTITUDE_FILL,ENAIRE_ALTITUDE_OUTLINE)])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Altitude-only NOTAM display © ENAIRE / AIS'},
       'enaire-aero-sites':{type:'raster',tiles:[arcGisMapTiles(ENAIRE_AERO,[0,4])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Aerodromes and model-aircraft sites © ENAIRE / AIS'},
       france: {type:'raster',tiles:[franceTiles],tileSize:256,bounds:[-63.7,-50,78,51.6],minzoom:6,maxzoom:18,attribution:'<a href="https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme" target="_blank">Restrictions UAS © IGN / Géoportail</a>'},
       uk:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/" target="_blank">NATS UK AIS · effective 9 Jul 2026</a>'},
@@ -450,11 +465,15 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       // These are the exact public operational services used by drones.enaire.es.
       // Its default 120 m flight filters are applied server-side so high-altitude
       // airspace is not painted as an applicable low-altitude drone zone.
-      {id:'enaire-nature',type:'raster',source:'enaire-nature',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.11,'raster-fade-duration':100}},
       {id:'enaire-urban',type:'raster',source:'enaire-urban',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.71,'raster-fade-duration':100}},
       {id:'enaire-infrastructure',type:'raster',source:'enaire-infrastructure',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.9,'raster-fade-duration':100}},
       {id:'enaire-aero-zones',type:'raster',source:'enaire-aero-zones',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.72,'raster-fade-duration':100}},
       {id:'enaire-notam',type:'raster',source:'enaire-notam',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.66,'raster-fade-duration':100}},
+      {id:'enaire-altitude-infrastructure',type:'raster',source:'enaire-altitude-infrastructure',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.72,'raster-fade-duration':100}},
+      {id:'enaire-altitude-aero',type:'raster',source:'enaire-altitude-aero',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.72,'raster-fade-duration':100}},
+      {id:'enaire-altitude-notam',type:'raster',source:'enaire-altitude-notam',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.72,'raster-fade-duration':100}},
+      // Nature stays green even where a higher-altitude blue band overlaps it.
+      {id:'enaire-nature',type:'raster',source:'enaire-nature',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.82,'raster-fade-duration':100}},
       {id:'enaire-aero-sites',type:'raster',source:'enaire-aero-sites',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':1,'raster-fade-duration':100}},
       {id:'france-zones',type:'raster',source:'france',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.82,'raster-fade-duration':100}},
       {id:'uk-zones',type:'fill',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['match',['get','category'],'Danger','#c43b73','Prohibited','#ff405d','Restricted','#e55270','#e55270'],'fill-opacity':['interpolate',['linear'],['zoom'],4.5,.2,8,.26,12,.32]}},
@@ -463,8 +482,8 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:'swiss-lines',type:'line',source:'switzerland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['coalesce',['get','stroke'],['get','fill'],'#ff6b6b'] as any,'line-width':['interpolate',['linear'],['zoom'],5,.7,12,2.1],'line-opacity':.92}},
       {id:'us-facility-fill',type:'fill',source:'us-facility',minzoom:7,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['step',['to-number',['get','CEILING']], '#ff4056',1,'#ff7c4d',100,'#ffb44e',300,'#ffe069'],'fill-opacity':.2}},
       {id:'us-facility-line',type:'line',source:'us-facility',minzoom:7,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['step',['to-number',['get','CEILING']], '#ff4056',1,'#ff7c4d',100,'#ffb44e',300,'#ffe069'],'line-width':['interpolate',['linear'],['zoom'],7,.45,13,1.5],'line-opacity':.9}},
-      {id:'canada-national-parks',type:'fill',source:'canada-national-parks',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':'#ff9e43','fill-opacity':['interpolate',['linear'],['zoom'],3,.13,7,.2,12,.28]}},
-      {id:'canada-national-park-lines',type:'line',source:'canada-national-parks',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':'#ffc26d','line-width':['interpolate',['linear'],['zoom'],3,.65,12,2.1],'line-opacity':.94}},
+      {id:'canada-national-parks',type:'fill',source:'canada-national-parks',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':'#26c96f','fill-opacity':['interpolate',['linear'],['zoom'],3,.13,7,.2,12,.28]}},
+      {id:'canada-national-park-lines',type:'line',source:'canada-national-parks',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':'#72efaa','line-width':['interpolate',['linear'],['zoom'],3,.65,12,2.1],'line-opacity':.94}},
       {id:'canada-airport-rings',type:'fill',source:'canada-airports',minzoom:3,filter:['==',['geometry-type'],'Polygon'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':'#ffb548','fill-opacity':['interpolate',['linear'],['zoom'],3,.1,7,.2,12,.27]}},
       {id:'canada-airport-lines',type:'line',source:'canada-airports',minzoom:3,filter:['==',['geometry-type'],'Polygon'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':'#ffd37c','line-width':['interpolate',['linear'],['zoom'],3,.65,12,2],'line-opacity':.92}},
       {id:'canada-airports',type:'circle',source:'canada-airports',minzoom:4,filter:['==',['geometry-type'],'Point'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,2.5,11,7],'circle-color':'#f7f4e8','circle-stroke-color':'#ffb548','circle-stroke-width':2}},
