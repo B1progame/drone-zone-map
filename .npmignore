@@ -1,0 +1,7 @@
+private-data/
+private/
+exports/
+output/
+pipeline/reports/
+.playwright/
+.playwright-cli/

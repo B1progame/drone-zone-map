@@ -1,0 +1,424 @@
+{
+  "generatedAt": "2026-07-19T10:27:56.496889+00:00",
+  "providers": [
+    {
+      "countryCode": "DE",
+      "providerId": "de-dipul",
+      "sourceType": "wfs",
+      "discoveredLayers": 33,
+      "importedLayers": 0,
+      "liveOnly": true,
+      "warnings": [
+        "Official raster renders live; exact viewport export uses the official WFS without simplifying or caching its geometry.",
+        "Confirm the current DIPUL map before takeoff."
+      ]
+    },
+    {
+      "countryCode": "ES",
+      "providerId": "es-enaire-servais-ed-318",
+      "sourceType": "arcgis",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": true,
+      "warnings": [
+        "Live official vectors are loaded by viewport across mainland Spain, the Canary Islands, Balearic Islands, Ceuta and Melilla; broad urban coverage is shown only at local zoom.",
+        "Re-check ENAIRE Drones before flight."
+      ]
+    },
+    {
+      "countryCode": "FR",
+      "providerId": "fr-ign-g-oportail",
+      "sourceType": "wfs",
+      "discoveredLayers": 1,
+      "importedLayers": 0,
+      "liveOnly": true,
+      "warnings": [
+        "Official WMTS styling plus live WFS point checks and viewport exports for metropolitan France and the published overseas coverage.",
+        "The published dataset does not cover temporary restrictions; check SIA before flight."
+      ]
+    },
+    {
+      "countryCode": "IE",
+      "providerId": "ie-irish-aviation-authority",
+      "sourceType": "json",
+      "discoveredLayers": 1,
+      "importedLayers": 1,
+      "liveOnly": false,
+      "warnings": [
+        "Reference only, not to be used for navigation. Check current TRAs, NOTAMs and the official IAA file."
+      ]
+    },
+    {
+      "countryCode": "GB",
+      "providerId": "gb-nats-uk-ais",
+      "sourceType": "kml",
+      "discoveredLayers": 1,
+      "importedLayers": 1,
+      "liveOnly": false,
+      "warnings": [
+        "Current permanent AIRAC UAS restriction geometry only; it will not match a live planning app that also includes temporary restrictions and NOTAMs.",
+        "Visualization only; consult the UK AIP and current NOTAMs before flight."
+      ]
+    },
+    {
+      "countryCode": "NL",
+      "providerId": "nl-ministry-of-infrastructure-and-water-management",
+      "sourceType": "json",
+      "discoveredLayers": 1,
+      "importedLayers": 1,
+      "liveOnly": false,
+      "warnings": [
+        "Current official ED-269 download; the former PDOK services were retired on 1 July 2026.",
+        "Check Aeret and current NOTAMs before flight."
+      ]
+    },
+    {
+      "countryCode": "BE",
+      "providerId": "be-fps-mobility-droneguide",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "The federal authority publishes all fixed geozones and access conditions through Droneguide. A stable documented public data URL and explicit reuse terms were not established, so Aeris links to the official map instead of reverse-engineering the application."
+      ]
+    },
+    {
+      "countryCode": "LU",
+      "providerId": "lu-dac-geoportal-uas-geozones",
+      "sourceType": "json",
+      "discoveredLayers": 1,
+      "importedLayers": 1,
+      "liveOnly": false,
+      "warnings": [
+        "Geo-awareness only; consult the official geoportal and current restrictions before flight."
+      ]
+    },
+    {
+      "countryCode": "AT",
+      "providerId": "at-austro-control-dronespace",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "Use the official interactive Dronespace planning map; no verified reusable zone feed is copied by Aeris."
+      ]
+    },
+    {
+      "countryCode": "IT",
+      "providerId": "it-enac-d-flight",
+      "sourceType": "json",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "ENAC requires pilots to check the official d-flight maps before every operation; the operator portal offers an ED-269 JSON download after registration.",
+        "d-flight terms reserve site content and permit local personal storage only without prior written consent for redistribution. Aeris therefore supports only an ignored local manual import and never publishes or automates login-protected data."
+      ]
+    },
+    {
+      "countryCode": "CH",
+      "providerId": "ch-foca-geo-admin-ch",
+      "sourceType": "json",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": true,
+      "warnings": [
+        "Complete federal UAS geozones render live. Confirm cantonal and temporary restrictions before flight."
+      ]
+    },
+    {
+      "countryCode": "PT",
+      "providerId": "pt-anac-portugal",
+      "sourceType": "json",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": true,
+      "warnings": [
+        "The app discovers the newest dated official ED-269 file and converts it in memory; no snapshot is redistributed.",
+        "Check ANAC, military no-fly zones and current NOTAMs before flight."
+      ]
+    },
+    {
+      "countryCode": "SE",
+      "providerId": "se-lfv-dronechart",
+      "sourceType": "wfs",
+      "discoveredLayers": 10,
+      "importedLayers": 10,
+      "liveOnly": false,
+      "warnings": [
+        "LFV CC BY-NC-ND 4.0. Raw geometry is preserved and official display filters are applied at render time. NOTAM indications are not a certified AIS service."
+      ]
+    },
+    {
+      "countryCode": "DK",
+      "providerId": "dk-trafikstyrelsen-dronezoner",
+      "sourceType": "json",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": true,
+      "warnings": [
+        "Stable official GeoJSON is loaded live. Check Dronezoner for temporary restrictions before flight."
+      ]
+    },
+    {
+      "countryCode": "NO",
+      "providerId": "no-avinor-drone-map",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "Link only. Avinor's terms prohibit scraping, copying and redistributing its service data."
+      ]
+    },
+    {
+      "countryCode": "FI",
+      "providerId": "fi-traficom",
+      "sourceType": "json",
+      "discoveredLayers": 1,
+      "importedLayers": 1,
+      "liveOnly": false,
+      "warnings": [
+        "Machine-readable official UAS zones; check the official map, temporary restrictions and NOTAMs before flight.",
+        "The circle-to-polygon conversion is marked as a modification under Traficom's CC BY 4.0 terms."
+      ]
+    },
+    {
+      "countryCode": "PL",
+      "providerId": "pl-pansa-dronetower",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "PANSA requires pilots to check current zones and notify intended flights through the DroneTower app. No documented anonymous reusable geozone feed was verified."
+      ]
+    },
+    {
+      "countryCode": "CZ",
+      "providerId": "cz-caa-czechia-dronemap",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "CAA Czechia designates DroneMap as the practical source for exact boundaries and operating conditions. No documented reusable public zone endpoint was verified."
+      ]
+    },
+    {
+      "countryCode": "SK",
+      "providerId": "sk-transport-authority",
+      "sourceType": "kml",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "The official page publishes a dated KML ZIP. Aeris can discover and inventory every placemark and style locally, but does not redistribute geometry while reuse terms remain unstated."
+      ]
+    },
+    {
+      "countryCode": "HU",
+      "providerId": "hu-hungarocontrol-mydronespace",
+      "sourceType": "authenticated-api",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "MyDroneSpace is Hungary's official pre-flight and operational service. No documented anonymous reusable national geozone feed was verified."
+      ]
+    },
+    {
+      "countryCode": "RO",
+      "providerId": "ro-romanian-caa",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "The Romanian CAA publishes prohibited/restricted UAS areas, contacts and an interactive map, but no stable reusable zone feed or reuse licence was verified."
+      ]
+    },
+    {
+      "countryCode": "BG",
+      "providerId": "bg-bulgarian-civil-aviation-administration",
+      "sourceType": "json",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "The local inspection adapter discovers the newest BGR_ZONES package, but Aeris does not redistribute it while Bulgarian CAA reuse permission remains unconfirmed.",
+        "Check B-FLIP and active or temporary restrictions before flight."
+      ]
+    },
+    {
+      "countryCode": "GR",
+      "providerId": "gr-hcaa-drone-aware-greece",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "HCAA requires a pre-flight DAGR check; yellow and magenta zones can require approval or prohibit flight. No documented reusable public feed was verified."
+      ]
+    },
+    {
+      "countryCode": "HR",
+      "providerId": "hr-croatia-control-amc-portal",
+      "sourceType": "authenticated-api",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "Croatian UAS zones and current airspace use are managed through the AMC Portal and mobile workflow. The operational service requires registration and no reusable public geozone feed was verified."
+      ]
+    },
+    {
+      "countryCode": "SI",
+      "providerId": "si-civil-aviation-agency",
+      "sourceType": "arcgis",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "The official public web map exposes structured layer and renderer metadata, but no reuse licence is stated; Aeris inventories it without copying geometry."
+      ]
+    },
+    {
+      "countryCode": "EE",
+      "providerId": "ee-transport-administration-eans",
+      "sourceType": "json",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": true,
+      "warnings": [
+        "Official GeoJSON is loaded live; check the EANS map and temporary restrictions before flight.",
+        "The live global outside-Estonia mask is excluded from rendering and point results."
+      ]
+    },
+    {
+      "countryCode": "LV",
+      "providerId": "lv-lgs-civil-aviation-agency",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "LGS states the official map updates every five minutes, but no stable reusable download URL was verified; use the official map directly."
+      ]
+    },
+    {
+      "countryCode": "LT",
+      "providerId": "lt-oro-navigacija-lithuania-drone-map",
+      "sourceType": "authenticated-api",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "All approved Lithuanian geozones and temporary restrictions are published in the UTM platform. Its user rules apply to registered users; no documented public reusable feed was verified."
+      ]
+    },
+    {
+      "countryCode": "US",
+      "providerId": "us-faa-uas-facility-maps-b4ufly",
+      "sourceType": "arcgis",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": true,
+      "warnings": [
+        "Facility grids show authorization ceilings, not permission or every restriction.",
+        "Check B4UFLY and current TFRs before flight."
+      ]
+    },
+    {
+      "countryCode": "CA",
+      "providerId": "ca-government-of-canada-open-data",
+      "sourceType": "arcgis",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": true,
+      "warnings": [
+        "The map renders open federal airport data, 5.6 km airport orientation rings, and open national-park boundaries.",
+        "NRC states its NAV CANADA-derived database may not be redistributed; use the official Drone Site Selection Tool for the complete map."
+      ]
+    },
+    {
+      "countryCode": "AU",
+      "providerId": "au-casa-drone-safety",
+      "sourceType": "authenticated-api",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "CASA directs pilots to verified apps. Its digital platform data access is for onboarded providers and authenticated services, so Aeris does not bypass that access model."
+      ]
+    },
+    {
+      "countryCode": "NZ",
+      "providerId": "nz-caa-new-zealand-airshare",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "CAA directs pilots to AirShare for current low-flying, aerodrome, control, restricted, military and danger areas. No documented reusable public feed was verified."
+      ]
+    },
+    {
+      "countryCode": "JP",
+      "providerId": "jp-mlit-dips-2-0",
+      "sourceType": "authenticated-api",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "DIPS 2.0 is the official registration, planning and permission platform. No documented anonymous reusable national zone feed was verified."
+      ]
+    },
+    {
+      "countryCode": "BR",
+      "providerId": "br-decea-sarpas",
+      "sourceType": "authenticated-api",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "SARPAS requires operator and aircraft registration for access requests. Aeris does not automate or bypass the authenticated operational service."
+      ]
+    },
+    {
+      "countryCode": "IN",
+      "providerId": "in-dgca-digital-sky",
+      "sourceType": "authenticated-api",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "Digital Sky is the government real-time repository for red, yellow and green airspace zones. No documented anonymous public API or reusable zone download was verified."
+      ]
+    },
+    {
+      "countryCode": "SG",
+      "providerId": "sg-caas-onemap",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "CAAS identifies OneMap as the authoritative source for no-fly, permit and temporary restricted areas. No documented reusable UA-zone feed was verified."
+      ]
+    },
+    {
+      "countryCode": "ZA",
+      "providerId": "za-sacaa-atns-aip",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "The authoritative restrictions are published through current AIP/NOTAM and SACAA RPAS rules. No national public drone-geozone feed with reuse terms was verified."
+      ]
+    }
+  ]
+}

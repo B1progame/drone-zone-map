@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-07-19T10:27:56.537198+00:00",
+  "requiredLanguages": [
+    "cs",
+    "da",
+    "de",
+    "en",
+    "es",
+    "fi",
+    "fr",
+    "it",
+    "nl",
+    "no",
+    "pl",
+    "pt",
+    "sv"
+  ],
+  "languageCount": 13,
+  "termCount": 78,
+  "offlineCacheEntries": 78,
+  "zoneTextPolicy": "Original official wording is retained; reviewed terminology is a display fallback."
+}

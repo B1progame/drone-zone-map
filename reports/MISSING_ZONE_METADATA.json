@@ -1,0 +1,95 @@
+{
+  "generatedAt": "2026-07-19T10:27:56.543861+00:00",
+  "providers": [
+    {
+      "countryCode": "FI",
+      "namesPercent": 100.0,
+      "descriptionsPercent": 0.0,
+      "identifiersPercent": 100.0,
+      "originalPropertiesPercent": 100.0
+    },
+    {
+      "countryCode": "SE",
+      "namesPercent": 6.27,
+      "descriptionsPercent": 0.0,
+      "identifiersPercent": 100.0,
+      "originalPropertiesPercent": 100.0
+    }
+  ],
+  "liveBaseline": {
+    "DE": {
+      "officialName": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      },
+      "officialFeatureId": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      },
+      "category": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      },
+      "description": {
+        "present": 0,
+        "total": 144,
+        "percent": 0.0
+      },
+      "lowerAltitude": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      },
+      "upperAltitude": {
+        "present": 4,
+        "total": 144,
+        "percent": 2.78
+      },
+      "legalReference": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      },
+      "originalProperties": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      }
+    },
+    "FR": {
+      "officialName": {
+        "present": 59,
+        "total": 60,
+        "percent": 98.33
+      },
+      "category": {
+        "present": 60,
+        "total": 60,
+        "percent": 100.0
+      },
+      "description": {
+        "present": 51,
+        "total": 60,
+        "percent": 85.0
+      },
+      "altitude": {
+        "present": 0,
+        "total": 60,
+        "percent": 0.0
+      },
+      "officialFeatureId": {
+        "present": 0,
+        "total": 60,
+        "percent": 0.0
+      },
+      "originalProperties": {
+        "present": 60,
+        "total": 60,
+        "percent": 100.0
+      }
+    }
+  }
+}

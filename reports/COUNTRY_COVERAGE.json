@@ -1,0 +1,389 @@
+{
+  "generatedAt": "2026-07-19T10:27:56.491418+00:00",
+  "isoEntryCount": 249,
+  "providerCount": 37,
+  "completenessCounts": {
+    "authenticated-personal-data": 1,
+    "complete-except-live-data": 2,
+    "not-yet-processed": 212,
+    "official-reference-only": 21,
+    "partial-missing-layers": 13
+  },
+  "providers": [
+    {
+      "countryCode": "DE",
+      "countryName": "Germany",
+      "status": "complete-except-live-data",
+      "source": "DIPUL",
+      "officialMap": "https://dipul.bund.de/homepage/en/information/geographical-zones/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "ES",
+      "countryName": "Spain",
+      "status": "partial-missing-layers",
+      "source": "ENAIRE servAIS / ED-318",
+      "officialMap": "https://aip.enaire.es/AIP/UAS-en.html",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "FR",
+      "countryName": "France",
+      "status": "complete-except-live-data",
+      "source": "IGN / Géoportail",
+      "officialMap": "https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "IE",
+      "countryName": "Ireland",
+      "status": "partial-missing-layers",
+      "source": "Irish Aviation Authority",
+      "officialMap": "https://www.iaa.ie/general-aviation/drones/uas-geographic-zones",
+      "offline": true,
+      "featureCount": 87,
+      "geometryChecksum": "178810f68a7f14edc304c64464b59d248cd9dc524397b3f15b8fd062fa7d86fd",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 100.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "GB",
+      "countryName": "United Kingdom",
+      "status": "partial-missing-layers",
+      "source": "NATS UK AIS",
+      "officialMap": "https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/",
+      "offline": true,
+      "featureCount": 1073,
+      "geometryChecksum": "7cd5684a9c89dbca8b0b4b503c2aa951c45d55d76bf1f7a1ec5ebd69e7f25462",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 100.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "NL",
+      "countryName": "Netherlands",
+      "status": "partial-missing-layers",
+      "source": "Ministry of Infrastructure and Water Management",
+      "officialMap": "https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone",
+      "offline": true,
+      "featureCount": 774,
+      "geometryChecksum": "393e0360051b32bf74d110c152859c60e6b224344136e9a57500fb5a3e49833e",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 100.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "BE",
+      "countryName": "Belgium",
+      "status": "official-reference-only",
+      "source": "FPS Mobility / Droneguide",
+      "officialMap": "https://mobilit.belgium.be/fr/aviation/voler-en-piloter/drones-uas/informations-generales/zones-geographiques",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "LU",
+      "countryName": "Luxembourg",
+      "status": "partial-missing-layers",
+      "source": "DAC Geoportal UAS Geozones",
+      "officialMap": "https://data.public.lu/en/datasets/uas-geographical-zones-grand-duchy-of-luxembourg-zones-geographiques-uas-grand-duche-de-luxembourg/",
+      "offline": true,
+      "featureCount": 47,
+      "geometryChecksum": "0471515dcbe306a0a2af6f9f413f95a612c9e63b44cc74a3d42131673d078efb",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 100.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "AT",
+      "countryName": "Austria",
+      "status": "official-reference-only",
+      "source": "Austro Control Dronespace",
+      "officialMap": "https://map.dronespace.at/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "IT",
+      "countryName": "Italy",
+      "status": "authenticated-personal-data",
+      "source": "ENAC / d-flight",
+      "officialMap": "https://www.d-flight.it/web-app/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "CH",
+      "countryName": "Switzerland",
+      "status": "partial-missing-layers",
+      "source": "FOCA / geo.admin.ch",
+      "officialMap": "https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "PT",
+      "countryName": "Portugal",
+      "status": "partial-missing-layers",
+      "source": "ANAC Portugal",
+      "officialMap": "https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "SE",
+      "countryName": "Sweden",
+      "status": "partial-missing-layers",
+      "source": "LFV Dronechart",
+      "officialMap": "https://dronechart.lfv.se/",
+      "offline": true,
+      "featureCount": 845,
+      "geometryChecksum": "da22e9207725c6770b06d09f70dc78eab197e7b5bcdd09248b2e8e099cc66e13",
+      "metadataCoverage": {
+        "namesPercent": 6.27,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "DK",
+      "countryName": "Denmark",
+      "status": "partial-missing-layers",
+      "source": "Trafikstyrelsen Dronezoner",
+      "officialMap": "https://www.droneregler.dk/dronezoner",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "NO",
+      "countryName": "Norway",
+      "status": "official-reference-only",
+      "source": "Avinor drone map",
+      "officialMap": "https://www.avinor.no/en/practical-info/drone/dronekart/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "FI",
+      "countryName": "Finland",
+      "status": "partial-missing-layers",
+      "source": "Traficom",
+      "officialMap": "https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa",
+      "offline": true,
+      "featureCount": 722,
+      "geometryChecksum": "fd3d62bbef40909d9c3587fa6ea1f246901d28cfcfcf606cb434f0bba3458301",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "PL",
+      "countryName": "Poland",
+      "status": "official-reference-only",
+      "source": "PANSA / DroneTower",
+      "officialMap": "https://www.pansa.pl/dronetower/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "CZ",
+      "countryName": "Czechia",
+      "status": "official-reference-only",
+      "source": "CAA Czechia / DroneMap",
+      "officialMap": "https://www.caa.cz/en/flight-operations/unmanned-aircraft/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "SK",
+      "countryName": "Slovakia",
+      "status": "official-reference-only",
+      "source": "Transport Authority",
+      "officialMap": "https://letectvo.nsat.sk/bezpilotne-letectvo/zemepisne-oblasti-uas/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "HU",
+      "countryName": "Hungary",
+      "status": "official-reference-only",
+      "source": "HungaroControl MyDroneSpace",
+      "officialMap": "https://mydronespace.hu/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "RO",
+      "countryName": "Romania",
+      "status": "official-reference-only",
+      "source": "Romanian CAA",
+      "officialMap": "https://www.caa.ro/ro/pages/drone",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "BG",
+      "countryName": "Bulgaria",
+      "status": "official-reference-only",
+      "source": "Bulgarian Civil Aviation Administration",
+      "officialMap": "https://www.caa.bg/bg/category/633/7062",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "GR",
+      "countryName": "Greece",
+      "status": "official-reference-only",
+      "source": "HCAA / Drone Aware Greece",
+      "officialMap": "https://hcaa.gov.gr/el/where-you-are-allowed-fly-uas-greece",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "HR",
+      "countryName": "Croatia",
+      "status": "official-reference-only",
+      "source": "Croatia Control AMC Portal",
+      "officialMap": "https://amc.crocontrol.hr/Informacije",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "SI",
+      "countryName": "Slovenia",
+      "status": "official-reference-only",
+      "source": "Civil Aviation Agency",
+      "officialMap": "https://www.caa.si/geografske-omejitve-za-uas.html",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "EE",
+      "countryName": "Estonia",
+      "status": "partial-missing-layers",
+      "source": "Transport Administration / EANS",
+      "officialMap": "https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "LV",
+      "countryName": "Latvia",
+      "status": "official-reference-only",
+      "source": "LGS / Civil Aviation Agency",
+      "officialMap": "https://www.airspace.lv/drones/en",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "LT",
+      "countryName": "Lithuania",
+      "status": "official-reference-only",
+      "source": "Oro Navigacija / Lithuania Drone Map",
+      "officialMap": "https://www.ans.lt/en/services/unmanned-aerial-vehicles-drones",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "US",
+      "countryName": "United States",
+      "status": "partial-missing-layers",
+      "source": "FAA UAS Facility Maps / B4UFLY",
+      "officialMap": "https://www.faa.gov/uas/getting_started/b4ufly",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "CA",
+      "countryName": "Canada",
+      "status": "partial-missing-layers",
+      "source": "Government of Canada Open Data",
+      "officialMap": "https://nrc.canada.ca/en/drone-tool-2/map.html",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "AU",
+      "countryName": "Australia",
+      "status": "official-reference-only",
+      "source": "CASA Drone Safety",
+      "officialMap": "https://www.casa.gov.au/knowyourdrone/drone-safety-apps",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "NZ",
+      "countryName": "New Zealand",
+      "status": "official-reference-only",
+      "source": "CAA New Zealand / AirShare",
+      "officialMap": "https://www.aviation.govt.nz/drones/flying-your-drone-safely/check-the-airspace/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "JP",
+      "countryName": "Japan",
+      "status": "official-reference-only",
+      "source": "MLIT DIPS 2.0",
+      "officialMap": "https://www.mlit.go.jp/koku/koku_ua_dips.html",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "BR",
+      "countryName": "Brazil",
+      "status": "official-reference-only",
+      "source": "DECEA SARPAS",
+      "officialMap": "https://www.gov.br/pt-br/servicos/solicitar-autorizacao-para-voo-de-aeronaves-remotamente-pilotadas",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "IN",
+      "countryName": "India",
+      "status": "official-reference-only",
+      "source": "DGCA Digital Sky",
+      "officialMap": "https://digitalsky.dgca.gov.in/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "SG",
+      "countryName": "Singapore",
+      "status": "official-reference-only",
+      "source": "CAAS / OneMap",
+      "officialMap": "https://www.caas.gov.sg/unmanned-aircraft/no-fly-zones-and-ua-flying-areas/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "ZA",
+      "countryName": "South Africa",
+      "status": "official-reference-only",
+      "source": "SACAA / ATNS AIP",
+      "officialMap": "https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/",
+      "offline": false,
+      "featureCount": 0
+    }
+  ]
+}

@@ -24,6 +24,7 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 | Germany | DIPUL | Live official WMS and point identify | No vector/offline zone claim |
 | Spain | ENAIRE servAIS / ED-318 | Live viewport vectors and point identify | Urban coverage appears only at useful local zoom |
 | France | IGN / Géoportail | Live official UAS-restriction WMTS | No vector/offline zone claim |
+| Italy | ENAC / d-flight | Authenticated official map; personal ED-269 export | Private manual import only; never redistributed |
 | United Kingdom | NATS UK AIS | AIRAC KML visualization and local point checks | Permanent restrictions; check NOTAMs |
 | United States | FAA UAS Facility Maps | Live viewport grids and point checks | Authorization ceilings, not complete clearance |
 | Canada | Government of Canada Open Data | Open airports, 5.6 km advisory rings, and national parks | Partial open-data view; NAV CANADA database is not redistributed |
@@ -41,7 +42,7 @@ A privacy-friendly, static drone planning map built for GitHub Pages. It combine
 
 Germany loads every active layer advertised by DIPUL, separating country-scale safety layers from dense local infrastructure so the national view remains readable. France uses its bounded live raster source. Spain loads current ENAIRE vectors by viewport and colors `PROHIBITED`, `REQ_AUTHORIZATION`, `CONDITIONAL`, and `NO_RESTRICTION` distinctly; very large TMA/regional polygons are softly filled while local restrictions remain prominent, including the Canary Islands. The UK uses NATS' AIRAC visualization KML, and US FAA facility grids load only near the viewed area. Denmark and Estonia load official GeoJSON live. Portugal discovers ANAC's newest dated ED-269 file and converts it in memory. Ireland, Luxembourg, Finland, and the Netherlands use verified vector files. Sweden's raw files remain unmodified and the frontend applies LFV's ground-level display filters. ED-269 circles are converted to geodesic polygons while their exact source center and radius remain in properties. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and records verified services, freshness, attribution, capabilities, warnings, and terms notes.
 
-Norway resolves to its official source but does not display copied geometry because Avinor prohibits presenting its service data in another application. Italy was removed from the map and source directory. Canada renders openly licensed federal airports, clearly labelled 5.6 km advisory rings, and national-park boundaries; NRC explicitly states that its NAV CANADA-derived database cannot be redistributed, so the complete official map remains a direct handoff.
+Norway resolves to its official source but does not display copied geometry because Avinor prohibits presenting its service data in another application. Italy resolves to ENAC's required d-flight map. A registered operator can manually import an ED-269 JSON export into ignored `private-data/it/` storage, but Aeris does not automate d-flight login or redistribute its reserved content. Canada renders openly licensed federal airports, clearly labelled 5.6 km advisory rings, and national-park boundaries; NRC explicitly states that its NAV CANADA-derived database cannot be redistributed, so the complete official map remains a direct handoff.
 
 ### Expanded coverage directory
 
@@ -55,6 +56,25 @@ npm run dev
 ```
 
 Build with `npm run build`. The Vite base is `/drone-zone-map/` in GitHub Actions and `/` locally.
+
+## Worldwide data commands
+
+```bash
+npm run data:baseline
+npm run data:discover
+npm run data:update -- --country=DE
+npm run data:update -- --country=FR
+npm run data:update -- --country=IT --input=/path/to/personal-export.json
+npm run data:update-all
+npm run data:normalize
+npm run data:translate
+npm run data:validate
+npm run data:test-locations
+npm run data:report
+npm run world:continue
+```
+
+`world:continue` inventories all 249 ISO 3166 countries and territories, processes verified providers, leaves unknown or restricted sources pending, validates public datasets, and regenerates `reports/`. It does not invent legal zones for countries whose official data cannot be obtained or redistributed.
 
 ## Deploy to GitHub Pages
 

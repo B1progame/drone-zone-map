@@ -1,0 +1,219 @@
+{
+  "generatedAt": "2026-07-19T10:27:56.533666+00:00",
+  "passed": true,
+  "tests": [
+    {
+      "countryCode": "LU",
+      "fixture": "Luxembourg Airport",
+      "lat": 49.6266,
+      "lng": 6.2115,
+      "matchCount": 1,
+      "passed": true,
+      "matches": [
+        {
+          "id": "A1ELLX0-0",
+          "name": "EL-UAS-A1-ELLX0",
+          "sourceFile": "public\\data\\zones\\LU.geojson"
+        }
+      ]
+    },
+    {
+      "countryCode": "IE",
+      "fixture": "Dublin Airport",
+      "lat": 53.4213,
+      "lng": -6.2701,
+      "matchCount": 3,
+      "passed": true,
+      "matches": [
+        {
+          "id": "U27",
+          "name": "Dublin Control Zone (CTR)- Red Zone",
+          "sourceFile": "public\\data\\zones\\IE.geojson"
+        },
+        {
+          "id": "T32",
+          "name": "Baldonnel TRA 1",
+          "sourceFile": "public\\data\\zones\\IE.geojson"
+        },
+        {
+          "id": "T35",
+          "name": "Baldonnel TRA 3",
+          "sourceFile": "public\\data\\zones\\IE.geojson"
+        }
+      ]
+    },
+    {
+      "countryCode": "GB",
+      "fixture": "London Heathrow",
+      "lat": 51.47,
+      "lng": -0.4543,
+      "matchCount": 1,
+      "passed": true,
+      "matches": [
+        {
+          "id": "EGR1U028A",
+          "name": "EGR1U028A LONDON HEATHROW",
+          "sourceFile": "public\\data\\zones\\GB.geojson"
+        }
+      ]
+    },
+    {
+      "countryCode": "NL",
+      "fixture": "Amsterdam Schiphol",
+      "lat": 52.3105,
+      "lng": 4.7683,
+      "matchCount": 1,
+      "passed": true,
+      "matches": [
+        {
+          "id": "7.2-0",
+          "name": "Nabijheid van vliegveld voor bemand luchtverkeer EHAM SCHIPHOL CTR 1",
+          "sourceFile": "public\\data\\zones\\NL.geojson"
+        }
+      ]
+    },
+    {
+      "countryCode": "FI",
+      "fixture": "Helsinki Airport",
+      "lat": 60.3172,
+      "lng": 24.9633,
+      "matchCount": 4,
+      "passed": true,
+      "matches": [
+        {
+          "id": "EFHKUASA-0",
+          "name": "UAS-ilmatilavyöhyke A Helsinki-Vantaa",
+          "sourceFile": "public\\data\\zones\\FI.geojson"
+        },
+        {
+          "id": "EFHKUASB-0",
+          "name": "UAS-ilmatilavyöhyke B Helsinki-Vantaa",
+          "sourceFile": "public\\data\\zones\\FI.geojson"
+        },
+        {
+          "id": "EFHKUASC-0",
+          "name": "UAS-ilmatilavyöhyke C Helsinki-Vantaa",
+          "sourceFile": "public\\data\\zones\\FI.geojson"
+        },
+        {
+          "id": "EFHKUASD-0",
+          "name": "UAS-ilmatilavyöhyke D Helsinki-Vantaa",
+          "sourceFile": "public\\data\\zones\\FI.geojson"
+        }
+      ]
+    },
+    {
+      "countryCode": "SE",
+      "fixture": "Stockholm Arlanda",
+      "lat": 59.6519,
+      "lng": 17.9186,
+      "matchCount": 19,
+      "passed": true,
+      "matches": [
+        {
+          "id": "RWY5K.22",
+          "name": "DAIM_TOPO-RWY5K",
+          "sourceFile": "public\\data\\zones\\sweden\\DAIM_TOPO-RWY5K.geojson"
+        },
+        {
+          "id": "NOTAM.15332",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.15181",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.15279",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.14785",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.15105",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.15104",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.15106",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.15107",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.15108",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.15109",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.15110",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        }
+      ]
+    },
+    {
+      "countryCode": "DE",
+      "fixture": "Berlin Brandenburg Airport",
+      "lat": 52.3667,
+      "lng": 13.5033,
+      "matchCount": 2,
+      "passed": true,
+      "source": "DIPUL pre-change live baseline"
+    },
+    {
+      "countryCode": "DE",
+      "fixture": "Berlin government district",
+      "lat": 52.5208,
+      "lng": 13.3697,
+      "matchCount": 5,
+      "passed": true,
+      "source": "DIPUL pre-change live baseline"
+    },
+    {
+      "countryCode": "DE",
+      "fixture": "Cologne city centre",
+      "lat": 50.9375,
+      "lng": 6.9603,
+      "matchCount": 2,
+      "passed": true,
+      "source": "DIPUL pre-change live baseline"
+    },
+    {
+      "countryCode": "DE",
+      "fixture": "Munich city centre",
+      "lat": 48.1372,
+      "lng": 11.5756,
+      "matchCount": 3,
+      "passed": true,
+      "source": "DIPUL pre-change live baseline"
+    },
+    {
+      "countryCode": "FR",
+      "fixture": "Réunion published overseas coverage",
+      "matchCount": 55,
+      "passed": true,
+      "source": "IGN / Géoportail pre-change live baseline"
+    }
+  ]
+}

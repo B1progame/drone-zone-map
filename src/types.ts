@@ -9,7 +9,24 @@ export type AppSettings = {
 export type Location = { lat: number; lng: number; name: string };
 export type WeatherHour = { time:string; temperature:number; wind:number; gusts:number; rain:number; rainProbability:number; cloud:number; visibility:number; score:number; isDay:boolean };
 export type Weather = { temperature: number; wind: number; gusts: number; rain: number; rainProbability:number; cloud: number; visibility:number; score: number; hourly:WeatherHour[]; timezone:string };
-export type ZoneDetail = { id:string; name:string; type:string; message?:string; lower?:string; upper?:string; legalReference?:string; contact?:string; source:string; updated?:string };
+export type ZoneDetail = {
+  id:string;
+  name:string;
+  originalName?:string;
+  type:string;
+  severity?:'blocked'|'authorization'|'conditional'|'warning'|'information'|'unknown';
+  message?:string;
+  pilotAction?:string;
+  lower?:string;
+  upper?:string;
+  legalReference?:string;
+  contact?:string;
+  authority?:string;
+  officialLayerName?:string;
+  source:string;
+  sourceUrl?:string;
+  updated?:string;
+};
 export type ZoneInfo = { countryCode:string; countryName:string; sourceName:string; sourceUrl:string; status:'loaded'|'none'|'unsupported'|'error'; zones:ZoneDetail[]; checkedAt:string; warning:string };
 export type SavedWeatherSummary = {
   score:number;

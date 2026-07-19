@@ -1,0 +1,602 @@
+{
+  "generatedAt": "2026-07-19T10:22:53.340968+00:00",
+  "purpose": "Pre-change regression baseline for working Germany and France providers",
+  "germany": {
+    "classification": "working-needs-metadata",
+    "configuredLayerCount": 33,
+    "configuredWfsLayers": [
+      "bahnanlagen",
+      "behoerden",
+      "binnenwasserstrassen",
+      "bundesautobahnen",
+      "bundesstrassen",
+      "diplomatische_vertretungen",
+      "ffh-gebiete",
+      "flugbeschraenkungsgebiete",
+      "flughaefen",
+      "flugplaetze",
+      "freibaeder",
+      "industrieanlagen",
+      "internationale_organisationen",
+      "justizvollzugsanstalten",
+      "kontrollzonen",
+      "kraftwerke",
+      "krankenhaeuser",
+      "labore",
+      "militaerische_anlagen",
+      "nationalparks",
+      "naturschutzgebiete",
+      "polizei",
+      "schifffahrtsanlagen",
+      "seewasserstrassen",
+      "sicherheitsbehoerden",
+      "stromleitungen",
+      "temporaere_betriebseinschraenkungen",
+      "umspannwerke",
+      "vogelschutzgebiete",
+      "windkraftanlagen",
+      "wohngrundstuecke"
+    ],
+    "configuredWmsOnlyLayers": [
+      "haengegleiter",
+      "modellflugplaetze"
+    ],
+    "nationalWfsFeatureCount": 88589,
+    "nationalWfsFeatureCountsByLayer": {
+      "bahnanlagen": 9819,
+      "behoerden": 1524,
+      "binnenwasserstrassen": 1095,
+      "bundesautobahnen": 1009,
+      "bundesstrassen": 1248,
+      "diplomatische_vertretungen": 303,
+      "ffh-gebiete": 4543,
+      "flugbeschraenkungsgebiete": 108,
+      "flughaefen": 63,
+      "flugplaetze": 1205,
+      "freibaeder": 6600,
+      "industrieanlagen": 24482,
+      "internationale_organisationen": 59,
+      "justizvollzugsanstalten": 353,
+      "kontrollzonen": 69,
+      "kraftwerke": 70,
+      "krankenhaeuser": 2521,
+      "labore": 4,
+      "militaerische_anlagen": 1637,
+      "nationalparks": 16,
+      "naturschutzgebiete": 9011,
+      "polizei": 3708,
+      "schifffahrtsanlagen": 437,
+      "seewasserstrassen": 14,
+      "sicherheitsbehoerden": 1922,
+      "stromleitungen": 2277,
+      "temporaere_betriebseinschraenkungen": 39,
+      "umspannwerke": 389,
+      "vogelschutzgebiete": 742,
+      "windkraftanlagen": 2529,
+      "wohngrundstuecke": 10793
+    },
+    "nationalCountScope": "WFS numberMatched from a Germany-bounded count=1 query; no national geometry snapshot downloaded",
+    "representativeGeometryFeatureCount": 144,
+    "representativeGeometryChecksum": "09922baa75298e945923b681cd2c4e49bc5e366d32c4cdbcc0a0300208dafb17",
+    "geometryChecksumScope": {
+      "layers": [
+        "behoerden",
+        "flugbeschraenkungsgebiete",
+        "flughaefen",
+        "flugplaetze",
+        "kontrollzonen",
+        "militaerische_anlagen",
+        "naturschutzgebiete",
+        "temporaere_betriebseinschraenkungen"
+      ],
+      "viewports": [
+        {
+          "name": "Berlin Brandenburg Airport",
+          "bbox": [
+            13.4683,
+            52.331700000000005,
+            13.5383,
+            52.4017
+          ],
+          "featureCount": 7
+        },
+        {
+          "name": "Berlin government district",
+          "bbox": [
+            13.3347,
+            52.485800000000005,
+            13.4047,
+            52.5558
+          ],
+          "featureCount": 65
+        },
+        {
+          "name": "Cologne city centre",
+          "bbox": [
+            6.9253,
+            50.9025,
+            6.9953,
+            50.9725
+          ],
+          "featureCount": 13
+        },
+        {
+          "name": "Munich city centre",
+          "bbox": [
+            11.5406,
+            48.1022,
+            11.6106,
+            48.1722
+          ],
+          "featureCount": 59
+        }
+      ]
+    },
+    "sourceUrls": {
+      "authority": "https://dipul.bund.de/homepage/en/information/geographical-zones/",
+      "wms": "https://uas-betrieb.de/geoservices/dipul/wms",
+      "wfs": "https://uas-betrieb.de/geoservices/dipul/wfs"
+    },
+    "metadataCoverage": {
+      "officialName": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      },
+      "officialFeatureId": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      },
+      "category": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      },
+      "description": {
+        "present": 0,
+        "total": 144,
+        "percent": 0.0
+      },
+      "lowerAltitude": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      },
+      "upperAltitude": {
+        "present": 4,
+        "total": 144,
+        "percent": 2.78
+      },
+      "legalReference": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      },
+      "originalProperties": {
+        "present": 144,
+        "total": 144,
+        "percent": 100.0
+      }
+    },
+    "representativePointQueries": [
+      {
+        "name": "Berlin Brandenburg Airport",
+        "lat": 52.3667,
+        "lng": 13.5033,
+        "matchCount": 2,
+        "matches": [
+          {
+            "layer": "flughaefen",
+            "id": "uQiEZKA",
+            "name": "BERLIN BRANDENBURG",
+            "type": "FLUGHAFEN",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": null,
+            "legalReference": "§ 21h, Abs. 3 (2.) LuftVO",
+            "originalProperties": {
+              "layer": "flughaefen",
+              "geom": "[GEOMETRY (Polygon) with 119 points]",
+              "legal_ref": "§ 21h, Abs. 3 (2.) LuftVO",
+              "generated_name_EN": "BERLIN BRANDENBURG",
+              "lower_limit_unit": "m",
+              "external_reference": "uQiEZKA",
+              "name": "BERLIN BRANDENBURG",
+              "generated_name_DE": "BERLIN BRANDENBURG",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "FLUGHAFEN"
+            }
+          },
+          {
+            "layer": "kontrollzonen",
+            "id": "14264",
+            "name": "BERLIN (CTR)",
+            "type": "KONTROLLZONE",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": "2500.0 ft MSL",
+            "legalReference": "§ 21h, Abs. 3 (9.) LuftVO",
+            "originalProperties": {
+              "layer": "kontrollzonen",
+              "geom": "[GEOMETRY (Polygon) with 41 points]",
+              "legal_ref": "§ 21h, Abs. 3 (9.) LuftVO",
+              "upper_limit_alt_ref": "MSL",
+              "generated_name_EN": "BERLIN (CTR)",
+              "lower_limit_unit": "m",
+              "external_reference": "14264",
+              "name": "BERLIN (CTR)",
+              "upper_limit_unit": "ft",
+              "upper_limit_altitude": "2500.0",
+              "generated_name_DE": "BERLIN (CTR)",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "KONTROLLZONE"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Berlin government district",
+        "lat": 52.5208,
+        "lng": 13.3697,
+        "matchCount": 5,
+        "matches": [
+          {
+            "layer": "behoerden",
+            "id": "tfcBDeA",
+            "name": "Bundeskanzleramt",
+            "type": "BEHOERDE",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": null,
+            "legalReference": "§ 21h, Abs. 3 (4.) LuftVO",
+            "originalProperties": {
+              "layer": "behoerden",
+              "geom": "[GEOMETRY (Polygon) with 70 points]",
+              "legal_ref": "§ 21h, Abs. 3 (4.) LuftVO",
+              "generated_name_EN": "Bundeskanzleramt",
+              "lower_limit_unit": "m",
+              "external_reference": "tfcBDeA",
+              "name": "Bundeskanzleramt",
+              "generated_name_DE": "Bundeskanzleramt",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "BEHOERDE"
+            }
+          },
+          {
+            "layer": "binnenwasserstrassen",
+            "id": "uYQXTHA",
+            "name": "Spree",
+            "type": "BINNENWASSERSTRASSE",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": null,
+            "legalReference": "§ 21h, Abs. 3 (5.) LuftVO",
+            "originalProperties": {
+              "layer": "binnenwasserstrassen",
+              "geom": "[GEOMETRY (Polygon) with 2275 points]",
+              "legal_ref": "§ 21h, Abs. 3 (5.) LuftVO",
+              "generated_name_EN": "Spree",
+              "lower_limit_unit": "m",
+              "external_reference": "uYQXTHA",
+              "name": "Spree",
+              "generated_name_DE": "Spree",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "BINNENWASSERSTRASSE"
+            }
+          },
+          {
+            "layer": "diplomatische_vertretungen",
+            "id": "tfcCJEA",
+            "name": "Botschaft der Schweizerischen Eidgenossenschaft",
+            "type": "DIPLOMATISCHE_VERTRETUNG",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": null,
+            "legalReference": "§ 21h, Abs. 3 (4.) LuftVO",
+            "originalProperties": {
+              "layer": "diplomatische_vertretungen",
+              "geom": "[GEOMETRY (Polygon) with 39 points]",
+              "legal_ref": "§ 21h, Abs. 3 (4.) LuftVO",
+              "generated_name_EN": "Botschaft der Schweizerischen Eidgenossenschaft",
+              "lower_limit_unit": "m",
+              "external_reference": "tfcCJEA",
+              "name": "Botschaft der Schweizerischen Eidgenossenschaft",
+              "generated_name_DE": "Botschaft der Schweizerischen Eidgenossenschaft",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "DIPLOMATISCHE_VERTRETUNG"
+            }
+          },
+          {
+            "layer": "flugbeschraenkungsgebiete",
+            "id": "4385",
+            "name": "BERLIN",
+            "type": "FLUGBESCHRAENKUNGSGEBIET",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": "5000.0 ft MSL",
+            "legalReference": "§ 17, Abs. 1 LuftVO",
+            "originalProperties": {
+              "layer": "flugbeschraenkungsgebiete",
+              "geom": "[GEOMETRY (Polygon) with 301 points]",
+              "legal_ref": "§ 17, Abs. 1 LuftVO",
+              "upper_limit_alt_ref": "MSL",
+              "generated_name_EN": "BERLIN",
+              "lower_limit_unit": "m",
+              "external_reference": "4385",
+              "name": "BERLIN",
+              "upper_limit_unit": "ft",
+              "upper_limit_altitude": "5000.0",
+              "generated_name_DE": "BERLIN",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "FLUGBESCHRAENKUNGSGEBIET"
+            }
+          },
+          {
+            "layer": "polizei",
+            "id": "tfcBDYA",
+            "name": "Liegenschaft der Bundespolizei",
+            "type": "POLIZEI",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": null,
+            "legalReference": "§ 21h, Abs. 3 (4.) LuftVO",
+            "originalProperties": {
+              "layer": "polizei",
+              "geom": "[GEOMETRY (Polygon) with 126 points]",
+              "legal_ref": "§ 21h, Abs. 3 (4.) LuftVO",
+              "generated_name_EN": "Liegenschaft der Bundespolizei",
+              "lower_limit_unit": "m",
+              "external_reference": "tfcBDYA",
+              "name": "Liegenschaft der Bundespolizei",
+              "generated_name_DE": "Liegenschaft der Bundespolizei",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "POLIZEI"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Cologne city centre",
+        "lat": 50.9375,
+        "lng": 6.9603,
+        "matchCount": 2,
+        "matches": [
+          {
+            "layer": "kontrollzonen",
+            "id": "962",
+            "name": "KOELN/BONN (CTR)",
+            "type": "KONTROLLZONE",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": "2500.0 ft MSL",
+            "legalReference": "§ 21h, Abs. 3 (9.) LuftVO",
+            "originalProperties": {
+              "layer": "kontrollzonen",
+              "geom": "[GEOMETRY (Polygon) with 131 points]",
+              "legal_ref": "§ 21h, Abs. 3 (9.) LuftVO",
+              "upper_limit_alt_ref": "MSL",
+              "generated_name_EN": "KOELN/BONN (CTR)",
+              "lower_limit_unit": "m",
+              "external_reference": "962",
+              "name": "KOELN/BONN (CTR)",
+              "upper_limit_unit": "ft",
+              "upper_limit_altitude": "2500.0",
+              "generated_name_DE": "KOELN/BONN (CTR)",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "KONTROLLZONE"
+            }
+          },
+          {
+            "layer": "wohngrundstuecke",
+            "id": "iYZYYgA",
+            "name": "Stadt Köln",
+            "type": "WOHNGRUNDSTUECK",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": null,
+            "legalReference": "§ 21h, Abs. 3 (7.) LuftVO",
+            "originalProperties": {
+              "layer": "wohngrundstuecke",
+              "geom": "[GEOMETRY (MultiPolygon) with 48154 points]",
+              "legal_ref": "§ 21h, Abs. 3 (7.) LuftVO",
+              "generated_name_EN": "Stadt Köln",
+              "lower_limit_unit": "m",
+              "external_reference": "iYZYYgA",
+              "name": "Stadt Köln",
+              "generated_name_DE": "Stadt Köln",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "WOHNGRUNDSTUECK"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Munich city centre",
+        "lat": 48.1372,
+        "lng": 11.5756,
+        "matchCount": 3,
+        "matches": [
+          {
+            "layer": "behoerden",
+            "id": "UucbbeA",
+            "name": "Infopoint Museen & Schlösser in Bayern;Landesstelle für die nichtstaatlichen Museen in Bayern",
+            "type": "BEHOERDE",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": null,
+            "legalReference": "§ 21h, Abs. 3 (4.) LuftVO",
+            "originalProperties": {
+              "layer": "behoerden",
+              "geom": "[GEOMETRY (Polygon) with 43 points]",
+              "legal_ref": "§ 21h, Abs. 3 (4.) LuftVO",
+              "generated_name_EN": "Infopoint Museen & Schlösser in Bayern;Landesstelle für die nichtstaatlichen Museen in Bayern",
+              "lower_limit_unit": "m",
+              "external_reference": "UucbbeA",
+              "name": "Infopoint Museen & Schlösser in Bayern;Landesstelle für die nichtstaatlichen Museen in Bayern",
+              "generated_name_DE": "Infopoint Museen & Schlösser in Bayern;Landesstelle für die nichtstaatlichen Museen in Bayern",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "BEHOERDE"
+            }
+          },
+          {
+            "layer": "krankenhaeuser",
+            "id": "UucaUQA",
+            "name": "ProSomno GmbH Klinik für Schlafmedizin",
+            "type": "KRANKENHAUS",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": null,
+            "legalReference": "§ 21h, Abs. 3 (10.) LuftVO",
+            "originalProperties": {
+              "layer": "krankenhaeuser",
+              "geom": "[GEOMETRY (Polygon) with 46 points]",
+              "legal_ref": "§ 21h, Abs. 3 (10.) LuftVO",
+              "generated_name_EN": "ProSomno GmbH Klinik für Schlafmedizin",
+              "lower_limit_unit": "m",
+              "external_reference": "UucaUQA",
+              "name": "ProSomno GmbH Klinik für Schlafmedizin",
+              "generated_name_DE": "ProSomno GmbH Klinik für Schlafmedizin",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "KRANKENHAUS"
+            }
+          },
+          {
+            "layer": "wohngrundstuecke",
+            "id": "UvZzTgA",
+            "name": "Stadt München",
+            "type": "WOHNGRUNDSTUECK",
+            "description": null,
+            "lower": "0.0 m AGL",
+            "upper": null,
+            "legalReference": "§ 21h, Abs. 3 (7.) LuftVO",
+            "originalProperties": {
+              "layer": "wohngrundstuecke",
+              "geom": "[GEOMETRY (MultiPolygon) with 53172 points]",
+              "legal_ref": "§ 21h, Abs. 3 (7.) LuftVO",
+              "generated_name_EN": "Stadt München",
+              "lower_limit_unit": "m",
+              "external_reference": "UvZzTgA",
+              "name": "Stadt München",
+              "generated_name_DE": "Stadt München",
+              "lower_limit_altitude": "0.0",
+              "lower_limit_alt_ref": "AGL",
+              "type_code": "WOHNGRUNDSTUECK"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "france": {
+    "classification": "working-needs-metadata",
+    "configuredLayerCount": 1,
+    "representativeFeatureCount": 60,
+    "representativeGeometryChecksum": "a66436354c020119beb6e37cafb5249030be916f1e9a35a3dc29b0d32af618c4",
+    "geometryChecksumScope": [
+      {
+        "name": "Paris",
+        "bbox": [
+          2.28,
+          48.82,
+          2.42,
+          48.9
+        ],
+        "featureCount": 2,
+        "warnings": [
+          "Live official viewport extract; geometry is retained without simplification.",
+          "Temporary restrictions are not included in the published layer; check SIA and current NOTAMs."
+        ]
+      },
+      {
+        "name": "Lyon",
+        "bbox": [
+          4.77,
+          45.71,
+          4.91,
+          45.81
+        ],
+        "featureCount": 3,
+        "warnings": [
+          "Live official viewport extract; geometry is retained without simplification.",
+          "Temporary restrictions are not included in the published layer; check SIA and current NOTAMs."
+        ]
+      },
+      {
+        "name": "Réunion",
+        "bbox": [
+          55.43,
+          -21.18,
+          55.58,
+          -20.87
+        ],
+        "featureCount": 55,
+        "warnings": [
+          "Live official viewport extract; geometry is retained without simplification.",
+          "Temporary restrictions are not included in the published layer; check SIA and current NOTAMs."
+        ]
+      }
+    ],
+    "sourceUrls": {
+      "authority": "https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme",
+      "wfs": "https://data.geopf.fr/wfs/ows"
+    },
+    "metadataCoverage": {
+      "officialName": {
+        "present": 59,
+        "total": 60,
+        "percent": 98.33
+      },
+      "category": {
+        "present": 60,
+        "total": 60,
+        "percent": 100.0
+      },
+      "description": {
+        "present": 51,
+        "total": 60,
+        "percent": 85.0
+      },
+      "altitude": {
+        "present": 0,
+        "total": 60,
+        "percent": 0.0
+      },
+      "officialFeatureId": {
+        "present": 0,
+        "total": 60,
+        "percent": 0.0
+      },
+      "originalProperties": {
+        "present": 60,
+        "total": 60,
+        "percent": 100.0
+      }
+    },
+    "publishedOverseasProbe": {
+      "name": "Réunion",
+      "bbox": [
+        55.43,
+        -21.18,
+        55.58,
+        -20.87
+      ],
+      "featureCount": 55,
+      "warnings": [
+        "Live official viewport extract; geometry is retained without simplification.",
+        "Temporary restrictions are not included in the published layer; check SIA and current NOTAMs."
+      ]
+    }
+  }
+}

@@ -1,0 +1,588 @@
+{
+  "generatedAt": "2026-07-19T10:27:54.293773+00:00",
+  "preservesOriginalOfficialWording": true,
+  "doNotTranslate": [
+    "zone IDs",
+    "legal article numbers",
+    "callsigns",
+    "URLs",
+    "emails",
+    "technical identifiers"
+  ],
+  "terms": {
+    "en": {
+      "prohibited": "Prohibited",
+      "restricted": "Restricted",
+      "authorization-required": "Authorization required",
+      "conditional": "Conditional",
+      "warning": "Warning",
+      "information": "Information"
+    },
+    "de": {
+      "prohibited": "Verboten",
+      "restricted": "Eingeschränkt",
+      "authorization-required": "Genehmigung erforderlich",
+      "conditional": "Bedingt",
+      "warning": "Warnung",
+      "information": "Information"
+    },
+    "fr": {
+      "prohibited": "Interdit",
+      "restricted": "Restreint",
+      "authorization-required": "Autorisation requise",
+      "conditional": "Conditionnel",
+      "warning": "Avertissement",
+      "information": "Information"
+    },
+    "es": {
+      "prohibited": "Prohibido",
+      "restricted": "Restringido",
+      "authorization-required": "Autorización requerida",
+      "conditional": "Condicional",
+      "warning": "Advertencia",
+      "information": "Información"
+    },
+    "it": {
+      "prohibited": "Vietato",
+      "restricted": "Limitato",
+      "authorization-required": "Autorizzazione richiesta",
+      "conditional": "Condizionato",
+      "warning": "Avviso",
+      "information": "Informazione"
+    },
+    "pt": {
+      "prohibited": "Proibido",
+      "restricted": "Restrito",
+      "authorization-required": "Autorização necessária",
+      "conditional": "Condicional",
+      "warning": "Aviso",
+      "information": "Informação"
+    },
+    "nl": {
+      "prohibited": "Verboden",
+      "restricted": "Beperkt",
+      "authorization-required": "Toestemming vereist",
+      "conditional": "Voorwaardelijk",
+      "warning": "Waarschuwing",
+      "information": "Informatie"
+    },
+    "no": {
+      "prohibited": "Forbudt",
+      "restricted": "Begrenset",
+      "authorization-required": "Tillatelse kreves",
+      "conditional": "Betinget",
+      "warning": "Advarsel",
+      "information": "Informasjon"
+    },
+    "sv": {
+      "prohibited": "Förbjudet",
+      "restricted": "Begränsat",
+      "authorization-required": "Tillstånd krävs",
+      "conditional": "Villkorat",
+      "warning": "Varning",
+      "information": "Information"
+    },
+    "da": {
+      "prohibited": "Forbudt",
+      "restricted": "Begrænset",
+      "authorization-required": "Tilladelse kræves",
+      "conditional": "Betinget",
+      "warning": "Advarsel",
+      "information": "Information"
+    },
+    "fi": {
+      "prohibited": "Kielletty",
+      "restricted": "Rajoitettu",
+      "authorization-required": "Lupa vaaditaan",
+      "conditional": "Ehdollinen",
+      "warning": "Varoitus",
+      "information": "Tiedote"
+    },
+    "pl": {
+      "prohibited": "Zabronione",
+      "restricted": "Ograniczone",
+      "authorization-required": "Wymagane zezwolenie",
+      "conditional": "Warunkowe",
+      "warning": "Ostrzeżenie",
+      "information": "Informacja"
+    },
+    "cs": {
+      "prohibited": "Zakázáno",
+      "restricted": "Omezeno",
+      "authorization-required": "Vyžadováno povolení",
+      "conditional": "Podmíněné",
+      "warning": "Varování",
+      "information": "Informace"
+    }
+  },
+  "cache": {
+    "1f461f8accb2467e915ac133731c2c87cf871d1a116fb56ba80691969e5a1726": {
+      "language": "en",
+      "key": "prohibited",
+      "translation": "Prohibited",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "ee7055d8cecff8f96b2f52db633f497b40436b21283e1c36b5391960ae599d61": {
+      "language": "en",
+      "key": "restricted",
+      "translation": "Restricted",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "c7cd14c85b6fbed8b6ce600b9c0715277569637145ad428fd9f254e659a5bf04": {
+      "language": "en",
+      "key": "authorization-required",
+      "translation": "Authorization required",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "aefa106b839a7315d7c21b207bedd4417b2f662bd105bca4d97db2f47954977d": {
+      "language": "en",
+      "key": "conditional",
+      "translation": "Conditional",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "9707a077c84500290f6c99abf04b2fd5233889b241e96061cb276c53d4acd2d5": {
+      "language": "en",
+      "key": "warning",
+      "translation": "Warning",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "b98c8fa62bd0a5a228acce13d859b8d95b3cafbe130e87c08fab2f98f2b0a42e": {
+      "language": "en",
+      "key": "information",
+      "translation": "Information",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "c1a581a5e29f8c317c32b0c77ada9482382b40b53c2e69c7424f833319e0ee6b": {
+      "language": "de",
+      "key": "prohibited",
+      "translation": "Verboten",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "e87af456f05b41cdda48b51104475e368753efa256de7a4b48e1104ff86ec14b": {
+      "language": "de",
+      "key": "restricted",
+      "translation": "Eingeschränkt",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "7d8fb6e40ecf0f327dfde11f14c45e5f7407b46e3309ce94e0fad171eebf553e": {
+      "language": "de",
+      "key": "authorization-required",
+      "translation": "Genehmigung erforderlich",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "f9ff0d3088ae048512d25969b4f893fc6f2fd5387ccaddd2758bbaf24306cf1d": {
+      "language": "de",
+      "key": "conditional",
+      "translation": "Bedingt",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "b5c083cd55579fa14e9e78a347ef03fe41c4c6563010a278c8f770a53bbaec38": {
+      "language": "de",
+      "key": "warning",
+      "translation": "Warnung",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "3ceaf2e253839a03d4bdb8614b7dc962992050de57c3a5aef769d7ebf36ba938": {
+      "language": "de",
+      "key": "information",
+      "translation": "Information",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "3606d7091ad7b3276b96b8c1aa5f3d71ed657cd6d409a7502b3d873231537baa": {
+      "language": "fr",
+      "key": "prohibited",
+      "translation": "Interdit",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "620b8affc1060f2767d896cf72a503f920a7b939853c46d5fa106518287d0dae": {
+      "language": "fr",
+      "key": "restricted",
+      "translation": "Restreint",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "097bc3669a9cbadcccd197d312e98275006327b3b12005bed62c9dd8053e2b94": {
+      "language": "fr",
+      "key": "authorization-required",
+      "translation": "Autorisation requise",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "889b226034ae3ada762aff773be702bc11060d69e3f82e8ae9d4627808840b33": {
+      "language": "fr",
+      "key": "conditional",
+      "translation": "Conditionnel",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "3a536014a1c84e5515ad6898ba0da0c3f472646b004d17e30e78814c1a5ffb8c": {
+      "language": "fr",
+      "key": "warning",
+      "translation": "Avertissement",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "f6cfdb52d39dafda02c74b1297456a25f8d94837333c49d181a19a91021e4643": {
+      "language": "fr",
+      "key": "information",
+      "translation": "Information",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "b6539862788da5a25be2bec11564fb137ba56019873fb9e542a9fd46f0aef991": {
+      "language": "es",
+      "key": "prohibited",
+      "translation": "Prohibido",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "29906de598f5c37c2497534920c01b94041ab914fd0687c543a8dffa8fd13c66": {
+      "language": "es",
+      "key": "restricted",
+      "translation": "Restringido",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "dae33f033c509de02bac71eddf950ca23cc065803acd017ac6865a4598ac1e8f": {
+      "language": "es",
+      "key": "authorization-required",
+      "translation": "Autorización requerida",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "aeace6b482bcb080d97fc035b97214f7f0c0d341a7ee500df4d84ddd564c167b": {
+      "language": "es",
+      "key": "conditional",
+      "translation": "Condicional",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "4b035f431a98bddbd01441713f8b400142ad416a79ab9a5fda1abc21a1dc8fdf": {
+      "language": "es",
+      "key": "warning",
+      "translation": "Advertencia",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "9c606052b9263833c91f67e3d4fc01d584f6f984af7ef7255c4e4a34548f0bd9": {
+      "language": "es",
+      "key": "information",
+      "translation": "Información",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "97368d310ea35825bac8d0f201cea7985cad6c1a1bf6426fb66a49bf3c299518": {
+      "language": "it",
+      "key": "prohibited",
+      "translation": "Vietato",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "a746a77909815773a1d2916c32ac6c817592a761abbee17009a8bfecf779dc14": {
+      "language": "it",
+      "key": "restricted",
+      "translation": "Limitato",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "bd7fed0bf908c9eb5af4541694d6578f435f1c6b25f150c32e934dbfef81cad4": {
+      "language": "it",
+      "key": "authorization-required",
+      "translation": "Autorizzazione richiesta",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "55c05193148cd7f06b8b29500361f83ac6939f7468d7fc150eed4200d412a0e5": {
+      "language": "it",
+      "key": "conditional",
+      "translation": "Condizionato",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "602988f5327ac149ad42452e3b8e2fca40b680354be97f282c7a2458d9ee2ab3": {
+      "language": "it",
+      "key": "warning",
+      "translation": "Avviso",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "fd43b89055161fee2ff519323e174fa212a8c1befadd4644f2887fd7717bb604": {
+      "language": "it",
+      "key": "information",
+      "translation": "Informazione",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "000f74690a9b09dd9909a5846d1492314c0ac304b7820c8ea5ce23699bfd89af": {
+      "language": "pt",
+      "key": "prohibited",
+      "translation": "Proibido",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "e7127b53d27b5a0eff36f464d426dcb060039360cce34a391a312eecca1ed891": {
+      "language": "pt",
+      "key": "restricted",
+      "translation": "Restrito",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "698c17080a60363c1ab26002f22a15a78d74baa7b17eb422316af9e4a2b3eb85": {
+      "language": "pt",
+      "key": "authorization-required",
+      "translation": "Autorização necessária",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "775d69a90d259e7980a66f337e97cb1b2526dd0af070f03978c0203432c22e04": {
+      "language": "pt",
+      "key": "conditional",
+      "translation": "Condicional",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "664f3b68e4300fc346782ef881b1f47390b13f6c57caf573e00c7ed8ab635461": {
+      "language": "pt",
+      "key": "warning",
+      "translation": "Aviso",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "cca100b486fc8df7068cfaf7a5120b983d0bf6343025ec85207e1bd9c6bac0b8": {
+      "language": "pt",
+      "key": "information",
+      "translation": "Informação",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "17e48475167e4a478c2db90706fa3d1c2ac14a777623abdc2c3ff24ab597566e": {
+      "language": "nl",
+      "key": "prohibited",
+      "translation": "Verboden",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "cb1cb6bb6a986667807bed2b600377acb9c47614b6fc153bdb988e07e5b9b520": {
+      "language": "nl",
+      "key": "restricted",
+      "translation": "Beperkt",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "42f4a89e6a68f22256831b666a3f6847ea4739ff3ec10ae35d8741ca1a374d33": {
+      "language": "nl",
+      "key": "authorization-required",
+      "translation": "Toestemming vereist",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "779732748c777fa375a6f302566cb910be5a5408055e187c27769d594e575926": {
+      "language": "nl",
+      "key": "conditional",
+      "translation": "Voorwaardelijk",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "e8edca49af0c7e01088bfaf7f9329c3b7ab8349011d04090d1081ae086784d3f": {
+      "language": "nl",
+      "key": "warning",
+      "translation": "Waarschuwing",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "bb3273ce4032ef7fcb3fdd4e7c11856c60815306ed9c61a593120430d00011a0": {
+      "language": "nl",
+      "key": "information",
+      "translation": "Informatie",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "8ac7b365a731d9ce17719616db3627a0edf813aadaa2fd985e64b1b496dc7d19": {
+      "language": "no",
+      "key": "prohibited",
+      "translation": "Forbudt",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "5c3b3d8ab3f321f459e4da4dbdd9fd49c11007baea0545f5cb3f5c415ff36320": {
+      "language": "no",
+      "key": "restricted",
+      "translation": "Begrenset",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "8a4587dc047b9d547d299a341785d8201fd737a938a1ad451e0b0ad73b72335f": {
+      "language": "no",
+      "key": "authorization-required",
+      "translation": "Tillatelse kreves",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "b8f86289f1e205cd93bfe019e0105777a4245a06731398a2be8bcbd60ce0a96e": {
+      "language": "no",
+      "key": "conditional",
+      "translation": "Betinget",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "7808529a1863a7b49660374b30fdff00471d499cee5303b811fadc978f41875c": {
+      "language": "no",
+      "key": "warning",
+      "translation": "Advarsel",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "e9e39be2381cfd04f8d39d2961891aaab0803369972255e3e104b40474697c48": {
+      "language": "no",
+      "key": "information",
+      "translation": "Informasjon",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "1b6e1687f267bd85dca1dbe5372402db3c9bb421bf3dbe31e44c346bc6b08df4": {
+      "language": "sv",
+      "key": "prohibited",
+      "translation": "Förbjudet",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "e4a0e82c68759de2c2a351b96730817c21c1cac192408e32fb16e8dc8d2a946a": {
+      "language": "sv",
+      "key": "restricted",
+      "translation": "Begränsat",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "526245fd4fbbf09d86a6004f89a5450f4c2f24c99273cb4f56046bce4e3371f1": {
+      "language": "sv",
+      "key": "authorization-required",
+      "translation": "Tillstånd krävs",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "edbf6bff6f9ca267fc66122f165795bc1d7c0092e816fb72f92fbbe3d67fbde5": {
+      "language": "sv",
+      "key": "conditional",
+      "translation": "Villkorat",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "e5d432e44258f4f0c3c30cc06f14d9f7087c279bf56dc9f4ddc6404a0243012f": {
+      "language": "sv",
+      "key": "warning",
+      "translation": "Varning",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "949125dfaa4407c78975219eea54530b8b9a53ddff5fe413d90dfd7894c240e4": {
+      "language": "sv",
+      "key": "information",
+      "translation": "Information",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "79a0f5211a5eee1722de4046544dce659d437f584f98e1e720d7cf16bd31401b": {
+      "language": "da",
+      "key": "prohibited",
+      "translation": "Forbudt",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "d7ad16f3575e36f535dafd888b8c7329560c5cfc908f14f3c46dcfe2361a765b": {
+      "language": "da",
+      "key": "restricted",
+      "translation": "Begrænset",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "29bddeaaa7ab536c3c2350a2a4e8f726bc6906dddf036734038120575c2cad1e": {
+      "language": "da",
+      "key": "authorization-required",
+      "translation": "Tilladelse kræves",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "6a8b3bc8590a5ce47680dcf5ef9c7ed1874c05d4e3d3c0c18bfa232927e6a7c2": {
+      "language": "da",
+      "key": "conditional",
+      "translation": "Betinget",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "b92048d3036b73d1032d3de2be51bbebd6ac0d19f1135aaec9c344c3faff951f": {
+      "language": "da",
+      "key": "warning",
+      "translation": "Advarsel",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "bf55f43771d43790281da906f466bd9c625e27215fabf432b00d9ff543c8c4d6": {
+      "language": "da",
+      "key": "information",
+      "translation": "Information",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "a94259ab1884d2f5283dc43940f240a33062eb478a086a6f096fa4238940090e": {
+      "language": "fi",
+      "key": "prohibited",
+      "translation": "Kielletty",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "8faa13fe0dbe2a0ee565c78f5e84ec8e78122b8dd00387bc2580f195a875dd0c": {
+      "language": "fi",
+      "key": "restricted",
+      "translation": "Rajoitettu",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "e6f19a0aa7df1bc69e6b618fb87dc3b70c1736b3530b778a0104cd59bdedf016": {
+      "language": "fi",
+      "key": "authorization-required",
+      "translation": "Lupa vaaditaan",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "5b9417569adfacd393347156eb28ce90f3c6af299c7792509183b5b15acf2ba4": {
+      "language": "fi",
+      "key": "conditional",
+      "translation": "Ehdollinen",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "db3f1b279cc88eb5fcd3cd71c37a948a5db67347dc7d44dc69b90713394cdb3f": {
+      "language": "fi",
+      "key": "warning",
+      "translation": "Varoitus",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "8d89a1de99947dced79206479b3fad20adc3cbd8556d8ebf28ca9018805e1fbd": {
+      "language": "fi",
+      "key": "information",
+      "translation": "Tiedote",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "bac09038f648d685cd942d963bb8e8ecad4b6868518d7453ed56c959bcabb3f3": {
+      "language": "pl",
+      "key": "prohibited",
+      "translation": "Zabronione",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "e4d7375aa3f582e2e044fc4d5d7ca941f548e9661fc5e5cd3cb85780505e118a": {
+      "language": "pl",
+      "key": "restricted",
+      "translation": "Ograniczone",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "25d0cb498a01e633ee4d4d0b3a7ee1bc1812491c0c11a14fae10c0b0de6baab3": {
+      "language": "pl",
+      "key": "authorization-required",
+      "translation": "Wymagane zezwolenie",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "7b3c82136bb771398c36eda736794680ffaae84c01805813e481641e2adc79a7": {
+      "language": "pl",
+      "key": "conditional",
+      "translation": "Warunkowe",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "450565b702ef3712af324fbc3208bb027d87e86ac93783060835a7113b0dd47d": {
+      "language": "pl",
+      "key": "warning",
+      "translation": "Ostrzeżenie",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "b45d76a9ceeec2b4c8272cbe0a93f9797c9ca0f98d5aa54b18ab89afea8912d0": {
+      "language": "pl",
+      "key": "information",
+      "translation": "Informacja",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "5a0f065f085f45c6ec4971e4aa6222d31f226907cb5c0ef21bafaa6d6081326e": {
+      "language": "cs",
+      "key": "prohibited",
+      "translation": "Zakázáno",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "c95951dbf363f42d3b23376aded7dc4145b89c8e9d106bc89c6fc26ef9522705": {
+      "language": "cs",
+      "key": "restricted",
+      "translation": "Omezeno",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "c84c5707e6253d941293bebdd08c782dfbd5cc79939882f59e88f719a96e1a57": {
+      "language": "cs",
+      "key": "authorization-required",
+      "translation": "Vyžadováno povolení",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "cf27f90d78b337eded62c452ead2d209274adbcb709348b6d372183d5011a65f": {
+      "language": "cs",
+      "key": "conditional",
+      "translation": "Podmíněné",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "c37d52214da2dc1bc4d457a570bdb526fd64b3cf21b4a7cb4faaf9d711afe674": {
+      "language": "cs",
+      "key": "warning",
+      "translation": "Varování",
+      "source": "reviewed aviation terminology dictionary"
+    },
+    "2fabfbd3c9c16cdd3918c422a214d5e3551fe3a7eef796ad069b4ac4d31189e9": {
+      "language": "cs",
+      "key": "information",
+      "translation": "Informace",
+      "source": "reviewed aviation terminology dictionary"
+    }
+  }
+}

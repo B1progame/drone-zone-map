@@ -6,7 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "python -m unittest discover -s pipeline/tests -v",
+    "typecheck": "tsc -b",
+    "data:discover": "python pipeline/world.py discover",
+    "data:update": "python pipeline/update_country.py",
+    "data:update-all": "python pipeline/update_country.py",
+    "data:normalize": "python pipeline/world.py normalize",
+    "data:translate": "python pipeline/world.py translate",
+    "data:validate": "python pipeline/world.py validate",
+    "data:test-locations": "python pipeline/world.py test-locations",
+    "data:report": "python pipeline/world.py report",
+    "world:continue": "python pipeline/world.py continue",
+    "data:baseline": "python pipeline/generate_provider_baselines.py"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

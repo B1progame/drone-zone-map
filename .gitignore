@@ -13,3 +13,5 @@ output/playwright/
 playwright-report/
 test-results/
 exports/
+private/
+private-data/

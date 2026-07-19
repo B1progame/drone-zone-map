@@ -17,6 +17,7 @@ export const sources: Source[] = [
  { code:'BG', country:'Bulgaria', name:'Bulgarian CAA', status:'Official link + inspection tool', updated:'18 Jun 2026', url:'https://www.caa.bg/bg/category/633/7062', detail:'The local importer can inspect the newest BGR_ZONES ZIP, but public geometry remains disabled until CAA reuse permission is explicit.' },
  { code:'PT', country:'Portugal', name:'ANAC Portugal', status:'Live official ED-269', updated:'2026', url:'https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx', detail:'The newest dated official ED-269 file is discovered and normalized in memory, including mainland Portugal, Madeira, and the Azores.' },
  { code:'AT', country:'Austria', name:'Austro Control Dronespace', status:'Official link only', updated:'2026', url:'https://map.dronespace.at/', detail:'Austro Control’s official interactive planner is linked directly; no unverified private feed is copied.' },
+ { code:'IT', country:'Italy', name:'ENAC / d-flight', status:'Authenticated official map + personal ED-269 export', updated:'2026', url:'https://www.d-flight.it/web-app/', detail:'ENAC requires the official d-flight map before each operation. Registered operators can manually import an ED-269 export for a private local build; d-flight content is not redistributed.' },
  { code:'NO', country:'Norway', name:'Avinor drone map', status:'Official link only', updated:'2026', url:'https://www.avinor.no/en/practical-info/drone/dronekart/', detail:'Avinor expressly prohibits presenting its service data through another application.' },
  { code:'CA', country:'Canada', name:'Government of Canada Open Data', status:'Open airports + national parks', updated:'2026', url:'https://nrc.canada.ca/en/drone-tool-2/map.html', detail:'Aeris renders openly licensed federal airports, 5.6 km orientation rings, and national parks. NRC confirms the NAV CANADA-derived database may not be redistributed.' }
 ];
@@ -35,6 +36,7 @@ export const sourceFor = (lat:number, lng:number) =>
   source.code==='DK'?lat>=54.4&&lat<=58&&lng>=7.8&&lng<=15.3:
   source.code==='CH'?lat>=45.75&&lat<=47.85&&lng>=5.75&&lng<=10.65:
   source.code==='AT'?lat>=46.25&&lat<=49.15&&lng>=9.45&&lng<=17.2:
+  source.code==='IT'?lat>=35.3&&lat<=47.2&&lng>=6.5&&lng<=18.8:
   source.code==='DE'?lat>=47&&lat<=55.2&&lng>=5.5&&lng<=15.5:
   source.code==='FR'?lat>=41&&lat<=51.5&&lng>=-5.5&&lng<=10:
   source.code==='SE'?lat>=55&&lat<=69.2&&lng>=10.4&&lng<=24.5&&lng>=(lat<60.5?11.3:lat<63?12.5:lat<66?15:lat<68?18:lat<69?23:31.5):

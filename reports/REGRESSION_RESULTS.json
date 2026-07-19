@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-07-19T10:27:56.555508+00:00",
+  "germany": {
+    "passed": true,
+    "configuredLayerCount": 33,
+    "nationalWfsFeatureCount": 88589,
+    "representativeGeometryChecksum": "09922baa75298e945923b681cd2c4e49bc5e366d32c4cdbcc0a0300208dafb17",
+    "validFeatureOrBehaviorLost": false,
+    "basis": "Provider source URLs, layer configuration, frontend query path, and representative baseline are unchanged."
+  },
+  "france": {
+    "passed": true,
+    "configuredLayerCount": 1,
+    "representativeFeatureCount": 60,
+    "overseasProbeFeatures": 55
+  },
+  "bundledDatasets": {
+    "passed": true,
+    "datasetCount": 15
+  }
+}

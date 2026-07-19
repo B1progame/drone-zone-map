@@ -1,0 +1,61 @@
+{
+  "generatedAt": "2026-07-19T10:27:56.511017+00:00",
+  "providers": [
+    {
+      "countryCode": "IT",
+      "authority": "ENAC / d-flight",
+      "authentication": "required-user-login",
+      "publicRedistributionPermitted": false,
+      "workflow": "manual ED-269 export into ignored private-data/it/"
+    },
+    {
+      "countryCode": "HU",
+      "authority": "HungaroControl MyDroneSpace",
+      "authentication": "required-user-login",
+      "publicRedistributionPermitted": false,
+      "workflow": "official authenticated service handoff; no automated login"
+    },
+    {
+      "countryCode": "HR",
+      "authority": "Croatia Control AMC Portal",
+      "authentication": "required-user-login",
+      "publicRedistributionPermitted": false,
+      "workflow": "official authenticated service handoff; no automated login"
+    },
+    {
+      "countryCode": "LT",
+      "authority": "Oro Navigacija / Lithuania Drone Map",
+      "authentication": "required-user-login",
+      "publicRedistributionPermitted": false,
+      "workflow": "official authenticated service handoff; no automated login"
+    },
+    {
+      "countryCode": "AU",
+      "authority": "CASA Drone Safety",
+      "authentication": "required-user-login",
+      "publicRedistributionPermitted": false,
+      "workflow": "official authenticated service handoff; no automated login"
+    },
+    {
+      "countryCode": "JP",
+      "authority": "MLIT DIPS 2.0",
+      "authentication": "required-user-login",
+      "publicRedistributionPermitted": false,
+      "workflow": "official authenticated service handoff; no automated login"
+    },
+    {
+      "countryCode": "BR",
+      "authority": "DECEA SARPAS",
+      "authentication": "required-user-login",
+      "publicRedistributionPermitted": false,
+      "workflow": "official authenticated service handoff; no automated login"
+    },
+    {
+      "countryCode": "IN",
+      "authority": "DGCA Digital Sky",
+      "authentication": "required-user-login",
+      "publicRedistributionPermitted": false,
+      "workflow": "official authenticated service handoff; no automated login"
+    }
+  ]
+}

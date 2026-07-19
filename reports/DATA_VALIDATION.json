@@ -1,0 +1,201 @@
+{
+  "generatedAt": "2026-07-19T10:27:54.285151+00:00",
+  "valid": true,
+  "datasets": [
+    {
+      "countryCode": "FI",
+      "path": "public\\data\\zones\\FI.geojson",
+      "valid": true,
+      "featureCount": 722,
+      "geometryChecksum": "fd3d62bbef40909d9c3587fa6ea1f246901d28cfcfcf606cb434f0bba3458301",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "GB",
+      "path": "public\\data\\zones\\GB.geojson",
+      "valid": true,
+      "featureCount": 1073,
+      "geometryChecksum": "7cd5684a9c89dbca8b0b4b503c2aa951c45d55d76bf1f7a1ec5ebd69e7f25462",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 100.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "IE",
+      "path": "public\\data\\zones\\IE.geojson",
+      "valid": true,
+      "featureCount": 87,
+      "geometryChecksum": "178810f68a7f14edc304c64464b59d248cd9dc524397b3f15b8fd062fa7d86fd",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 100.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "LU",
+      "path": "public\\data\\zones\\LU.geojson",
+      "valid": true,
+      "featureCount": 47,
+      "geometryChecksum": "0471515dcbe306a0a2af6f9f413f95a612c9e63b44cc74a3d42131673d078efb",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 100.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "NL",
+      "path": "public\\data\\zones\\NL.geojson",
+      "valid": true,
+      "featureCount": 774,
+      "geometryChecksum": "393e0360051b32bf74d110c152859c60e6b224344136e9a57500fb5a3e49833e",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 100.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "SE",
+      "path": "public\\data\\zones\\sweden\\DAIM_TOPO-HKP1K.geojson",
+      "valid": true,
+      "featureCount": 37,
+      "geometryChecksum": "17e40c47355c88ba0f17ef86ae62d503e75db934b2ad69a0ffc58894686d758f",
+      "metadataCoverage": {
+        "namesPercent": 0.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "SE",
+      "path": "public\\data\\zones\\sweden\\DAIM_TOPO-RWY5K.geojson",
+      "valid": true,
+      "featureCount": 47,
+      "geometryChecksum": "f448e159d0be4314ccda3478e19061b1e289dc5625dbf40177d7a0abb7170fe2",
+      "metadataCoverage": {
+        "namesPercent": 0.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "SE",
+      "path": "public\\data\\zones\\sweden\\DAIM_TOPO-SUP.geojson",
+      "valid": true,
+      "featureCount": 53,
+      "geometryChecksum": "009bc992b46e65b0ebc38be39cd47560d5c1bc9008644cb17a6c75ed7feb458c",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "SE",
+      "path": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson",
+      "valid": true,
+      "featureCount": 325,
+      "geometryChecksum": "1a451b69e4dda60eadcefebc7c946f1a730bb1addab5731e5cce351fc9d1ff21",
+      "metadataCoverage": {
+        "namesPercent": 0.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "SE",
+      "path": "public\\data\\zones\\sweden\\mais-ARP.geojson",
+      "valid": true,
+      "featureCount": 139,
+      "geometryChecksum": "b3dc9ab014230cea448df56071be5d3dbda5e52c2c84c70938909a10625d6d2d",
+      "metadataCoverage": {
+        "namesPercent": 0.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "SE",
+      "path": "public\\data\\zones\\sweden\\mais-ATZ.geojson",
+      "valid": true,
+      "featureCount": 2,
+      "geometryChecksum": "2fa51a602475cb2796a58fe457e2508e10f2deebc962886beab20f97bf383d53",
+      "metadataCoverage": {
+        "namesPercent": 0.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "SE",
+      "path": "public\\data\\zones\\sweden\\mais-CTR.geojson",
+      "valid": true,
+      "featureCount": 43,
+      "geometryChecksum": "2b49661845bfd3f6537e449d9a975842a29a7c0304bb479322e8cf40122ccc21",
+      "metadataCoverage": {
+        "namesPercent": 0.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "SE",
+      "path": "public\\data\\zones\\sweden\\mais-DNGA.geojson",
+      "valid": true,
+      "featureCount": 22,
+      "geometryChecksum": "730fda6eec39a654b37ddf2a046b6254fe9c3a16d4261b4838a37808ad1f1ecb",
+      "metadataCoverage": {
+        "namesPercent": 0.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "SE",
+      "path": "public\\data\\zones\\sweden\\mais-RSTA.geojson",
+      "valid": true,
+      "featureCount": 166,
+      "geometryChecksum": "44b136a8ce3cde0aceb16aa6b507d4656f90216654cfd8a4ee0bdbb0a9380257",
+      "metadataCoverage": {
+        "namesPercent": 0.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    },
+    {
+      "countryCode": "SE",
+      "path": "public\\data\\zones\\sweden\\mais-TIZ.geojson",
+      "valid": true,
+      "featureCount": 11,
+      "geometryChecksum": "2d337ec455ab4432b8be501524e30722205c372a34d06103e8b7829c44192031",
+      "metadataCoverage": {
+        "namesPercent": 0.0,
+        "descriptionsPercent": 0.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
+    }
+  ]
+}

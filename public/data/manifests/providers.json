@@ -1,0 +1,992 @@
+{
+  "generatedAt": "2026-07-19T10:27:55.134988+00:00",
+  "providers": [
+    {
+      "providerId": "de-dipul",
+      "countryCodes": [
+        "DE"
+      ],
+      "authorityName": "DIPUL",
+      "authorityUrl": "https://dipul.bund.de/homepage/en/information/geographical-zones/",
+      "officialMapUrls": [
+        "https://dipul.bund.de/homepage/en/information/geographical-zones/"
+      ],
+      "sourceType": "wfs",
+      "sourceUrls": [
+        "https://uas-betrieb.de/geoservices/dipul/wfs"
+      ],
+      "license": null,
+      "attribution": "Quelle Geodaten: DFS, BKG 2026 · WFS CC BY-ND 4.0",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Official raster renders live; exact viewport export uses the official WFS without simplifying or caching its geometry.",
+        "Confirm the current DIPUL map before takeoff."
+      ]
+    },
+    {
+      "providerId": "es-enaire-servais-ed-318",
+      "countryCodes": [
+        "ES"
+      ],
+      "authorityName": "ENAIRE servAIS / ED-318",
+      "authorityUrl": "https://aip.enaire.es/AIP/UAS-en.html",
+      "officialMapUrls": [
+        "https://aip.enaire.es/AIP/UAS-en.html"
+      ],
+      "sourceType": "arcgis",
+      "sourceUrls": [
+        "https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer"
+      ],
+      "license": null,
+      "attribution": "ENAIRE / AIS",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Live official vectors are loaded by viewport across mainland Spain, the Canary Islands, Balearic Islands, Ceuta and Melilla; broad urban coverage is shown only at local zoom.",
+        "Re-check ENAIRE Drones before flight."
+      ]
+    },
+    {
+      "providerId": "fr-ign-g-oportail",
+      "countryCodes": [
+        "FR"
+      ],
+      "authorityName": "IGN / Géoportail",
+      "authorityUrl": "https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme",
+      "officialMapUrls": [
+        "https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme"
+      ],
+      "sourceType": "wfs",
+      "sourceUrls": [
+        "https://data.geopf.fr/wfs/ows"
+      ],
+      "license": null,
+      "attribution": "Restrictions UAS © IGN / Géoportail",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Official WMTS styling plus live WFS point checks and viewport exports for metropolitan France and the published overseas coverage.",
+        "The published dataset does not cover temporary restrictions; check SIA before flight."
+      ]
+    },
+    {
+      "providerId": "ie-irish-aviation-authority",
+      "countryCodes": [
+        "IE"
+      ],
+      "authorityName": "Irish Aviation Authority",
+      "authorityUrl": "https://www.iaa.ie/general-aviation/drones/uas-geographic-zones",
+      "officialMapUrls": [
+        "https://www.iaa.ie/general-aviation/drones/uas-geographic-zones"
+      ],
+      "sourceType": "json",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "Irish Aviation Authority",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": true,
+      "canRunInAutomation": true,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Reference only, not to be used for navigation. Check current TRAs, NOTAMs and the official IAA file."
+      ]
+    },
+    {
+      "providerId": "gb-nats-uk-ais",
+      "countryCodes": [
+        "GB"
+      ],
+      "authorityName": "NATS UK AIS",
+      "authorityUrl": "https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/",
+      "officialMapUrls": [
+        "https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/"
+      ],
+      "sourceType": "kml",
+      "sourceUrls": [
+        "https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/digital-datasets/index.html"
+      ],
+      "license": null,
+      "attribution": "NATS UK AIS · effective 9 July 2026",
+      "authentication": "none",
+      "canCache": true,
+      "canRedistribute": true,
+      "canRunInAutomation": true,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Current permanent AIRAC UAS restriction geometry only; it will not match a live planning app that also includes temporary restrictions and NOTAMs.",
+        "Visualization only; consult the UK AIP and current NOTAMs before flight."
+      ]
+    },
+    {
+      "providerId": "nl-ministry-of-infrastructure-and-water-management",
+      "countryCodes": [
+        "NL"
+      ],
+      "authorityName": "Ministry of Infrastructure and Water Management",
+      "authorityUrl": "https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone",
+      "officialMapUrls": [
+        "https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone"
+      ],
+      "sourceType": "json",
+      "sourceUrls": [
+        "https://www.nieuwsienw.nl/api/documents/downloadfile?fileid=1650029&forcedownload=true&sectionid=178144"
+      ],
+      "license": null,
+      "attribution": "Ministerie van Infrastructuur en Waterstaat · CC0",
+      "authentication": "none",
+      "canCache": true,
+      "canRedistribute": true,
+      "canRunInAutomation": true,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Current official ED-269 download; the former PDOK services were retired on 1 July 2026.",
+        "Check Aeret and current NOTAMs before flight."
+      ]
+    },
+    {
+      "providerId": "be-fps-mobility-droneguide",
+      "countryCodes": [
+        "BE"
+      ],
+      "authorityName": "FPS Mobility / Droneguide",
+      "authorityUrl": "https://mobilit.belgium.be/fr/aviation/voler-en-piloter/drones-uas/informations-generales/zones-geographiques",
+      "officialMapUrls": [
+        "https://mobilit.belgium.be/fr/aviation/voler-en-piloter/drones-uas/informations-generales/zones-geographiques"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [
+        "https://map.droneguide.be/"
+      ],
+      "license": null,
+      "attribution": "FPS Mobility / Droneguide",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "The federal authority publishes all fixed geozones and access conditions through Droneguide. A stable documented public data URL and explicit reuse terms were not established, so Aeris links to the official map instead of reverse-engineering the application."
+      ]
+    },
+    {
+      "providerId": "lu-dac-geoportal-uas-geozones",
+      "countryCodes": [
+        "LU"
+      ],
+      "authorityName": "DAC Geoportal UAS Geozones",
+      "authorityUrl": "https://data.public.lu/en/datasets/uas-geographical-zones-grand-duchy-of-luxembourg-zones-geographiques-uas-grand-duche-de-luxembourg/",
+      "officialMapUrls": [
+        "https://data.public.lu/en/datasets/uas-geographical-zones-grand-duchy-of-luxembourg-zones-geographiques-uas-grand-duche-de-luxembourg/"
+      ],
+      "sourceType": "json",
+      "sourceUrls": [
+        "https://drones.geoportail.lu/zones"
+      ],
+      "license": null,
+      "attribution": "Direction de l'Aviation Civile Luxembourg · CC0",
+      "authentication": "none",
+      "canCache": true,
+      "canRedistribute": true,
+      "canRunInAutomation": true,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Geo-awareness only; consult the official geoportal and current restrictions before flight."
+      ]
+    },
+    {
+      "providerId": "at-austro-control-dronespace",
+      "countryCodes": [
+        "AT"
+      ],
+      "authorityName": "Austro Control Dronespace",
+      "authorityUrl": "https://map.dronespace.at/",
+      "officialMapUrls": [
+        "https://map.dronespace.at/"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "Austro Control Dronespace",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Use the official interactive Dronespace planning map; no verified reusable zone feed is copied by Aeris."
+      ]
+    },
+    {
+      "providerId": "it-enac-d-flight",
+      "countryCodes": [
+        "IT"
+      ],
+      "authorityName": "ENAC / d-flight",
+      "authorityUrl": "https://www.d-flight.it/web-app/",
+      "officialMapUrls": [
+        "https://www.d-flight.it/web-app/"
+      ],
+      "sourceType": "json",
+      "sourceUrls": [
+        "https://www.d-flight.it/new_portal/"
+      ],
+      "license": null,
+      "attribution": "ENAC / d-flight",
+      "authentication": "required-user-login",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "ENAC requires pilots to check the official d-flight maps before every operation; the operator portal offers an ED-269 JSON download after registration.",
+        "d-flight terms reserve site content and permit local personal storage only without prior written consent for redistribution. Aeris therefore supports only an ignored local manual import and never publishes or automates login-protected data."
+      ]
+    },
+    {
+      "providerId": "ch-foca-geo-admin-ch",
+      "countryCodes": [
+        "CH"
+      ],
+      "authorityName": "FOCA / geo.admin.ch",
+      "authorityUrl": "https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen",
+      "officialMapUrls": [
+        "https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen"
+      ],
+      "sourceType": "json",
+      "sourceUrls": [
+        "https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson"
+      ],
+      "license": null,
+      "attribution": "Federal Office of Civil Aviation FOCA / geo.admin.ch",
+      "authentication": "none",
+      "canCache": true,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Complete federal UAS geozones render live. Confirm cantonal and temporary restrictions before flight."
+      ]
+    },
+    {
+      "providerId": "pt-anac-portugal",
+      "countryCodes": [
+        "PT"
+      ],
+      "authorityName": "ANAC Portugal",
+      "authorityUrl": "https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx",
+      "officialMapUrls": [
+        "https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx"
+      ],
+      "sourceType": "json",
+      "sourceUrls": [
+        "https://dnt.anac.pt/json/?"
+      ],
+      "license": null,
+      "attribution": "ANAC Portugal",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "The app discovers the newest dated official ED-269 file and converts it in memory; no snapshot is redistributed.",
+        "Check ANAC, military no-fly zones and current NOTAMs before flight."
+      ]
+    },
+    {
+      "providerId": "se-lfv-dronechart",
+      "countryCodes": [
+        "SE"
+      ],
+      "authorityName": "LFV Dronechart",
+      "authorityUrl": "https://dronechart.lfv.se/",
+      "officialMapUrls": [
+        "https://dronechart.lfv.se/"
+      ],
+      "sourceType": "wfs",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "LFV Dronechart",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "LFV CC BY-NC-ND 4.0. Raw geometry is preserved and official display filters are applied at render time. NOTAM indications are not a certified AIS service."
+      ]
+    },
+    {
+      "providerId": "dk-trafikstyrelsen-dronezoner",
+      "countryCodes": [
+        "DK"
+      ],
+      "authorityName": "Trafikstyrelsen Dronezoner",
+      "authorityUrl": "https://www.droneregler.dk/dronezoner",
+      "officialMapUrls": [
+        "https://www.droneregler.dk/dronezoner"
+      ],
+      "sourceType": "json",
+      "sourceUrls": [
+        "https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/980697acd04d4a9bb1fd34bbefab924a/data"
+      ],
+      "license": null,
+      "attribution": "Trafikstyrelsen Dronezoner",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Stable official GeoJSON is loaded live. Check Dronezoner for temporary restrictions before flight."
+      ]
+    },
+    {
+      "providerId": "no-avinor-drone-map",
+      "countryCodes": [
+        "NO"
+      ],
+      "authorityName": "Avinor drone map",
+      "authorityUrl": "https://www.avinor.no/en/practical-info/drone/dronekart/",
+      "officialMapUrls": [
+        "https://www.avinor.no/en/practical-info/drone/dronekart/"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "Avinor drone map",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Link only. Avinor's terms prohibit scraping, copying and redistributing its service data."
+      ]
+    },
+    {
+      "providerId": "fi-traficom",
+      "countryCodes": [
+        "FI"
+      ],
+      "authorityName": "Traficom",
+      "authorityUrl": "https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa",
+      "officialMapUrls": [
+        "https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa"
+      ],
+      "sourceType": "json",
+      "sourceUrls": [
+        "https://eservices.traficom.fi/Ilmatilasovellus/api/uas-reservations/json?lang=fi"
+      ],
+      "license": null,
+      "attribution": "Source: Finnish Transport and Communications Agency Traficom; modified to GeoJSON; CC BY 4.0",
+      "authentication": "none",
+      "canCache": true,
+      "canRedistribute": true,
+      "canRunInAutomation": true,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Machine-readable official UAS zones; check the official map, temporary restrictions and NOTAMs before flight.",
+        "The circle-to-polygon conversion is marked as a modification under Traficom's CC BY 4.0 terms."
+      ]
+    },
+    {
+      "providerId": "pl-pansa-dronetower",
+      "countryCodes": [
+        "PL"
+      ],
+      "authorityName": "PANSA / DroneTower",
+      "authorityUrl": "https://www.pansa.pl/dronetower/",
+      "officialMapUrls": [
+        "https://www.pansa.pl/dronetower/"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "PANSA / DroneTower",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "PANSA requires pilots to check current zones and notify intended flights through the DroneTower app. No documented anonymous reusable geozone feed was verified."
+      ]
+    },
+    {
+      "providerId": "cz-caa-czechia-dronemap",
+      "countryCodes": [
+        "CZ"
+      ],
+      "authorityName": "CAA Czechia / DroneMap",
+      "authorityUrl": "https://www.caa.cz/en/flight-operations/unmanned-aircraft/",
+      "officialMapUrls": [
+        "https://www.caa.cz/en/flight-operations/unmanned-aircraft/"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [
+        "https://dronemap.gov.cz/index.php?lang=2"
+      ],
+      "license": null,
+      "attribution": "CAA Czechia / DroneMap",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "CAA Czechia designates DroneMap as the practical source for exact boundaries and operating conditions. No documented reusable public zone endpoint was verified."
+      ]
+    },
+    {
+      "providerId": "sk-transport-authority",
+      "countryCodes": [
+        "SK"
+      ],
+      "authorityName": "Transport Authority",
+      "authorityUrl": "https://letectvo.nsat.sk/bezpilotne-letectvo/zemepisne-oblasti-uas/",
+      "officialMapUrls": [
+        "https://letectvo.nsat.sk/bezpilotne-letectvo/zemepisne-oblasti-uas/"
+      ],
+      "sourceType": "kml",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "Transport Authority",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "The official page publishes a dated KML ZIP. Aeris can discover and inventory every placemark and style locally, but does not redistribute geometry while reuse terms remain unstated."
+      ]
+    },
+    {
+      "providerId": "hu-hungarocontrol-mydronespace",
+      "countryCodes": [
+        "HU"
+      ],
+      "authorityName": "HungaroControl MyDroneSpace",
+      "authorityUrl": "https://mydronespace.hu/",
+      "officialMapUrls": [
+        "https://mydronespace.hu/"
+      ],
+      "sourceType": "authenticated-api",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "HungaroControl MyDroneSpace",
+      "authentication": "required-user-login",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "MyDroneSpace is Hungary's official pre-flight and operational service. No documented anonymous reusable national geozone feed was verified."
+      ]
+    },
+    {
+      "providerId": "ro-romanian-caa",
+      "countryCodes": [
+        "RO"
+      ],
+      "authorityName": "Romanian CAA",
+      "authorityUrl": "https://www.caa.ro/ro/pages/drone",
+      "officialMapUrls": [
+        "https://www.caa.ro/ro/pages/drone"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "Romanian CAA",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "The Romanian CAA publishes prohibited/restricted UAS areas, contacts and an interactive map, but no stable reusable zone feed or reuse licence was verified."
+      ]
+    },
+    {
+      "providerId": "bg-bulgarian-civil-aviation-administration",
+      "countryCodes": [
+        "BG"
+      ],
+      "authorityName": "Bulgarian Civil Aviation Administration",
+      "authorityUrl": "https://www.caa.bg/bg/category/633/7062",
+      "officialMapUrls": [
+        "https://www.caa.bg/bg/category/633/7062"
+      ],
+      "sourceType": "json",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "Bulgarian Civil Aviation Administration",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "The local inspection adapter discovers the newest BGR_ZONES package, but Aeris does not redistribute it while Bulgarian CAA reuse permission remains unconfirmed.",
+        "Check B-FLIP and active or temporary restrictions before flight."
+      ]
+    },
+    {
+      "providerId": "gr-hcaa-drone-aware-greece",
+      "countryCodes": [
+        "GR"
+      ],
+      "authorityName": "HCAA / Drone Aware Greece",
+      "authorityUrl": "https://hcaa.gov.gr/el/where-you-are-allowed-fly-uas-greece",
+      "officialMapUrls": [
+        "https://hcaa.gov.gr/el/where-you-are-allowed-fly-uas-greece"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [
+        "https://dagr.hasp.gov.gr/#map_page"
+      ],
+      "license": null,
+      "attribution": "HCAA / Drone Aware Greece",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "HCAA requires a pre-flight DAGR check; yellow and magenta zones can require approval or prohibit flight. No documented reusable public feed was verified."
+      ]
+    },
+    {
+      "providerId": "hr-croatia-control-amc-portal",
+      "countryCodes": [
+        "HR"
+      ],
+      "authorityName": "Croatia Control AMC Portal",
+      "authorityUrl": "https://amc.crocontrol.hr/Informacije",
+      "officialMapUrls": [
+        "https://amc.crocontrol.hr/Informacije"
+      ],
+      "sourceType": "authenticated-api",
+      "sourceUrls": [
+        "https://amc.crocontrol.hr/"
+      ],
+      "license": null,
+      "attribution": "Croatia Control AMC Portal",
+      "authentication": "required-user-login",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Croatian UAS zones and current airspace use are managed through the AMC Portal and mobile workflow. The operational service requires registration and no reusable public geozone feed was verified."
+      ]
+    },
+    {
+      "providerId": "si-civil-aviation-agency",
+      "countryCodes": [
+        "SI"
+      ],
+      "authorityName": "Civil Aviation Agency",
+      "authorityUrl": "https://www.caa.si/geografske-omejitve-za-uas.html",
+      "officialMapUrls": [
+        "https://www.caa.si/geografske-omejitve-za-uas.html"
+      ],
+      "sourceType": "arcgis",
+      "sourceUrls": [
+        "https://caa-slovenia.maps.arcgis.com/apps/webappviewer/index.html?id=25ba69037c264c5faa5381174f76f861"
+      ],
+      "license": null,
+      "attribution": "Civil Aviation Agency",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "The official public web map exposes structured layer and renderer metadata, but no reuse licence is stated; Aeris inventories it without copying geometry."
+      ]
+    },
+    {
+      "providerId": "ee-transport-administration-eans",
+      "countryCodes": [
+        "EE"
+      ],
+      "authorityName": "Transport Administration / EANS",
+      "authorityUrl": "https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones",
+      "officialMapUrls": [
+        "https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones"
+      ],
+      "sourceType": "json",
+      "sourceUrls": [
+        "https://utm.eans.ee/avm/utm/uas.geojson"
+      ],
+      "license": null,
+      "attribution": "Estonian Transport Administration / EANS",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Official GeoJSON is loaded live; check the EANS map and temporary restrictions before flight.",
+        "The live global outside-Estonia mask is excluded from rendering and point results."
+      ]
+    },
+    {
+      "providerId": "lv-lgs-civil-aviation-agency",
+      "countryCodes": [
+        "LV"
+      ],
+      "authorityName": "LGS / Civil Aviation Agency",
+      "authorityUrl": "https://www.airspace.lv/drones/en",
+      "officialMapUrls": [
+        "https://www.airspace.lv/drones/en"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [
+        "https://ais.lgs.lv/page/UAS_geozones"
+      ],
+      "license": null,
+      "attribution": "LGS / Civil Aviation Agency",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "LGS states the official map updates every five minutes, but no stable reusable download URL was verified; use the official map directly."
+      ]
+    },
+    {
+      "providerId": "lt-oro-navigacija-lithuania-drone-map",
+      "countryCodes": [
+        "LT"
+      ],
+      "authorityName": "Oro Navigacija / Lithuania Drone Map",
+      "authorityUrl": "https://www.ans.lt/en/services/unmanned-aerial-vehicles-drones",
+      "officialMapUrls": [
+        "https://www.ans.lt/en/services/unmanned-aerial-vehicles-drones"
+      ],
+      "sourceType": "authenticated-api",
+      "sourceUrls": [
+        "https://utm.ans.lt/"
+      ],
+      "license": null,
+      "attribution": "Oro Navigacija / Lithuania Drone Map",
+      "authentication": "required-user-login",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "All approved Lithuanian geozones and temporary restrictions are published in the UTM platform. Its user rules apply to registered users; no documented public reusable feed was verified."
+      ]
+    },
+    {
+      "providerId": "us-faa-uas-facility-maps-b4ufly",
+      "countryCodes": [
+        "US"
+      ],
+      "authorityName": "FAA UAS Facility Maps / B4UFLY",
+      "authorityUrl": "https://www.faa.gov/uas/getting_started/b4ufly",
+      "officialMapUrls": [
+        "https://www.faa.gov/uas/getting_started/b4ufly"
+      ],
+      "sourceType": "arcgis",
+      "sourceUrls": [
+        "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0"
+      ],
+      "license": null,
+      "attribution": "FAA / ATO Aeronautical Information Services",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Facility grids show authorization ceilings, not permission or every restriction.",
+        "Check B4UFLY and current TFRs before flight."
+      ]
+    },
+    {
+      "providerId": "ca-government-of-canada-open-data",
+      "countryCodes": [
+        "CA"
+      ],
+      "authorityName": "Government of Canada Open Data",
+      "authorityUrl": "https://nrc.canada.ca/en/drone-tool-2/map.html",
+      "officialMapUrls": [
+        "https://nrc.canada.ca/en/drone-tool-2/map.html"
+      ],
+      "sourceType": "arcgis",
+      "sourceUrls": [
+        "https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0"
+      ],
+      "license": null,
+      "attribution": "Transport Canada / Natural Resources Canada · Open Government Licence - Canada",
+      "authentication": "none",
+      "canCache": true,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "The map renders open federal airport data, 5.6 km airport orientation rings, and open national-park boundaries.",
+        "NRC states its NAV CANADA-derived database may not be redistributed; use the official Drone Site Selection Tool for the complete map."
+      ]
+    },
+    {
+      "providerId": "au-casa-drone-safety",
+      "countryCodes": [
+        "AU"
+      ],
+      "authorityName": "CASA Drone Safety",
+      "authorityUrl": "https://www.casa.gov.au/knowyourdrone/drone-safety-apps",
+      "officialMapUrls": [
+        "https://www.casa.gov.au/knowyourdrone/drone-safety-apps"
+      ],
+      "sourceType": "authenticated-api",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "CASA Drone Safety",
+      "authentication": "required-user-login",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "CASA directs pilots to verified apps. Its digital platform data access is for onboarded providers and authenticated services, so Aeris does not bypass that access model."
+      ]
+    },
+    {
+      "providerId": "nz-caa-new-zealand-airshare",
+      "countryCodes": [
+        "NZ"
+      ],
+      "authorityName": "CAA New Zealand / AirShare",
+      "authorityUrl": "https://www.aviation.govt.nz/drones/flying-your-drone-safely/check-the-airspace/",
+      "officialMapUrls": [
+        "https://www.aviation.govt.nz/drones/flying-your-drone-safely/check-the-airspace/"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [
+        "https://www.airshare.co.nz/"
+      ],
+      "license": null,
+      "attribution": "CAA New Zealand / AirShare",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "CAA directs pilots to AirShare for current low-flying, aerodrome, control, restricted, military and danger areas. No documented reusable public feed was verified."
+      ]
+    },
+    {
+      "providerId": "jp-mlit-dips-2-0",
+      "countryCodes": [
+        "JP"
+      ],
+      "authorityName": "MLIT DIPS 2.0",
+      "authorityUrl": "https://www.mlit.go.jp/koku/koku_ua_dips.html",
+      "officialMapUrls": [
+        "https://www.mlit.go.jp/koku/koku_ua_dips.html"
+      ],
+      "sourceType": "authenticated-api",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "MLIT DIPS 2.0",
+      "authentication": "required-user-login",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "DIPS 2.0 is the official registration, planning and permission platform. No documented anonymous reusable national zone feed was verified."
+      ]
+    },
+    {
+      "providerId": "br-decea-sarpas",
+      "countryCodes": [
+        "BR"
+      ],
+      "authorityName": "DECEA SARPAS",
+      "authorityUrl": "https://www.gov.br/pt-br/servicos/solicitar-autorizacao-para-voo-de-aeronaves-remotamente-pilotadas",
+      "officialMapUrls": [
+        "https://www.gov.br/pt-br/servicos/solicitar-autorizacao-para-voo-de-aeronaves-remotamente-pilotadas"
+      ],
+      "sourceType": "authenticated-api",
+      "sourceUrls": [
+        "https://servicos.decea.gov.br/sarpas/"
+      ],
+      "license": null,
+      "attribution": "DECEA SARPAS",
+      "authentication": "required-user-login",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "SARPAS requires operator and aircraft registration for access requests. Aeris does not automate or bypass the authenticated operational service."
+      ]
+    },
+    {
+      "providerId": "in-dgca-digital-sky",
+      "countryCodes": [
+        "IN"
+      ],
+      "authorityName": "DGCA Digital Sky",
+      "authorityUrl": "https://digitalsky.dgca.gov.in/",
+      "officialMapUrls": [
+        "https://digitalsky.dgca.gov.in/"
+      ],
+      "sourceType": "authenticated-api",
+      "sourceUrls": [],
+      "license": null,
+      "attribution": "DGCA Digital Sky",
+      "authentication": "required-user-login",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "Digital Sky is the government real-time repository for red, yellow and green airspace zones. No documented anonymous public API or reusable zone download was verified."
+      ]
+    },
+    {
+      "providerId": "sg-caas-onemap",
+      "countryCodes": [
+        "SG"
+      ],
+      "authorityName": "CAAS / OneMap",
+      "authorityUrl": "https://www.caas.gov.sg/unmanned-aircraft/no-fly-zones-and-ua-flying-areas/",
+      "officialMapUrls": [
+        "https://www.caas.gov.sg/unmanned-aircraft/no-fly-zones-and-ua-flying-areas/"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [
+        "https://www.onemap.gov.sg/"
+      ],
+      "license": null,
+      "attribution": "CAAS / OneMap",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "CAAS identifies OneMap as the authoritative source for no-fly, permit and temporary restricted areas. No documented reusable UA-zone feed was verified."
+      ]
+    },
+    {
+      "providerId": "za-sacaa-atns-aip",
+      "countryCodes": [
+        "ZA"
+      ],
+      "authorityName": "SACAA / ATNS AIP",
+      "authorityUrl": "https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/",
+      "officialMapUrls": [
+        "https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [
+        "https://www.atns.co.za/products/aim/AeronauticalInformationManagementProduct"
+      ],
+      "license": null,
+      "attribution": "SACAA / ATNS AIP",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-07-19",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "The authoritative restrictions are published through current AIP/NOTAM and SACAA RPAS rules. No national public drone-geozone feed with reuse terms was verified."
+      ]
+    }
+  ]
+}
