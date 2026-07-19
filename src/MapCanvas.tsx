@@ -4,7 +4,7 @@ import { CloudRain, CloudSun, Layers3, Map as MapIcon, Pause, Play, Satellite, W
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
-import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData, isOfflineTestMode, setOfflineTestMode } from './offline';
+import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData, isOfflineTestMode, setOfflineTestMode, type OfflineBasemapType } from './offline';
 import { enrichZoneSemantics, filterUkDroneRelevant, type ZoneSemantic } from './zoneSemantics';
 
 type BaseMap = 'satellite' | 'streets';
@@ -99,13 +99,21 @@ const emptyGeoJson={type:'FeatureCollection' as const,features:[]};
 const mapShouldUseOffline=()=>!navigator.onLine||isOfflineTestMode()||(import.meta.env.DEV&&new URLSearchParams(window.location.search).has('offline-test'));
 let offlineProtocolRegistered=false;
 if(!offlineProtocolRegistered){
-  maplibregl.addProtocol('aeris-offline',async params=>{
-    const match=params.url.match(/^aeris-offline:\/\/([^/]+)\/([^/]+)\/(\d+)\/(\d+)\/(\d+)$/);
+  const readOfflineTile=async(url:string)=>{
+    const match=url.match(/^aeris-offline(?:-raster)?:\/\/([^/]+)\/([^/]+)\/(\d+)\/(\d+)\/(\d+)$/);
     if(!match)throw new Error('Invalid offline tile URL.');
-    const data=await getOfflineMapTile(decodeURIComponent(match[1]),decodeURIComponent(match[2]),Number(match[3]),Number(match[4]),Number(match[5]));
+    return getOfflineMapTile(decodeURIComponent(match[1]),decodeURIComponent(match[2]),Number(match[3]),Number(match[4]),Number(match[5]));
+  };
+  maplibregl.addProtocol('aeris-offline',async params=>{
+    const data=await readOfflineTile(params.url);
     // An empty protobuf message is a valid empty vector tile. Returning it keeps
     // MapLibre stable when the viewport extends beyond downloaded coverage.
     return{data:data??new ArrayBuffer(0)};
+  });
+  maplibregl.addProtocol('aeris-offline-raster',async params=>{
+    const data=await readOfflineTile(params.url);
+    const transparentPng=new Uint8Array([137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,1,0,0,0,1,8,6,0,0,0,31,21,196,137,0,0,0,13,73,68,65,84,8,215,99,248,207,192,240,31,0,5,0,1,255,137,153,61,29,0,0,0,0,73,69,78,68,174,66,96,130]);
+    return{data:data??transparentPng.buffer};
   });
   offlineProtocolRegistered=true;
 }
@@ -380,7 +388,8 @@ const terrainDemSource=()=>({type:'raster-dem' as const,url:'https://tiles.mapte
 const buildingSource=()=>({type:'vector' as const,url:'https://tiles.openfreemap.org/planet',attribution:'<a href="https://openfreemap.org/" target="_blank">Buildings © OpenStreetMap · OpenMapTiles · OpenFreeMap</a>'});
 const terrainHillshadeLayer=()=>({id:'terrain-hillshade',type:'hillshade' as const,source:'terrain-dem',layout:{visibility:'visible' as const},paint:{'hillshade-shadow-color':'#15241e','hillshade-highlight-color':'#d7edce','hillshade-accent-color':'#6c806f','hillshade-exaggeration':.35}});
 const buildingLayer=()=>({id:'3d-buildings',type:'fill-extrusion' as const,source:'openfreemap-buildings','source-layer':'building',minzoom:14.5,filter:['!=',['get','hide_3d'],true] as any,layout:{visibility:'visible' as const},paint:{'fill-extrusion-color':['interpolate',['linear'],['coalesce',['get','render_height'],6],0,'#cfd8d2',20,'#e2d9ca',80,'#c6d4d2',200,'#a8c6c2'] as any,'fill-extrusion-height':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_height'],6]] as any,'fill-extrusion-base':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_min_height'],0]] as any,'fill-extrusion-opacity':.82,'fill-extrusion-vertical-gradient':true}});
-const offlineBasemapSource=(tiles=['aeris-offline://none/none/{z}/{x}/{y}'])=>({type:'vector' as const,tiles,minzoom:2,maxzoom:12,attribution:'<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>'});
+const offlineBasemapSource=(tiles=['aeris-offline://none/none/{z}/{x}/{y}'],maxzoom=12)=>({type:'vector' as const,tiles,minzoom:2,maxzoom,attribution:'<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>'});
+const offlineSatelliteSource=(tiles=['aeris-offline-raster://none/none/{z}/{x}/{y}'],maxzoom=13)=>({type:'raster' as const,tiles,tileSize:256,minzoom:2,maxzoom,attribution:'<a href="https://s2maps.eu/" target="_blank">Sentinel-2 cloudless</a> by <a href="https://eox.at/" target="_blank">EOX</a> · modified Copernicus Sentinel data 2016/2017 · CC BY 4.0'});
 const offlineBasemapLayers=(visibility:'visible'|'none'='none'):any[]=>[
   {id:'offline-map-background',type:'background',layout:{visibility},paint:{'background-color':'#07130f'}},
   {id:'offline-map-landcover',type:'fill',source:'offline-basemap','source-layer':'landcover',layout:{visibility},paint:{'fill-color':['match',['get','class'],'wood','#183d2b','grass','#244834','farmland','#343f2a','ice','#a7c8c3','sand','#655c3a','#173326'],'fill-opacity':.9}},
@@ -393,7 +402,11 @@ const offlineBasemapLayers=(visibility:'visible'|'none'='none'):any[]=>[
   {id:'offline-map-roads',type:'line',source:'offline-basemap','source-layer':'transportation',minzoom:4,layout:{visibility,'line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','class'],'motorway','#d9b75e','trunk','#c9a955','primary','#b4a36b','secondary','#89968a','rail','#788b84','#687a73'],'line-width':['interpolate',['linear'],['zoom'],4,.5,8,1.2,12,4.5]}},
   {id:'offline-map-boundary',type:'line',source:'offline-basemap','source-layer':'boundary',layout:{visibility},paint:{'line-color':'#7d9b8d','line-width':['interpolate',['linear'],['zoom'],3,.5,10,1.4],'line-dasharray':[3,2],'line-opacity':.65}}
 ];
-const OFFLINE_BASEMAP_LAYER_IDS=offlineBasemapLayers().map(layer=>layer.id);
+const offlineSatelliteLayers=(visibility:'visible'|'none'='none'):any[]=>[
+  {id:'offline-map-background',type:'background',layout:{visibility},paint:{'background-color':'#07130f'}},
+  {id:'offline-map-satellite',type:'raster',source:'offline-basemap',layout:{visibility},paint:{'raster-opacity':1,'raster-fade-duration':0}}
+];
+const OFFLINE_BASEMAP_LAYER_IDS=[...new Set([...offlineBasemapLayers(),...offlineSatelliteLayers()].map(layer=>layer.id))];
 
 function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
   const satellite = baseMap === 'satellite';
@@ -796,7 +809,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       for(const id of [...OFFLINE_BASEMAP_LAYER_IDS].reverse())if(map.getLayer(id))map.removeLayer(id);
       if(map.getSource('offline-basemap'))map.removeSource('offline-basemap');
     };
-    const showOfflineMap=(visible:boolean,tiles?:string[])=>{
+    const showOfflineMap=(visible:boolean,tiles?:string[],basemapType:OfflineBasemapType='street',maxZoom=12)=>{
       if(map.getLayer('basemap'))map.setLayoutProperty('basemap','visibility',visible?'none':'visible');
       for(const id of ZONE_LAYER_IDS)if(!id.startsWith('offline-')&&map.getLayer(id))map.setLayoutProperty(id,'visibility',visible?'none':zonesVisibleRef.current?'visible':'none');
       for(const id of ['weather-clouds','weather-rain','weather-wind'])if(map.getLayer(id))map.setLayoutProperty(id,'visibility',visible?'none':weatherStateRef.current.visible?'visible':'none');
@@ -805,8 +818,8 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
         removeOfflineBasemap();
         const beforeLayer=map.getLayer('offline-package-fill')?'offline-package-fill':undefined;
         if(tiles){
-          map.addSource('offline-basemap',offlineBasemapSource(tiles));
-          for(const layer of offlineBasemapLayers('visible'))map.addLayer(layer,beforeLayer);
+          map.addSource('offline-basemap',basemapType==='satellite'?offlineSatelliteSource(tiles,maxZoom):offlineBasemapSource(tiles,maxZoom));
+          for(const layer of basemapType==='satellite'?offlineSatelliteLayers('visible'):offlineBasemapLayers('visible'))map.addLayer(layer,beforeLayer);
         }else map.addLayer(offlineBasemapLayers('visible')[0],beforeLayer);
       }else if(!visible)removeOfflineBasemap();
     };
@@ -828,11 +841,12 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       const bounds=point?[center.lng-span,center.lat-span,center.lng+span,center.lat+span] as [number,number,number,number]:[visible.getWest(),visible.getSouth(),visible.getEast(),visible.getNorth()] as [number,number,number,number];
       const data=await getOfflinePackageData(pack,bounds);
       if(request!==offlineRequestRef.current)return;
-      if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[`aeris-offline://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`]);else showOfflineMap(false);
+      const basemapType=pack.config.basemapType??pack.metadata.basemapType??'street',protocol=basemapType==='satellite'?'aeris-offline-raster':'aeris-offline';
+      if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[`${protocol}://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`],basemapType,pack.config.basemapMaxZoom??pack.metadata.basemapMaxZoom??12);else showOfflineMap(false);
       const[west,south,east,north]=pack.metadata.bounds;
       coverageSource.setData({type:'FeatureCollection',features:[{type:'Feature',properties:{name:pack.name},geometry:{type:'Polygon',coordinates:[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}}]} as any);
       const visibleData=pack.metadata.countryCode==='GB'?filterUkDroneRelevant(data):data;
-      source.setData(enrichZoneSemantics(visibleData) as any);setOfflineNotice(`Offline · ${pack.name} · street map + ${visibleData.features.length.toLocaleString()} nearby official items`);
+      source.setData(enrichZoneSemantics(visibleData) as any);setOfflineNotice(`Offline · ${pack.name} · ${basemapType} map + ${visibleData.features.length.toLocaleString()} nearby official items`);
     }
     else{source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);showOfflineMap(true);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
   };
