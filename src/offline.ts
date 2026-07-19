@@ -1,7 +1,7 @@
 import type { Location, Weather, ZoneInfo } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 import { localizeZoneInfo } from './zoneTranslations';
-import { classifyZoneSemantic } from './zoneSemantics';
+import { classifyZoneSemantic, filterUkDroneRelevant } from './zoneSemantics';
 
 export const OFFLINE_PACKAGE_VERSION=5;
 const DB_NAME='aeris-offline',PACKAGES='packages',CHUNKS='chunks',TILES='mapTiles',DB_VERSION=4;
@@ -248,7 +248,9 @@ async function saveCountryZones(config:OfflinePackConfig,packageId:string,genera
  const save=async(features:any[],category:OfflineLayerId,name:string)=>results.push(await saveFeatureCollection(features,category,config.bounds,packageId,generation,name));
  if(definition.adapter==='none')return{items:0,sizeBytes:0};
  if(definition.adapter==='static'&&config.layers.includes('restricted')){
-  const payload=await fetchGeoJson(`${import.meta.env.BASE_URL}data/zones/${definition.file}`);await save(payload.features,'restricted',`${config.country.toLowerCase()}-zones`);
+  const payload=await fetchGeoJson(`${import.meta.env.BASE_URL}data/zones/${definition.file}`);
+  const visiblePayload=config.country==='GB'?filterUkDroneRelevant(payload):payload;
+  await save(visiblePayload.features,'restricted',`${config.country.toLowerCase()}-zones`);
  }else if(definition.adapter==='sweden'){
   const files=['mais-TIZ','mais-RSTA','mais-DNGA','mais-CTR','mais-ATZ','dynais-NOTAM','DAIM_TOPO-SUP','DAIM_TOPO-RWY5K','DAIM_TOPO-HKP1K'];
   if(config.layers.includes('restricted'))for(const file of files){const payload=await fetchGeoJson(`${import.meta.env.BASE_URL}data/zones/sweden/${file}.geojson`);await save(payload.features,'restricted',`lfv-${file}`)}

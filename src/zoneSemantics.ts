@@ -90,3 +90,13 @@ export function enrichZoneSemantics<T extends {features?:any[]}>(data:T,forced?:
     })
   };
 }
+
+export function isUkDroneRelevant(properties:Record<string,unknown>={}){
+  const match=String(properties.lower??'').trim().toUpperCase().match(/^FL\s*(\d+(?:\.\d+)?)/);
+  return !match||Number(match[1])<500;
+}
+
+export function filterUkDroneRelevant<T extends {features?:any[]}>(data:T):T{
+  if(!Array.isArray(data?.features))return data;
+  return {...data,features:data.features.filter(feature=>isUkDroneRelevant(feature?.properties??{}))};
+}

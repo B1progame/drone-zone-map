@@ -5,7 +5,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData } from './offline';
-import { enrichZoneSemantics, type ZoneSemantic } from './zoneSemantics';
+import { enrichZoneSemantics, filterUkDroneRelevant, type ZoneSemantic } from './zoneSemantics';
 
 type BaseMap = 'satellite' | 'streets';
 
@@ -124,7 +124,7 @@ type VectorSourceConfig={id:string;url:string|(()=>Promise<string>);bounds:[numb
 const vectorSources=():VectorSourceConfig[]=>[
  {id:'luxembourg',url:`${import.meta.env.BASE_URL}data/zones/LU.geojson`,bounds:[5.65,49.35,6.65,50.25]},
  {id:'ireland',url:`${import.meta.env.BASE_URL}data/zones/IE.geojson`,bounds:[-11,51.2,-5,55.6]},
- {id:'uk',url:`${import.meta.env.BASE_URL}data/zones/GB.geojson`,bounds:[-9,49,2.5,61]},
+ {id:'uk',url:`${import.meta.env.BASE_URL}data/zones/GB.geojson`,bounds:[-9,49,2.5,61],transform:filterUkDroneRelevant},
  {id:'switzerland',url:SWISS_UAS,bounds:[5.75,45.75,10.65,47.85]},
  {id:'denmark',url:DENMARK_ZONES,bounds:[7.8,54.4,15.3,58]},
  {id:'denmark-nature',url:DENMARK_NATURE,bounds:[7.8,54.4,15.3,58],semantic:'nature'},
@@ -752,7 +752,8 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       if(pack.generation&&pack.metadata.tileCount){mapSource.setTiles([`aeris-offline://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`]);showOfflineMap(true)}else showOfflineMap(false);
       const[west,south,east,north]=pack.metadata.bounds;
       coverageSource.setData({type:'FeatureCollection',features:[{type:'Feature',properties:{name:pack.name},geometry:{type:'Polygon',coordinates:[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}}]} as any);
-      source.setData(enrichZoneSemantics(data) as any);setOfflineNotice(`Offline · ${pack.name} · street map + ${data.features.length.toLocaleString()} nearby official items`);
+      const visibleData=pack.metadata.countryCode==='GB'?filterUkDroneRelevant(data):data;
+      source.setData(enrichZoneSemantics(visibleData) as any);setOfflineNotice(`Offline · ${pack.name} · street map + ${visibleData.features.length.toLocaleString()} nearby official items`);
     }
     else{source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
   };
