@@ -4,7 +4,7 @@ import { CloudRain, CloudSun, Layers3, Map as MapIcon, Pause, Play, Satellite, W
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
-import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData } from './offline';
+import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData, isOfflineTestMode, setOfflineTestMode } from './offline';
 import { enrichZoneSemantics, filterUkDroneRelevant, type ZoneSemantic } from './zoneSemantics';
 
 type BaseMap = 'satellite' | 'streets';
@@ -96,7 +96,7 @@ const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const dynamicRequestKeys=new WeakMap<MapLibreMap,Map<string,string>>();
 const radarUnavailableMaps=new WeakSet<MapLibreMap>();
 const emptyGeoJson={type:'FeatureCollection' as const,features:[]};
-const mapShouldUseOffline=()=>!navigator.onLine||(import.meta.env.DEV&&new URLSearchParams(window.location.search).has('offline-test'));
+const mapShouldUseOffline=()=>!navigator.onLine||isOfflineTestMode()||(import.meta.env.DEV&&new URLSearchParams(window.location.search).has('offline-test'));
 let offlineProtocolRegistered=false;
 if(!offlineProtocolRegistered){
   maplibregl.addProtocol('aeris-offline',async params=>{
@@ -760,8 +760,8 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useEffect(()=>{void syncOfflinePackage(location)},[location?.lat,location?.lng]);
   useEffect(()=>{
     const update=()=>void syncOfflinePackage(location);
-    window.addEventListener('online',update);window.addEventListener('offline',update);window.addEventListener('aeris-offline-packages-changed',update);
-    return()=>{window.removeEventListener('online',update);window.removeEventListener('offline',update);window.removeEventListener('aeris-offline-packages-changed',update)};
+    window.addEventListener('online',update);window.addEventListener('offline',update);window.addEventListener('aeris-offline-packages-changed',update);window.addEventListener('aeris-offline-test-changed',update);
+    return()=>{window.removeEventListener('online',update);window.removeEventListener('offline',update);window.removeEventListener('aeris-offline-packages-changed',update);window.removeEventListener('aeris-offline-test-changed',update)};
   },[location?.lat,location?.lng]);
   useEffect(()=>{
     const map=mapRef.current;
@@ -865,7 +865,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     {weatherVisible&&location&&!weather&&!weatherError&&<div className="mapWeatherStatus loading"><span/> Loading live weather…</div>}
     {weatherVisible&&weatherError&&<div className="mapWeatherStatus error"><CloudRain/> {weatherError}</div>}
     {weatherVisible&&radarNotice&&<div className="mapWeatherStatus warning"><CloudRain/> {radarNotice}</div>}
-    {offlineNotice&&<div className="mapOfflineStatus"><WifiOff/> {offlineNotice}</div>}
+    {offlineNotice&&<div className="mapOfflineStatus"><WifiOff/> {offlineNotice}{navigator.onLine&&isOfflineTestMode()&&<button onClick={()=>setOfflineTestMode(false)}>Exit test</button>}</div>}
     <div className="mapStyleControl" aria-label="Map display controls">
       <button className={baseMap === 'satellite' ? 'active' : ''} onClick={() => setBaseMap('satellite')} aria-label="Satellite map"><Satellite size={16}/><span>Satellite</span></button>
       <button className={baseMap === 'streets' ? 'active' : ''} onClick={() => setBaseMap('streets')} aria-label="Street map"><MapIcon size={16}/><span>Streets</span></button>

@@ -1,5 +1,5 @@
-const VERSION='aeris-shell-v5';
-const RUNTIME='aeris-runtime-v2';
+const VERSION='aeris-shell-v6';
+const RUNTIME='aeris-runtime-v3';
 const SHELL=['./','./index.html','./manifest.webmanifest','./data/sources/countries.json'];
 
 self.addEventListener('install',event=>{
@@ -15,7 +15,7 @@ self.addEventListener('fetch',event=>{
  const url=new URL(request.url);
  if(url.origin!==self.location.origin)return;
  if(request.mode==='navigate'){
-  event.respondWith(fetch(request).then(response=>{const copy=response.clone();caches.open(VERSION).then(cache=>cache.put('./index.html',copy));return response}).catch(async()=>await caches.match('./index.html')||await caches.match('./')));
+  event.respondWith(Promise.race([fetch(request),new Promise((_,reject)=>setTimeout(()=>reject(new Error('offline navigation timeout')),3500))]).then(response=>{const copy=response.clone();caches.open(VERSION).then(cache=>cache.put('./index.html',copy));return response}).catch(async()=>await caches.match('./index.html')||await caches.match('./')));
   return;
  }
  const shellAsset=['script','style','font','image','worker'].includes(request.destination)||url.pathname.includes('/data/');

@@ -44,6 +44,8 @@ export type OfflinePack={
 type OfflineChunk={id:string;packageId:string;generation:string;cell:string;cellKeys:string[];features:any[];sizeBytes:number};
 type OfflineTile={id:string;packageId:string;generation:string;z:number;x:number;y:number;data:ArrayBuffer;sizeBytes:number};
 export type OfflineDownloadProgress={percent:number;stage:string;items:number};
+export type OfflineStorageStatus={supported:boolean;usageBytes:number;quotaBytes:number;freeBytes:number;persistent:boolean};
+export type OfflinePackVerification={ok:boolean;chunks:number;tiles:number;sizeBytes:number};
 
 type CountryAdapter='dipul'|'france'|'static'|'sweden'|'denmark'|'switzerland'|'estonia'|'portugal'|'spain'|'usa'|'canada'|'none';
 type OfflineCountryDefinition={name:string;bounds:OfflineBounds;center:Location;source:string;sourceUrl:string;layers:OfflineLayerId[];adapter:CountryAdapter;file?:string;scopeLabel?:string;offlineNote?:string};
@@ -154,7 +156,18 @@ export function offlineTileCoordinates(bounds:OfflineBounds,maxZoom:number){
  return tiles;
 }
 export function estimateOfflinePackage(config:OfflinePackConfig){const density:Record<OfflineLayerId,number>={droneZones:120,restricted:55,airports:18,controlled:12,nature:310,warnings:220,basic:530},area=areaKm2(config.bounds),features=Math.round(config.layers.reduce((sum,id)=>sum+density[id]*Math.pow(area/1000,.72),0)),tileCount=offlineTileCoordinates(config.bounds,config.basemapMaxZoom).length,bytes=Math.round(180000+features*1150+tileCount*28000);return{bytes,items:features+tileCount,tileCount,label:formatBytes(bytes)}}
-export const formatBytes=(bytes:number)=>bytes<1024*1024?`${Math.max(1,Math.round(bytes/1024))} KB`:`${(bytes/1024/1024).toFixed(bytes<10*1024*1024?1:0)} MB`;
+export const formatBytes=(bytes:number)=>bytes<1024*1024?`${Math.max(1,Math.round(bytes/1024))} KB`:bytes<1024*1024*1024?`${(bytes/1024/1024).toFixed(bytes<10*1024*1024?1:0)} MB`:`${(bytes/1024/1024/1024).toFixed(1)} GB`;
+export async function getOfflineStorageStatus(requestPersistence=false):Promise<OfflineStorageStatus>{
+ const manager=navigator.storage;
+ if(!manager)return{supported:false,usageBytes:0,quotaBytes:0,freeBytes:0,persistent:false};
+ if(requestPersistence&&manager.persist)await manager.persist().catch(()=>false);
+ const [estimate,persistent]=await Promise.all([manager.estimate().catch(()=>({} as StorageEstimate)),manager.persisted?.().catch(()=>false)??false]);
+ const usageBytes=estimate.usage??0,quotaBytes=estimate.quota??0;
+ return{supported:true,usageBytes,quotaBytes,freeBytes:Math.max(0,quotaBytes-usageBytes),persistent:Boolean(persistent)};
+}
+const OFFLINE_TEST_KEY='aeris-offline-test';
+export const isOfflineTestMode=()=>sessionStorage.getItem(OFFLINE_TEST_KEY)==='1';
+export function setOfflineTestMode(enabled:boolean){if(enabled)sessionStorage.setItem(OFFLINE_TEST_KEY,'1');else sessionStorage.removeItem(OFFLINE_TEST_KEY);window.dispatchEvent(new CustomEvent('aeris-offline-test-changed'))}
 export const isOfflinePackStale=(pack:OfflinePack)=>Date.now()-new Date(pack.metadata.updatedAt).getTime()>7*86400000||pack.metadata.version<OFFLINE_PACKAGE_VERSION;
 async function layerFeatureStats(layer:string,bounds:OfflineBounds){
  const params=new URLSearchParams({SERVICE:'WFS',VERSION:'2.0.0',REQUEST:'GetFeature',TYPENAMES:`dipul:${layer}`,OUTPUTFORMAT:'application/json',SRSNAME:'EPSG:4326',BBOX:[...bounds,'EPSG:4326'].join(','),COUNT:'25',STARTINDEX:'0'});
@@ -295,6 +308,28 @@ async function saveBasemap(config:OfflinePackConfig,packageId:string,generation:
  }
  return{sizeBytes,tileCount};
 }
+async function verifyGeneration(packageId:string,generation:string):Promise<OfflinePackVerification>{
+ const database=await openDb();
+ return new Promise((resolve,reject)=>{
+  const transaction=database.transaction([CHUNKS,TILES],'readonly');
+  let chunks=0,tiles=0,sizeBytes=0,pending=2;
+  const finish=()=>{if(--pending===0){database.close();resolve({ok:tiles>0,chunks,tiles,sizeBytes})}};
+  const scan=(storeName:string,onItem:(value:OfflineChunk|OfflineTile)=>void)=>{
+   const request=transaction.objectStore(storeName).index('packageId').openCursor(IDBKeyRange.only(packageId));
+   request.onsuccess=()=>{const cursor=request.result;if(!cursor){finish();return}const value=cursor.value as OfflineChunk|OfflineTile;if(value.generation===generation)onItem(value);cursor.continue()};
+   request.onerror=()=>reject(request.error);
+  };
+  scan(CHUNKS,value=>{chunks++;sizeBytes+=value.sizeBytes});
+  scan(TILES,value=>{tiles++;sizeBytes+=value.sizeBytes});
+  transaction.onerror=()=>{database.close();reject(transaction.error)};
+ });
+}
+export async function verifyOfflinePack(packOrId:OfflinePack|string):Promise<OfflinePackVerification>{
+ const pack=typeof packOrId==='string'?await getOfflinePack(packOrId):packOrId;
+ if(!pack?.generation)return{ok:false,chunks:0,tiles:0,sizeBytes:0};
+ const result=await verifyGeneration(pack.id,pack.generation);
+ return{...result,ok:result.ok&&result.tiles===(pack.metadata.tileCount??0)};
+}
 
 export async function createOfflinePack(config:OfflinePackConfig,weather?:Weather,zoneInfo?:ZoneInfo,onProgress?:(value:OfflineDownloadProgress)=>void,replaceId?:string):Promise<OfflinePack>{
  if(!navigator.onLine)throw new Error('Connect to the internet to download or update an offline package.');
@@ -320,13 +355,16 @@ export async function createOfflinePack(config:OfflinePackConfig,weather?:Weathe
   onProgress?.({percent:entries.length?96:15,stage:'Downloading offline street map',items:itemCount});
   const basemap=await saveBasemap(config,id,generation,(done,total)=>onProgress?.({percent:Math.round((entries.length?96:15)+(done/Math.max(1,total))*(entries.length?3:84)),stage:`Downloading offline street map (${done}/${total} tiles)`,items:itemCount+done}));
   sizeBytes+=basemap.sizeBytes;tileCount=basemap.tileCount;itemCount+=tileCount;
+  onProgress?.({percent:99,stage:'Verifying offline package',items:itemCount});
+  const verification=await verifyGeneration(id,generation);
+  if(!verification.ok||verification.tiles!==tileCount)throw new Error('The offline package could not be verified. Please retry the download.');
   const now=new Date().toISOString(),pack:OfflinePack={
    id,name:config.region,location:config.center,savedAt:old?.savedAt??now,weather,zoneInfo,generation,
    notice:'Offline data can become outdated. Temporary restrictions and weather can change. Re-check online before flying.',config,
    metadata:{country:OFFLINE_COUNTRIES[config.country].name,countryCode:config.country,region:config.region,center:config.center,radiusKm:config.radiusKm,bounds:config.bounds,layers:config.layers,version:OFFLINE_PACKAGE_VERSION,downloadedAt:old?.metadata.downloadedAt??now,updatedAt:now,sizeBytes,itemCount,sourceUpdatedAt:now,tileCount,basemapMaxZoom:config.basemapMaxZoom}
   };
   await storeRequest(PACKAGES,'readwrite',store=>store.put(pack));if(previousGeneration){await deleteChunks(id,previousGeneration);await deleteTiles(id,previousGeneration)}
-  window.dispatchEvent(new CustomEvent('aeris-offline-packages-changed'));onProgress?.({percent:100,stage:`Saved ${formatBytes(sizeBytes)}`,items:itemCount});return pack;
+  window.dispatchEvent(new CustomEvent('aeris-offline-packages-changed'));onProgress?.({percent:100,stage:`Verified · saved ${formatBytes(sizeBytes)}`,items:itemCount});return pack;
  }catch(error){await deleteChunks(id,generation);await deleteTiles(id,generation);throw error}
 }
 export const getOfflinePacks=async():Promise<OfflinePack[]>=>((await storeRequest(PACKAGES,'readonly',store=>store.getAll())) as OfflinePack[]).sort((a,b)=>b.metadata.updatedAt.localeCompare(a.metadata.updatedAt));
