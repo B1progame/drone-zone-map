@@ -388,8 +388,8 @@ const terrainDemSource=()=>({type:'raster-dem' as const,url:'https://tiles.mapte
 const buildingSource=()=>({type:'vector' as const,url:'https://tiles.openfreemap.org/planet',attribution:'<a href="https://openfreemap.org/" target="_blank">Buildings © OpenStreetMap · OpenMapTiles · OpenFreeMap</a>'});
 const terrainHillshadeLayer=()=>({id:'terrain-hillshade',type:'hillshade' as const,source:'terrain-dem',layout:{visibility:'visible' as const},paint:{'hillshade-shadow-color':'#15241e','hillshade-highlight-color':'#d7edce','hillshade-accent-color':'#6c806f','hillshade-exaggeration':.35}});
 const buildingLayer=()=>({id:'3d-buildings',type:'fill-extrusion' as const,source:'openfreemap-buildings','source-layer':'building',minzoom:14.5,filter:['!=',['get','hide_3d'],true] as any,layout:{visibility:'visible' as const},paint:{'fill-extrusion-color':['interpolate',['linear'],['coalesce',['get','render_height'],6],0,'#cfd8d2',20,'#e2d9ca',80,'#c6d4d2',200,'#a8c6c2'] as any,'fill-extrusion-height':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_height'],6]] as any,'fill-extrusion-base':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_min_height'],0]] as any,'fill-extrusion-opacity':.82,'fill-extrusion-vertical-gradient':true}});
-const offlineBasemapSource=(tiles=['aeris-offline://none/none/{z}/{x}/{y}'],maxzoom=12)=>({type:'vector' as const,tiles,minzoom:2,maxzoom,attribution:'<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>'});
-const offlineSatelliteSource=(tiles=['aeris-offline-raster://none/none/{z}/{x}/{y}'],maxzoom=13)=>({type:'raster' as const,tiles,tileSize:256,minzoom:2,maxzoom,attribution:'<a href="https://s2maps.eu/" target="_blank">Sentinel-2 cloudless</a> by <a href="https://eox.at/" target="_blank">EOX</a> · modified Copernicus Sentinel data 2016/2017 · CC BY 4.0'});
+const offlineBasemapSource=(tiles=['aeris-offline://none/none/{z}/{x}/{y}'],maxzoom=12)=>({type:'vector' as const,tiles,minzoom:0,maxzoom,attribution:'<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>'});
+const offlineSatelliteSource=(tiles=['aeris-offline-raster://none/none/{z}/{x}/{y}'],maxzoom=13)=>({type:'raster' as const,tiles,tileSize:256,minzoom:0,maxzoom,attribution:'<a href="https://s2maps.eu/" target="_blank">Sentinel-2 cloudless</a> by <a href="https://eox.at/" target="_blank">EOX</a> · modified Copernicus Sentinel data 2016/2017 · CC BY 4.0'});
 const offlineBasemapLayers=(visibility:'visible'|'none'='none'):any[]=>[
   {id:'offline-map-background',type:'background',layout:{visibility},paint:{'background-color':'#07130f'}},
   {id:'offline-map-landcover',type:'fill',source:'offline-basemap','source-layer':'landcover',layout:{visibility},paint:{'fill-color':['match',['get','class'],'wood','#183d2b','grass','#244834','farmland','#343f2a','ice','#a7c8c3','sand','#655c3a','#173326'],'fill-opacity':.9}},
@@ -873,8 +873,8 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     const map = new maplibregl.Map({
       container: hostRef.current,
       style: mapStyle('satellite', true),
-      center: [10.2, 51.1],
-      zoom: 5.1,
+      center: location?[location.lng,location.lat]:[10.2,51.1],
+      zoom: location?11:5.1,
       attributionControl: { compact: true },
       maxZoom: 19,
       canvasContextAttributes:{preserveDrawingBuffer:true,antialias:true}

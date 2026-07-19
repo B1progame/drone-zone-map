@@ -3,7 +3,7 @@ import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 import { localizeZoneInfo } from './zoneTranslations';
 import { classifyZoneSemantic, filterUkDroneRelevant } from './zoneSemantics';
 
-export const OFFLINE_PACKAGE_VERSION=6;
+export const OFFLINE_PACKAGE_VERSION=7;
 const DB_NAME='aeris-offline',PACKAGES='packages',CHUNKS='chunks',TILES='mapTiles',DB_VERSION=4;
 const DIPUL_WFS='https://uas-betrieb.de/geoservices/dipul/wfs';
 const FRANCE_WFS='https://data.geopf.fr/wfs/ows';
@@ -155,7 +155,10 @@ const lngToTile=(lng:number,z:number)=>Math.floor((lng+180)/360*2**z);
 const latToTile=(lat:number,z:number)=>Math.floor((1-Math.asinh(Math.tan(rad(Math.max(-85.0511,Math.min(85.0511,lat)))))/Math.PI)/2*2**z);
 export function offlineTileCoordinates(bounds:OfflineBounds,maxZoom:number){
  const tiles:{z:number;x:number;y:number}[]=[];
- for(let z=2;z<=maxZoom;z++){const limit=2**z-1,x0=Math.max(0,lngToTile(bounds[0],z)),x1=Math.min(limit,lngToTile(bounds[2],z)),y0=Math.max(0,latToTile(bounds[3],z)),y1=Math.min(limit,latToTile(bounds[1],z));for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)tiles.push({z,x,y})}
+ // Keep a complete, low-detail globe in every package. This avoids blank tiles
+ // when a phone opens the map zoomed farther out than the selected area.
+ for(let z=0;z<=Math.min(2,maxZoom);z++)for(let x=0;x<2**z;x++)for(let y=0;y<2**z;y++)tiles.push({z,x,y});
+ for(let z=3;z<=maxZoom;z++){const limit=2**z-1,x0=Math.max(0,lngToTile(bounds[0],z)),x1=Math.min(limit,lngToTile(bounds[2],z)),y0=Math.max(0,latToTile(bounds[3],z)),y1=Math.min(limit,latToTile(bounds[1],z));for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)tiles.push({z,x,y})}
  return tiles;
 }
 export function maxOfflineBasemapZoom(bounds:OfflineBounds,type:OfflineBasemapType='street'){
@@ -307,13 +310,40 @@ async function saveCountryZones(config:OfflinePackConfig,packageId:string,genera
 }
 let openFreeMapTileTemplate:Promise<string>|undefined;
 const getOpenFreeMapTileTemplate=()=>openFreeMapTileTemplate??=(fetch(OPENFREEMAP_TILEJSON).then(async response=>{if(!response.ok)throw new Error(`Offline basemap directory failed (${response.status})`);const data=await response.json();const template=data.tiles?.[0];if(typeof template!=='string')throw new Error('Offline basemap directory returned no tile template');return template}).catch(error=>{openFreeMapTileTemplate=undefined;throw error}));
+const wait=(ms:number)=>new Promise(resolve=>window.setTimeout(resolve,ms));
+async function downloadTile(url:string){
+ let lastError:unknown;
+ for(let attempt=0;attempt<3;attempt++){
+  const controller=new AbortController(),timer=window.setTimeout(()=>controller.abort(),20000);
+  try{
+   const response=await fetch(url,{signal:controller.signal});
+   if(response.status===204||response.status===404)return;
+   if(!response.ok)throw new Error(`server returned ${response.status}`);
+   return await response.arrayBuffer();
+  }catch(error){lastError=error}
+  finally{window.clearTimeout(timer)}
+  if(attempt<2)await wait(400*2**attempt);
+ }
+ const detail=lastError instanceof Error&&lastError.message&&!/load failed|failed to fetch/i.test(lastError.message)?` (${lastError.message})`:'';
+ throw new Error(`A map tile could not be loaded after 3 attempts${detail}. Check the connection, keep Aeris open, and retry.`);
+}
 async function saveBasemap(config:OfflinePackConfig,packageId:string,generation:string,onProgress?:(done:number,total:number)=>void){
  const coordinates=offlineTileCoordinates(config.bounds,config.basemapMaxZoom);if(coordinates.length>MAX_OFFLINE_TILES)throw new Error('This basemap selection is too large. Reduce the map quality or choose a smaller area.');
- const template=config.basemapType==='satellite'?EOX_SATELLITE_TILE_TEMPLATE:await getOpenFreeMapTileTemplate();let sizeBytes=0,tileCount=0;
- for(let offset=0;offset<coordinates.length;offset+=8){
-  const group=coordinates.slice(offset,offset+8),results=await Promise.all(group.map(async coordinate=>{const url=template.replace('{z}',String(coordinate.z)).replace('{x}',String(coordinate.x)).replace('{y}',String(coordinate.y));const response=await fetch(url);if(response.status===204||response.status===404)return{coordinate};if(!response.ok)throw new Error(`Offline basemap tile failed (${response.status})`);return{coordinate,data:await response.arrayBuffer()}})),tiles:OfflineTile[]=[];
+ const template=config.basemapType==='satellite'?EOX_SATELLITE_TILE_TEMPLATE:await getOpenFreeMapTileTemplate(),batchSize=config.basemapType==='satellite'?3:5;let sizeBytes=0,tileCount=0;
+ for(let offset=0;offset<coordinates.length;offset+=batchSize){
+  const group=coordinates.slice(offset,offset+batchSize),results=await Promise.all(group.map(async coordinate=>{const url=template.replace('{z}',String(coordinate.z)).replace('{x}',String(coordinate.x)).replace('{y}',String(coordinate.y));return{coordinate,data:await downloadTile(url)}})),tiles:OfflineTile[]=[];
   for(const {coordinate,data} of results){if(!data)continue;sizeBytes+=data.byteLength;tileCount++;tiles.push({id:`${packageId}:${generation}:${coordinate.z}:${coordinate.x}:${coordinate.y}`,packageId,generation,...coordinate,data,sizeBytes:data.byteLength})}
-  try{await putTiles(tiles)}catch(error){if(error instanceof DOMException&&error.name==='QuotaExceededError')throw new Error('Browser storage is full. Delete an offline package or select a smaller area.');throw error}
+  try{await putTiles(tiles)}
+  catch(error){
+   if(error instanceof DOMException&&error.name==='QuotaExceededError')throw new Error('Browser storage is full. Delete an offline package or select a smaller area.');
+   // Mobile Safari occasionally aborts a multi-record IndexedDB transaction
+   // while the tab is under memory pressure. Retry as individual writes.
+   if(error instanceof DOMException&&['AbortError','UnknownError','InvalidStateError'].includes(error.name)){
+    await wait(250);
+    try{for(const tile of tiles)await putTiles([tile])}
+    catch(retryError){if(retryError instanceof DOMException&&retryError.name==='QuotaExceededError')throw new Error('Browser storage is full. Delete an offline package or select a smaller area.');throw new Error('The phone could not save the map tile. Keep Aeris in the foreground and retry the download.')}
+   }else throw error;
+  }
   onProgress?.(Math.min(offset+group.length,coordinates.length),coordinates.length);
  }
  return{sizeBytes,tileCount};
