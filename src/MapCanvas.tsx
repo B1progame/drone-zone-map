@@ -903,7 +903,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);ensureRadar(map,weatherVisible,weatherHour,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined,!settingsRef.current.reducedMotion)}},[location,weather,weatherHour,weatherVisible]);
 
   useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,weatherHour,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks,!settings.reducedMotion)},[settings.renderDetail,settings.reducedMotion,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
-  useEffect(()=>{const map=mapRef.current;if(map)applyTerrain(map,settings.terrain3d&&!mapShouldUseOffline())},[settings.terrain3d,loaded,baseMap]);
+  useEffect(()=>{const map=mapRef.current;if(map&&loaded)applyTerrain(map,settings.terrain3d&&!mapShouldUseOffline())},[settings.terrain3d,loaded]);
 
   useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded()){applyFlightRange(map,planPoints,flightRadiusKm);applyFlightPlan(map,planPoints)}},[planPoints,flightRadiusKm,loaded,baseMap]);
 
