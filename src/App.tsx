@@ -57,8 +57,8 @@ export default function App(){
  const [savedRoutes,setSavedRoutes]=useState<SavedRoute[]>(()=>{try{return JSON.parse(localStorage.getItem('aeris-saved-routes')||'[]')}catch{return[]}});
  const [appSettings,setAppSettings]=useState<AppSettings>(()=>{try{const stored=JSON.parse(localStorage.getItem('aeris-settings')||'{}');return{renderDetail:'balanced',glassOpacity:.72,reducedMotion:false,terrain3d:false,...stored,language:stored.defaultLanguageVersion===2?normalizeLanguage(stored.language):'en'}}catch{return{renderDetail:'balanced',glassOpacity:.72,reducedMotion:false,terrain3d:false,language:'en'}}});
  const chooseRequest=useRef(0);
- const choose=(l:Location)=>{
- const request=++chooseRequest.current;setLocation(l);setPage('map');setWeather(undefined);setZoneInfo(undefined);setWeatherError('');
+ const choose=(l:Location,navigate=true)=>{
+ const request=++chooseRequest.current;setLocation(l);if(navigate)setPage('map');setWeather(undefined);setZoneInfo(undefined);setWeatherError('');
   if(!navigator.onLine||isOfflineTestMode()){void getOfflineContext(l,appSettings.language).then(context=>{if(request!==chooseRequest.current)return;if(context){setWeather(context.weather);setZoneInfo(context.zoneInfo);setWeatherError(context.weather?'':'Weather was not downloaded for this exact point.')}else setWeatherError('This location is outside every downloaded offline package.')});return}
   void getWeather(l).then(result=>{if(request===chooseRequest.current)setWeather(result)}).catch(async()=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l,appSettings.language);if(context?.weather)setWeather(context.weather);else setWeatherError(navigator.onLine?'Live weather is temporarily unavailable.':'This location is outside downloaded weather context.')});
   void getOfficialZoneInfo(l,appSettings.language).then(result=>{if(request===chooseRequest.current)setZoneInfo(result)}).catch(async()=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l,appSettings.language);if(context?.zoneInfo)setZoneInfo(context.zoneInfo)});
@@ -85,7 +85,7 @@ export default function App(){
  },[appSettings.language]);
  useEffect(()=>{
   if(!location)return;
-  const refresh=()=>choose(location);
+  const refresh=()=>choose(location,false);
   window.addEventListener('online',refresh);window.addEventListener('offline',refresh);window.addEventListener('aeris-offline-test-changed',refresh);
   return()=>{window.removeEventListener('online',refresh);window.removeEventListener('offline',refresh);window.removeEventListener('aeris-offline-test-changed',refresh)};
  },[location,appSettings.language]);
