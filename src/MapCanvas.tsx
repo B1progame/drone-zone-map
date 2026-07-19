@@ -162,6 +162,8 @@ const detailConfig:Record<RenderDetail,{zoomDelta:number;featureScale:number;wea
 };
 const weatherGridCache=new Map<string,{time:number;data:any}>();
 const weatherGridPending=new Map<string,Promise<any>>();
+const weatherGridDisplayed=new WeakMap<MapLibreMap,any>();
+const weatherGridFrames=new WeakMap<MapLibreMap,number>();
 let radarMetadata:Promise<{tiles:string[];time:number}>|undefined;
 
 function bufferCanadaAirports(data:any){
@@ -333,21 +335,40 @@ async function queryWeatherGrid(map:MapLibreMap,hourIndex:number,detail:RenderDe
  return {type:'FeatureCollection' as const,features};
 }
 
-function loadWeatherGrid(map:MapLibreMap,hourIndex:number,visible:boolean,detail:RenderDetail,enabled:boolean,hooks?:OverlayHooks){
+function morphWeatherGrid(map:MapLibreMap,source:maplibregl.GeoJSONSource,next:any,animate:boolean){
+ const previous=weatherGridDisplayed.get(map),oldFrame=weatherGridFrames.get(map);if(oldFrame)cancelAnimationFrame(oldFrame);
+ const compatible=animate&&previous?.features?.length===next?.features?.length&&next.features.length>0&&previous.features.every((feature:any,index:number)=>feature.geometry?.type===next.features[index]?.geometry?.type);
+ if(!compatible){source.setData(next);weatherGridDisplayed.set(map,next);return}
+ const started=performance.now(),duration=720;
+ const interpolateCoordinates=(from:any,to:any,t:number):any=>typeof from==='number'&&typeof to==='number'?from+(to-from)*t:Array.isArray(from)&&Array.isArray(to)?to.map((value,index)=>interpolateCoordinates(from[index],value,t)):to;
+ const frame=(time:number)=>{
+  const raw=Math.min(1,(time-started)/duration),t=1-Math.pow(1-raw,3);
+  const data={...next,features:next.features.map((feature:any,index:number)=>{
+   const before=previous.features[index],properties={...feature.properties};
+   for(const key of ['rain','precipitation','clouds','wind','direction','temperature'])if(Number.isFinite(before.properties?.[key])&&Number.isFinite(properties[key]))properties[key]=before.properties[key]+(properties[key]-before.properties[key])*t;
+   return{...feature,properties,geometry:{...feature.geometry,coordinates:interpolateCoordinates(before.geometry.coordinates,feature.geometry.coordinates,t)}};
+  })};
+  source.setData(data);weatherGridDisplayed.set(map,data);
+  if(raw<1)weatherGridFrames.set(map,requestAnimationFrame(frame));else{weatherGridFrames.delete(map);weatherGridDisplayed.set(map,next)}
+ };
+ weatherGridFrames.set(map,requestAnimationFrame(frame));
+}
+
+function loadWeatherGrid(map:MapLibreMap,hourIndex:number,visible:boolean,detail:RenderDetail,enabled:boolean,hooks?:OverlayHooks,animate=true){
  const source=map.getSource('weather-grid') as maplibregl.GeoJSONSource|undefined;
  if(!source)return;
- if(!visible||!enabled){source.setData(emptyGeoJson);return}
+ if(!visible||!enabled){const frame=weatherGridFrames.get(map);if(frame)cancelAnimationFrame(frame);weatherGridFrames.delete(map);weatherGridDisplayed.delete(map);source.setData(emptyGeoJson);return}
  const keys=dynamicRequestKeys.get(map)??new Map<string,string>();dynamicRequestKeys.set(map,keys);
  const b=map.getBounds(),key=['weather',detail,hourIndex,Math.floor(map.getZoom()),b.getWest().toFixed(1),b.getSouth().toFixed(1),b.getEast().toFixed(1),b.getNorth().toFixed(1)].join(':');
  if(keys.get('weather-grid')===key)return;
  const cached=weatherGridCache.get(key);
- if(cached&&Date.now()-cached.time<10*60*1000){keys.set('weather-grid',key);source.setData(cached.data);return}
+ if(cached&&Date.now()-cached.time<10*60*1000){keys.set('weather-grid',key);morphWeatherGrid(map,source,cached.data,animate);return}
  keys.set('weather-grid',key);hooks?.start(key,'weather field');
  const pending=weatherGridPending.get(key)??queryWeatherGrid(map,hourIndex,detail).finally(()=>weatherGridPending.delete(key));
  weatherGridPending.set(key,pending);
  void pending.then(data=>{
    weatherGridCache.set(key,{time:Date.now(),data});
-   if(keys.get('weather-grid')===key)(map.getSource('weather-grid') as maplibregl.GeoJSONSource|undefined)?.setData(data);
+   if(keys.get('weather-grid')===key){const current=map.getSource('weather-grid') as maplibregl.GeoJSONSource|undefined;if(current)morphWeatherGrid(map,current,data,animate)}
  }).catch(error=>{if(keys.get('weather-grid')===key)keys.delete('weather-grid');console.warn(error)}).finally(()=>hooks?.finish(key));
 }
 
@@ -801,7 +822,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
     map.touchZoomRotate.enable();
     map.dragPan.enable();
-    const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;if(!mapShouldUseOffline()){loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,state.hour,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)}else void syncOfflinePackage()};
+    const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;if(!mapShouldUseOffline()){loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,state.hour,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks,!settingsRef.current.reducedMotion)}else void syncOfflinePackage()};
     map.on('load', () => { map.setProjection({type:'globe'});applyTerrain(map,settingsRef.current.terrain3d&&!mapShouldUseOffline(),false);setLoaded(true); setError(''); map.resize();refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current);if(!settingsRef.current.reducedMotion&&!windAnimationRef.current)windAnimationRef.current=startWindLineAnimation(map); });
     map.on('style.load',()=>{map.setProjection({type:'globe'});applyTerrain(map,settingsRef.current.terrain3d&&!mapShouldUseOffline(),false);loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current)});
     map.on('moveend',refresh);
@@ -828,6 +849,8 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     resize.observe(hostRef.current);
     return () => {
       resize.disconnect();
+      const weatherFrame=weatherGridFrames.get(map);if(weatherFrame)cancelAnimationFrame(weatherFrame);
+      weatherGridFrames.delete(map);weatherGridDisplayed.delete(map);
       windAnimationRef.current?.();
       windAnimationRef.current=null;
       markerRef.current?.remove();
@@ -857,9 +880,9 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       .addTo(map);
   }, [location]);
 
-  useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);ensureRadar(map,weatherVisible,weatherHour,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined)}},[location,weather,weatherHour,weatherVisible]);
+  useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);ensureRadar(map,weatherVisible,weatherHour,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined,!settingsRef.current.reducedMotion)}},[location,weather,weatherHour,weatherVisible]);
 
-  useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,weatherHour,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks)},[settings.renderDetail,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
+  useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,weatherHour,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks,!settings.reducedMotion)},[settings.renderDetail,settings.reducedMotion,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
   useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded())applyTerrain(map,settings.terrain3d&&!mapShouldUseOffline())},[settings.terrain3d,loaded,baseMap]);
 
   useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded()){applyFlightRange(map,planPoints,flightRadiusKm);applyFlightPlan(map,planPoints)}},[planPoints,flightRadiusKm,loaded,baseMap]);
