@@ -156,9 +156,9 @@ const arcGisViewportSources:ArcGisViewportConfig[]=[
 ];
 
 const detailConfig:Record<RenderDetail,{zoomDelta:number;featureScale:number;weatherColumns:number;weatherRows:number}> = {
- efficient:{zoomDelta:.8,featureScale:.55,weatherColumns:4,weatherRows:3},
- balanced:{zoomDelta:0,featureScale:1,weatherColumns:5,weatherRows:4},
- maximum:{zoomDelta:-1.6,featureScale:1.75,weatherColumns:7,weatherRows:5}
+ efficient:{zoomDelta:.8,featureScale:.55,weatherColumns:5,weatherRows:4},
+ balanced:{zoomDelta:0,featureScale:1,weatherColumns:7,weatherRows:5},
+ maximum:{zoomDelta:-1.6,featureScale:1.75,weatherColumns:9,weatherRows:7}
 };
 const weatherGridCache=new Map<string,{time:number;data:any}>();
 const weatherGridPending=new Map<string,Promise<any>>();
@@ -326,7 +326,7 @@ async function queryWeatherGrid(map:MapLibreMap,hourIndex:number,detail:RenderDe
    const lat=Number(item.latitude??latitudes[index]),lng=Number(item.longitude??longitudes[index]);
    const rain=Number(hourly.precipitation_probability?.[slot]??0),precipitation=Number(hourly.precipitation?.[slot]??0);
    const clouds=Number(hourly.cloud_cover?.[slot]??0),wind=Number(hourly.wind_speed_10m?.[slot]??0),direction=Number(hourly.wind_direction_10m?.[slot]??0);
-   const properties={kind:'cell',rain,precipitation,clouds,wind,direction,temperature:Number(hourly.temperature_2m?.[slot]??0)};
+   const properties={kind:'cell',lead:hourIndex,rain,precipitation,clouds,wind,direction,temperature:Number(hourly.temperature_2m?.[slot]??0)};
    features.push({type:'Feature',properties,geometry:{type:'Point',coordinates:[lng,lat]}});
    const radians=(direction+180)*Math.PI/180,length=Math.min(1,.22+wind/75);
    const dx=Math.sin(radians)*cellWidth*.42*length,dy=Math.cos(radians)*cellHeight*.42*length;
@@ -435,6 +435,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
           : '© OpenStreetMap contributors'
       },
       'terrain-dem':{type:'raster-dem',url:'https://tiles.mapterhorn.com/tilejson.json',tileSize:512,attribution:'<a href="https://tiles.mapterhorn.com/" target="_blank">Elevation © Mapterhorn</a>'},
+      'openfreemap-buildings':{type:'vector',url:'https://tiles.openfreemap.org/planet',attribution:'<a href="https://openfreemap.org/" target="_blank">Buildings © OpenStreetMap · OpenMapTiles · OpenFreeMap</a>'},
       'offline-basemap':{type:'vector',tiles:['aeris-offline://none/none/{z}/{x}/{y}'],minzoom:2,maxzoom:12,attribution:'<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>'},
       dipul: {
         type: 'raster',
@@ -481,6 +482,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
     layers: [
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
       {id:'terrain-hillshade',type:'hillshade',source:'terrain-dem',layout:{visibility:'none'},paint:{'hillshade-shadow-color':'#15241e','hillshade-highlight-color':'#d7edce','hillshade-accent-color':'#6c806f','hillshade-exaggeration':.35}},
+      {id:'3d-buildings',type:'fill-extrusion',source:'openfreemap-buildings','source-layer':'building',minzoom:14.5,filter:['!=',['get','hide_3d'],true] as any,layout:{visibility:'none'},paint:{'fill-extrusion-color':['interpolate',['linear'],['coalesce',['get','render_height'],6],0,'#cfd8d2',20,'#e2d9ca',80,'#c6d4d2',200,'#a8c6c2'] as any,'fill-extrusion-height':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_height'],6]] as any,'fill-extrusion-base':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_min_height'],0]] as any,'fill-extrusion-opacity':.82,'fill-extrusion-vertical-gradient':true}},
       ...offlineBasemapLayers,
       {id:'offline-package-fill',type:'fill',source:'offline-package',filter:['match',['geometry-type'],['Polygon','MultiPolygon'],true,false] as any,paint:{'fill-color':semanticFillColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff']),'fill-opacity':.27}},
       {id:'offline-package-line',type:'line',source:'offline-package',paint:{'line-color':semanticLineColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff7182','airports','#ffd078','controlled','#e5a2ff','nature','#80efa4','warnings','#ffea94','basic','#b1cbc5','#9ee3ff']),'line-width':['interpolate',['linear'],['zoom'],4,.7,12,2.2] as any,'line-opacity':.96}},
@@ -532,7 +534,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       ...swedenLayers,
       {id:'sweden-airports',type:'circle',source:'sweden-mais-ARP',minzoom:8,layout:{visibility:zonesVisible?'visible':'none'},paint:{'circle-radius':['interpolate',['linear'],['zoom'],8,2.5,11,6],'circle-color':'#ffdc69','circle-stroke-color':'#2b2110','circle-stroke-width':1}},
       {id:'weather-clouds',type:'heatmap',source:'weather-grid',filter:['==',['get','kind'],'cell'],paint:{'heatmap-weight':['/', ['get','clouds'],100] as any,'heatmap-intensity':['interpolate',['linear'],['zoom'],0,.45,8,.75,14,1.05] as any,'heatmap-radius':['interpolate',['linear'],['zoom'],0,80,6,115,12,150] as any,'heatmap-opacity':.46,'heatmap-color':['interpolate',['linear'],['heatmap-density'],0,'rgba(255,255,255,0)',.18,'rgba(218,233,238,.15)',.45,'rgba(230,241,244,.38)',.75,'rgba(255,255,255,.64)',1,'rgba(255,255,255,.82)'] as any}},
-      {id:'weather-rain',type:'heatmap',source:'weather-grid',filter:['==',['get','kind'],'cell'],paint:{'heatmap-weight':['min',1,['+', ['/', ['get','rain'],100],['/', ['get','precipitation'],8]]] as any,'heatmap-intensity':['interpolate',['linear'],['zoom'],0,.7,10,1.2] as any,'heatmap-radius':['interpolate',['linear'],['zoom'],0,45,7,90,13,125] as any,'heatmap-opacity':.76,'heatmap-color':['interpolate',['linear'],['heatmap-density'],0,'rgba(35,169,255,0)',.16,'rgba(63,182,255,.28)',.4,'rgba(46,220,239,.56)',.68,'rgba(255,222,82,.76)',.88,'rgba(255,132,58,.88)',1,'rgba(226,57,82,.95)'] as any}},
+      {id:'weather-rain',type:'heatmap',source:'weather-grid',filter:['==',['get','kind'],'cell'],paint:{'heatmap-weight':['min',1,['*',['case',['>', ['get','lead'],0],1.35,1],['+', ['/', ['get','rain'],100],['/', ['get','precipitation'],7]]]] as any,'heatmap-intensity':['interpolate',['linear'],['zoom'],0,.82,10,1.38] as any,'heatmap-radius':['interpolate',['linear'],['zoom'],0,48,7,96,13,132] as any,'heatmap-opacity':.82,'heatmap-color':['interpolate',['linear'],['heatmap-density'],0,'rgba(35,169,255,0)',.12,'rgba(63,182,255,.3)',.34,'rgba(46,220,239,.6)',.62,'rgba(255,222,82,.8)',.84,'rgba(255,132,58,.9)',1,'rgba(226,57,82,.97)'] as any}},
       {id:'weather-wind',type:'line',source:'weather-grid',filter:['==',['get','kind'],'wind'],layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['interpolate',['linear'],['get','wind'],0,'#dff9ff',20,'#79ddff',40,'#ffd267',65,'#ff795f'] as any,'line-width':['interpolate',['linear'],['zoom'],0,.7,8,1.35,14,2.2] as any,'line-opacity':.82,'line-dasharray':[0,4,3]}},
       { id:'weather-field', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,28,10,150,15,280],'circle-color':['get','color'],'circle-opacity':.1,'circle-blur':.82} },
       { id:'weather-halo', type:'circle', source:'weather-location', paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,12,10,56,15,105],'circle-color':['get','color'],'circle-opacity':.17,'circle-blur':.45,'circle-stroke-width':2,'circle-stroke-color':['get','color'],'circle-stroke-opacity':.7} },
@@ -759,7 +761,8 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     if(!map.getSource('terrain-dem'))return;
     map.setTerrain(enabled?{source:'terrain-dem',exaggeration:1}:null);
     if(map.getLayer('terrain-hillshade'))map.setLayoutProperty('terrain-hillshade','visibility',enabled?'visible':'none');
-    if(animate)map.easeTo({pitch:enabled?58:0,bearing:enabled?-18:0,duration:settingsRef.current.reducedMotion?0:850,essential:false});
+    if(map.getLayer('3d-buildings'))map.setLayoutProperty('3d-buildings','visibility',enabled?'visible':'none');
+    if(animate)map.easeTo({pitch:enabled?58:0,bearing:enabled?-18:0,zoom:enabled&&weatherStateRef.current.location?Math.max(map.getZoom(),15.2):map.getZoom(),duration:settingsRef.current.reducedMotion?0:850,essential:false});
   };
   const syncOfflinePackage=async(point?:{lat:number;lng:number})=>{
     const map=mapRef.current;
@@ -814,7 +817,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       zoom: 5.1,
       attributionControl: { compact: true },
       maxZoom: 19,
-      canvasContextAttributes:{preserveDrawingBuffer:true}
+      canvasContextAttributes:{preserveDrawingBuffer:true,antialias:true}
     });
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
@@ -873,7 +876,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useEffect(() => {
     const map = mapRef.current;
     if (!location || !map) return;
-    map.flyTo({ center: [location.lng, location.lat], zoom: Math.max(map.getZoom(), 11), essential: true });
+    map.flyTo({ center: [location.lng, location.lat], zoom: Math.max(map.getZoom(), settingsRef.current.terrain3d?15.2:11), pitch:settingsRef.current.terrain3d?58:map.getPitch(), essential: true });
     markerRef.current?.remove();
     markerRef.current = new maplibregl.Marker({ color: '#b6ff94' })
       .setLngLat([location.lng, location.lat])
@@ -905,6 +908,6 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       <button className={zonesVisible ? 'active zones' : ''} onClick={() => setZonesVisible(value => !value)} aria-pressed={zonesVisible} aria-label="Toggle verified official drone zones"><Layers3 size={16}/><span>Zones</span></button>
       <button className={weatherVisible?'active weather':''} onClick={()=>setWeatherVisible(value=>!value)} aria-pressed={weatherVisible} aria-label="Toggle weather forecast overlay"><CloudSun size={16}/><span>Weather</span></button>
     </div>
-    {weather&&location&&weatherVisible&&<div className="mapWeatherControl liquid"><div className="mapWeatherNow">{(weather.hourly[weatherHour]?.rainProbability??0)>45?<CloudRain/>:<CloudSun/>}<div><small>FORECAST OVERLAY · +{weatherHour}H</small><b>{weather.hourly[weatherHour]?.score??weather.score}/100</b><span><Wind/> {weather.hourly[weatherHour]?.wind??weather.wind} km/h · {weather.hourly[weatherHour]?.rainProbability??weather.rainProbability}% rain</span></div><button className="weatherPlay" onClick={()=>setWeatherPlaying(value=>!value)} aria-label={weatherPlaying?'Pause forecast animation':'Play forecast animation'}>{weatherPlaying?<Pause/>:<Play/>}</button></div><div className="weatherLegend" aria-label="Weather overlay legend"><span className="cloudKey">Cloud forecast</span><span className="rainKey">Rain forecast</span><span className="windKey">Animated wind</span><small>{weatherHour===0?'Live radar + forecast field':'Forecast field · live radar hidden for future hours'}</small></div><input type="range" min="0" max="11" step="1" value={weatherHour} onChange={event=>{setWeatherPlaying(false);setWeatherHour(Number(event.target.value))}} aria-label="Weather forecast hour"/><div className="weatherTicks">{Array.from({length:12},(_,i)=><button className={i===weatherHour?'active':''} onClick={()=>{setWeatherPlaying(false);setWeatherHour(i)}} key={i}>{i===0?'Now':`+${i}`}</button>)}</div></div>}
+    {weather&&location&&weatherVisible&&<div className="mapWeatherControl liquid"><div className="mapWeatherNow">{(weather.hourly[weatherHour]?.rainProbability??0)>45?<CloudRain/>:<CloudSun/>}<div><small>FORECAST OVERLAY · +{weatherHour}H</small><b>{weather.hourly[weatherHour]?.score??weather.score}/100</b><span><Wind/> {weather.hourly[weatherHour]?.wind??weather.wind} km/h · {weather.hourly[weatherHour]?.rainProbability??weather.rainProbability}% rain</span></div><button className="weatherPlay" onClick={()=>setWeatherPlaying(value=>!value)} aria-label={weatherPlaying?'Pause forecast animation':'Play forecast animation'}>{weatherPlaying?<Pause/>:<Play/>}</button></div><div className="weatherLegend" aria-label="Weather overlay legend"><span className="cloudKey">Cloud forecast</span><span className="rainKey">Rain forecast</span><span className="windKey">Animated wind</span><small>{weatherHour===0?'LIVE RADAR + forecast field':'FUTURE FORECAST · live radar is available at Now only'}</small></div><input type="range" min="0" max="11" step="1" value={weatherHour} onChange={event=>{setWeatherPlaying(false);setWeatherHour(Number(event.target.value))}} aria-label="Weather forecast hour"/><div className="weatherTicks">{Array.from({length:12},(_,i)=><button className={i===weatherHour?'active':''} onClick={()=>{setWeatherPlaying(false);setWeatherHour(i)}} key={i}>{i===0?'Now':`+${i}`}</button>)}</div></div>}
   </div>;
 });
