@@ -77,6 +77,31 @@ export const zoneText=(language:string,key:ZoneUiKey,values:Record<string,string
   return value;
 };
 
+const resultCopy={
+ en:{great:'Great flying weather',good:'Good conditions',okay:'Okay, be careful',bad:'Bad for small drones',noFly:'Do not fly',wind:'wind',rain:'rain',disclaimer:'This is not legal clearance. Check the official national aviation source before takeoff.'},
+ de:{great:'Sehr gutes Flugwetter',good:'Gute Bedingungen',okay:'In Ordnung, vorsichtig fliegen',bad:'Schlecht für kleine Drohnen',noFly:'Nicht fliegen',wind:'Wind',rain:'Regen',disclaimer:'Dies ist keine rechtliche Flugfreigabe. Prüfe vor dem Start die offizielle nationale Luftfahrtquelle.'},
+ fr:{great:'Excellent temps de vol',good:'Bonnes conditions',okay:'Conditions moyennes, prudence',bad:'Défavorable aux petits drones',noFly:'Ne pas voler',wind:'vent',rain:'pluie',disclaimer:'Ceci ne constitue pas une autorisation légale. Consultez la source aéronautique nationale officielle avant le décollage.'},
+ es:{great:'Tiempo excelente para volar',good:'Buenas condiciones',okay:'Condiciones aceptables, precaución',bad:'Malo para drones pequeños',noFly:'No volar',wind:'viento',rain:'lluvia',disclaimer:'Esto no constituye una autorización legal. Consulta la fuente aeronáutica nacional oficial antes del despegue.'},
+ it:{great:'Ottimo tempo per volare',good:'Buone condizioni',okay:'Condizioni discrete, prudenza',bad:'Sfavorevole ai piccoli droni',noFly:'Non volare',wind:'vento',rain:'pioggia',disclaimer:'Questa non è un’autorizzazione legale. Consulta la fonte aeronautica nazionale ufficiale prima del decollo.'},
+ pt:{great:'Excelente tempo para voar',good:'Boas condições',okay:'Condições razoáveis, cautela',bad:'Desfavorável para drones pequenos',noFly:'Não voar',wind:'vento',rain:'chuva',disclaimer:'Isto não constitui uma autorização legal. Consulte a fonte aeronáutica nacional oficial antes da descolagem.'},
+ nl:{great:'Uitstekend vliegweer',good:'Goede omstandigheden',okay:'Redelijk, wees voorzichtig',bad:'Slecht voor kleine drones',noFly:'Niet vliegen',wind:'wind',rain:'regen',disclaimer:'Dit is geen wettelijke vliegtoestemming. Controleer vóór het opstijgen de officiële nationale luchtvaartbron.'},
+ no:{great:'Svært godt flyvær',good:'Gode forhold',okay:'Greit, vær forsiktig',bad:'Dårlig for små droner',noFly:'Ikke fly',wind:'vind',rain:'regn',disclaimer:'Dette er ikke en juridisk flytillatelse. Kontroller den offisielle nasjonale luftfartskilden før avgang.'},
+ sv:{great:'Mycket bra flygväder',good:'Goda förhållanden',okay:'Okej, var försiktig',bad:'Dåligt för små drönare',noFly:'Flyg inte',wind:'vind',rain:'regn',disclaimer:'Detta är inte ett juridiskt flygtillstånd. Kontrollera den officiella nationella luftfartskällan före start.'},
+ da:{great:'Meget godt flyvevejr',good:'Gode forhold',okay:'Acceptabelt, vær forsigtig',bad:'Dårligt for små droner',noFly:'Flyv ikke',wind:'vind',rain:'regn',disclaimer:'Dette er ikke en juridisk flyvetilladelse. Kontrollér den officielle nationale luftfartskilde før start.'},
+ fi:{great:'Erittäin hyvä lentosää',good:'Hyvät olosuhteet',okay:'Kohtalaiset olosuhteet, varovaisuutta',bad:'Huono pienille drooneille',noFly:'Älä lennä',wind:'tuuli',rain:'sade',disclaimer:'Tämä ei ole oikeudellinen lentolupa. Tarkista virallinen kansallinen ilmailulähde ennen lentoonlähtöä.'},
+ pl:{great:'Doskonała pogoda do lotu',good:'Dobre warunki',okay:'Warunki umiarkowane, zachowaj ostrożność',bad:'Złe warunki dla małych dronów',noFly:'Nie lataj',wind:'wiatr',rain:'deszcz',disclaimer:'To nie jest prawne zezwolenie na lot. Przed startem sprawdź oficjalne krajowe źródło lotnicze.'},
+ cs:{great:'Výborné počasí pro let',good:'Dobré podmínky',okay:'Přijatelné podmínky, buďte opatrní',bad:'Nevhodné pro malé drony',noFly:'Nelétat',wind:'vítr',rain:'déšť',disclaimer:'Toto není právní povolení k letu. Před vzletem ověřte oficiální národní letecký zdroj.'}
+} as const;
+export const zoneWeatherQuality=(language:string,score:number)=>{
+ const copy=resultCopy[zoneLanguage(language)];
+ return score>=90?copy.great:score>=70?copy.good:score>=50?copy.okay:score>=30?copy.bad:copy.noFly;
+};
+export const zoneWeatherMetrics=(language:string,wind:number,rain:number)=>{
+ const copy=resultCopy[zoneLanguage(language)];
+ return`${wind} km/h ${copy.wind} · ${rain}% ${copy.rain}`;
+};
+export const zoneDisclaimer=(language:string)=>resultCopy[zoneLanguage(language)].disclaimer;
+
 const normalized=(value='')=>value.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,'_');
 const termPatterns:[RegExp,ZoneTerm][]=[
  [/BAHN|RAILWAY/,'railway'],[/SICHERHEIT|SECURITY/,'security'],[/INTERNATIONALE?_ORGANISATION|INTERNATIONAL_ORGANI[ZS]ATION/,'government'],[/BEHOERD|GOVERNMENT|AUTHORITY/,'government'],[/BINNENWASSER|INLAND_WATER/,'waterway'],
@@ -107,22 +132,31 @@ const looksGeneric=(value:string|undefined,typeValue:string|undefined)=>{
 };
 
 const operationalMessage=(severity:Severity|undefined,language:string)=>zoneText(language,severity??'unknown');
+const inferredSeverity=(key:ZoneTerm):Severity=>{
+  if(key==='prohibited')return'blocked';
+  if(key==='authorization'||key==='facilityGrid')return'authorization';
+  if(key==='conditional'||key==='restricted'||key==='controlled')return'conditional';
+  if(key==='warning'||key==='temporary')return'warning';
+  if(key==='information')return'information';
+  return'unknown';
+};
 
 export function localizeZoneDetail(zone:ZoneDetail,language:string):ZoneDetail{
   const code=zone.categoryCode??zone.type??zone.officialLayerName;
-  const type=translateZoneTerm(code,language);
+  const termKey=zoneTermKey(code),type=translateZoneTerm(code,language),severity=zone.severity??inferredSeverity(termKey);
   const originalName=zone.originalName??zone.name;
   const name=zone.nameLocalizedLanguage===zoneLanguage(language)
     ? zone.name
     : looksGeneric(originalName,code)
       ? type
       : originalName.includes(type)?originalName:`${originalName} · ${type}`;
-  const localizedMessage=zone.messageLocalizedLanguage===zoneLanguage(language)?zone.message:operationalMessage(zone.severity,language);
+  const localizedMessage=zone.messageLocalizedLanguage===zoneLanguage(language)?zone.message:operationalMessage(severity,language);
   return{
     ...zone,
     name,
     originalName,
     type,
+    severity,
     message:localizedMessage,
     originalMessage:zone.originalMessage??(zone.messageLocalizedLanguage?undefined:zone.message),
     pilotAction:zoneText(language,'action'),

@@ -2,13 +2,13 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Bot, CloudSun, Heart, Home, Layers3, LocateFixed, Map, Search, Settings, ShieldAlert, Sparkles, X } from 'lucide-react';
 import type { Page, Location, Weather, ZoneInfo } from './types';
 import { sources, sourceFor, type Source } from './data/sources';
-import { searchLocation, quality } from './services';
+import { searchLocation } from './services';
 import { t } from './languages';
-import { zoneText } from './zoneTranslations';
+import { zoneDisclaimer, zoneText, zoneWeatherMetrics, zoneWeatherQuality } from './zoneTranslations';
 
 export function Logo({compact=false}:{compact?:boolean}) { return <div className="brand" aria-label="Aeris Airspace"><svg viewBox="0 0 44 44" role="img"><defs><linearGradient id="logoGlow" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#e9ffd9"/><stop offset="1" stopColor="#74f296"/></linearGradient></defs><path d="M22 4 38 13v18L22 40 6 31V13Z" fill="none" stroke="url(#logoGlow)" strokeWidth="2"/><path d="M13 25c5-1 7-4 9-11 2 7 4 10 9 11-5 1-7 3-9 7-2-4-4-6-9-7Z" fill="url(#logoGlow)"/><circle cx="22" cy="22" r="3" fill="#07120f"/></svg>{!compact&&<span><b>AERIS</b><small>DRONE AIRSPACE</small></span>}</div> }
 
-export const Disclaimer=()=> <div className="disclaimer"><ShieldAlert size={15}/><span>This is not legal clearance. Check the official national aviation source before takeoff.</span></div>;
+export const Disclaimer=({language='en'}:{language?:string})=> <div className="disclaimer"><ShieldAlert size={15}/><span>{zoneDisclaimer(language)}</span></div>;
 const pageMeta: {id:Page; icon:typeof Home}[]=[{id:'home',icon:Home},{id:'map',icon:Map},{id:'weather',icon:CloudSun},{id:'ai',icon:Bot},{id:'saved',icon:Heart}];
 export function Nav({page,setPage,language='en'}:{page:Page;setPage:(p:Page)=>void;language?:string}) {
   const dockRef=useRef<HTMLElement>(null),sliderRef=useRef<HTMLElement>(null),buttonRefs=useRef<(HTMLButtonElement|null)[]>([]);
@@ -85,8 +85,8 @@ export function ResultCard({location,weather,zoneInfo,onSave,onClose,language='e
   <div className={'status '+(loaded?'caution':'unknown')}><span/>{status}</div>
   {zoneInfo?.zones.length?<div className="zoneResults">{zoneInfo.zones.slice(0,12).map(zone=><details key={zone.id} open={zoneInfo.zones.length===1}><summary><div><b>{zone.name}</b><span>{zone.type}</span></div><i>+</i></summary><div className="zoneBody">{zone.message&&<p>{zone.message}</p>}{zone.pilotAction&&<p><b>{zoneText(language,'pilot')}:</b> {zone.pilotAction}</p>}<dl>{zone.originalName&&zone.originalName!==zone.name&&<><dt>{zoneText(language,'originalName')}</dt><dd>{zone.originalName}</dd></>}{zone.originalMessage&&zone.originalMessage!==zone.message&&<><dt>{zoneText(language,'originalText')}</dt><dd>{zone.originalMessage}</dd></>}{zone.officialLayerName&&<><dt>{zoneText(language,'layer')}</dt><dd>{zone.officialLayerName}</dd></>}{zone.lower&&<><dt>{zoneText(language,'lower')}</dt><dd>{zone.lower}</dd></>}{zone.upper&&<><dt>{zoneText(language,'upper')}</dt><dd>{zone.upper}</dd></>}{zone.legalReference&&<><dt>{zoneText(language,'legal')}</dt><dd>{zone.legalReference}</dd></>}{zone.authority&&<><dt>{zoneText(language,'authority')}</dt><dd>{zone.authority}</dd></>}{zone.contact&&<><dt>{zoneText(language,'contact')}</dt><dd>{zone.contact}</dd></>}{zone.updated&&<><dt>{zoneText(language,'updated')}</dt><dd>{zone.updated}</dd></>}{zone.sourceUrl&&<><dt>{zoneText(language,'source')}</dt><dd><a href={zone.sourceUrl} target="_blank" rel="noreferrer">{zone.source} ↗</a></dd></>}</dl></div></details>)}</div>:zoneInfo&&<p>{zoneInfo.status==='none'?`${zoneText(language,'none',{source:zoneInfo.sourceName})} ${zoneText(language,'caveat')}`:zoneInfo.warning}</p>}
   {zoneInfo?.zones.length?<p className="zoneCaveat">{zoneText(language,'caveat')}</p>:null}
-  {weather&&<div className="weatherline"><CloudSun size={19}/><div><b>{weather.score}/100 · {quality(weather.score)}</b><span>{weather.wind} km/h wind · {weather.rainProbability}% rain</span></div></div>}
-  <div className="cardActions"><button onClick={onSave}><Heart size={16}/> {zoneText(language,'save')}</button>{zoneInfo?.sourceUrl&&zoneInfo.sourceUrl!=='#'&&<a href={zoneInfo.sourceUrl} target="_blank" rel="noreferrer">{t(language,'official')} ↗</a>}</div><Disclaimer/>
+  {weather&&<div className="weatherline"><CloudSun size={19}/><div><b>{weather.score}/100 · {zoneWeatherQuality(language,weather.score)}</b><span>{zoneWeatherMetrics(language,weather.wind,weather.rainProbability)}</span></div></div>}
+  <div className="cardActions"><button onClick={onSave}><Heart size={16}/> {zoneText(language,'save')}</button>{zoneInfo?.sourceUrl&&zoneInfo.sourceUrl!=='#'&&<a href={zoneInfo.sourceUrl} target="_blank" rel="noreferrer">{t(language,'official')} ↗</a>}</div><Disclaimer language={language}/>
  </aside>;
 }
 

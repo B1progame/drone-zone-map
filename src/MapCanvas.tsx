@@ -351,7 +351,11 @@ function loadWeatherGrid(map:MapLibreMap,hourIndex:number,visible:boolean,detail
  }).catch(error=>{if(keys.get('weather-grid')===key)keys.delete('weather-grid');console.warn(error)}).finally(()=>hooks?.finish(key));
 }
 
-const spainColor=['match',['get','type'],'PROHIBITED','#ff405b','REQ_AUTHORIZATION','#ffad3d','CONDITIONAL','#f2ce50','NO_RESTRICTION','#5ce09a','#69bff5'] as any;
+// ENAIRE publishes all three official UAS polygon layers with the same pale-red
+// fill and red outline. Semantic recolouring made Spain appear mostly orange or
+// yellow and no longer matched the authority's map.
+const spainFillColor='#ffbebe';
+const spainLineColor='#ff0000';
 const geozoneColor=['match',['get','restriction'],'PROHIBITED','#ff405d','REQ_AUTHORISATION','#ff9e43','REQ_AUTHORIZATION','#ff9e43','CONDITIONAL','#ffd45d','NO_RESTRICTION','#56d78d','#7fb4ff'] as any;
 const geozoneOpacity=['match',['get','restriction'],'NO_RESTRICTION',.075,'CONDITIONAL',.16,.24] as any;
 const enaireOpacityAt=(localOpacity:number)=>['case',
@@ -465,12 +469,12 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:'offline-coverage-line',type:'line',source:'offline-coverage',layout:{visibility:'none'},paint:{'line-color':'#b7ff9c','line-width':['interpolate',['linear'],['zoom'],2,1,12,2.5] as any,'line-dasharray':[3,2],'line-opacity':.95}},
       { id: 'dipul-zones', type: 'raster', source: 'dipul', layout: { visibility: zonesVisible ? 'visible' : 'none' }, paint: { 'raster-opacity': 0.78, 'raster-fade-duration': 150 } },
       { id:'dipul-detail',type:'raster',source:'dipul-detail',minzoom:8.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.76,'raster-fade-duration':120}},
-      {id:'enaire-infrastructure-fill',type:'fill',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainColor,'fill-opacity':enaireFillOpacity}},
-      {id:'enaire-infrastructure-line',type:'line',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':spainColor,'line-width':['interpolate',['linear'],['zoom'],3,.65,12,2.1],'line-opacity':.95}},
-      {id:'enaire-aero-fill',type:'fill',source:'enaire-aero',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainColor,'fill-opacity':enaireFillOpacity}},
-      {id:'enaire-aero-line',type:'line',source:'enaire-aero',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':spainColor,'line-width':['interpolate',['linear'],['zoom'],3,.75,12,2.2],'line-opacity':.98}},
-      {id:'enaire-urban-fill',type:'fill',source:'enaire-urban',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['match',['get','type'],'REQ_AUTHORIZATION','#bb7cff','PROHIBITED','#ff405b','CONDITIONAL','#f2ce50','#b57cff'],'fill-opacity':enaireFillOpacity}},
-      {id:'enaire-urban-line',type:'line',source:'enaire-urban',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':'#d0a8ff','line-width':1.1,'line-opacity':.86}},
+      {id:'enaire-infrastructure-fill',type:'fill',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainFillColor,'fill-opacity':enaireFillOpacity}},
+      {id:'enaire-infrastructure-line',type:'line',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':spainLineColor,'line-width':['interpolate',['linear'],['zoom'],3,.65,12,2.1],'line-opacity':.95}},
+      {id:'enaire-aero-fill',type:'fill',source:'enaire-aero',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainFillColor,'fill-opacity':enaireFillOpacity}},
+      {id:'enaire-aero-line',type:'line',source:'enaire-aero',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':spainLineColor,'line-width':['interpolate',['linear'],['zoom'],3,.75,12,2.2],'line-opacity':.98}},
+      {id:'enaire-urban-fill',type:'fill',source:'enaire-urban',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainFillColor,'fill-opacity':enaireFillOpacity}},
+      {id:'enaire-urban-line',type:'line',source:'enaire-urban',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':spainLineColor,'line-width':1.1,'line-opacity':.86}},
       {id:'france-zones',type:'raster',source:'france',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.82,'raster-fade-duration':100}},
       {id:'uk-zones',type:'fill',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['match',['get','category'],'Danger','#c43b73','Prohibited','#ff405d','Restricted','#e55270','#e55270'],'fill-opacity':['interpolate',['linear'],['zoom'],4.5,.2,8,.26,12,.32]}},
       {id:'uk-lines',type:'line',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['match',['get','category'],'Danger','#ef6098','Prohibited','#ff667d','Restricted','#ff748c','#ff748c'],'line-width':['interpolate',['linear'],['zoom'],4.5,.75,12,2.2],'line-opacity':.98}},

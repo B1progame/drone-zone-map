@@ -126,7 +126,19 @@ const translateEnaireMessage=(value:string,attributes:Record<string,any>={})=>{
    pt:'Esta zona ENAIRE está sujeita a restrições para fotografia aérea ou captação de dados. Solicite as condições técnicas de cada trabalho ao Centro Cartográfico e Fotográfico da Força Aérea e Espacial espanhola (CECAF) através de cecaf@ea.mde.es e consulte a AIC ENAIRE em vigor antes do voo.'
   });
  }
- if(/Por debajo de\s*[0-9.,]+\s*m|al menos\s*[0-9]+\s*días hábiles/i.test(value)){
+ if(/protección de las instalaciones|permiso previo y expreso del titular/i.test(value)){
+  const threshold=value.match(/Por debajo de\s*([0-9.,]+\s*m)/i)?.[1]??`${attributes.upper??''} ${attributes.uom??'m'}`.trim();
+  const contact=attributes.email&&attributes.email!=='Nulo'?attributes.email:'the listed official contact';
+  return localizedOfficialText({
+   en:`This ENAIRE infrastructure-protection zone requires the facility owner’s or responsible operator’s prior express permission for flights below ${threshold}. Follow any conditions they impose and use ${contact} for coordination.`,
+   de:`In diesem ENAIRE-Schutzgebiet für Anlagen und Infrastruktur ist für Flüge unterhalb von ${threshold} die vorherige ausdrückliche Genehmigung des Eigentümers oder verantwortlichen Betreibers erforderlich. Beachte dessen Bedingungen und nutze ${contact} zur Koordination.`,
+   es:value,
+   fr:`Dans cette zone ENAIRE de protection des installations et infrastructures, les vols sous ${threshold} nécessitent l’autorisation préalable et expresse du propriétaire ou du gestionnaire responsable. Respectez ses conditions et utilisez ${contact} pour la coordination.`,
+   it:`In questa zona ENAIRE di protezione di impianti e infrastrutture, i voli al di sotto di ${threshold} richiedono l’autorizzazione preventiva ed esplicita del proprietario o del gestore responsabile. Rispetta le relative condizioni e usa ${contact} per il coordinamento.`,
+   pt:`Nesta zona ENAIRE de proteção de instalações e infraestruturas, os voos abaixo de ${threshold} exigem autorização prévia e expressa do proprietário ou gestor responsável. Cumpra as condições aplicáveis e utilize ${contact} para coordenação.`
+  });
+ }
+ if(/punto de referencia del aeródromo|AENA coordinará|proveedor de servicios ATS/i.test(value)){
   const threshold=value.match(/Por debajo de\s*([0-9.,]+\s*m)/i)?.[1]??`${attributes.lower??''} ${attributes.uom??'m'}`.trim();
   const reference=value.match(/punto de referencia del aeródromo\s*\(([^)]+)\)/i)?.[1];
   const advance=value.match(/al menos\s*([0-9]+)\s*días hábiles/i)?.[1];
@@ -165,6 +177,52 @@ const translateEnaireMessage=(value:string,attributes:Record<string,any>={})=>{
      :[lower&&`Lower limit: ${lower}.`,upper&&`Upper limit: ${upper}.`];
  return [summaries[language()]??summaries.en,...limits.filter(Boolean)].join(' ');
 };
+const severityFromRestriction=(value?:string):ZoneDetail['severity']=>{
+ const normalized=(value??'').toUpperCase();
+ if(/PROHIB/.test(normalized))return'blocked';
+ if(/REQ_AUTH|AUTHORIS/.test(normalized))return'authorization';
+ if(/CONDITIONAL|RESTRICT/.test(normalized))return'conditional';
+ if(/WARNING|ADVISORY/.test(normalized))return'warning';
+ if(/INFORMATION|NO_RESTRICTION/.test(normalized))return'information';
+ return'unknown';
+};
+const translatePortugalMessage=(value:string)=>{
+ if(!/Todas as categorias[\s\S]*autorização|All categories[\s\S]*authorisation/i.test(value))return;
+ const messages:Record<string,string>={
+  en:'All UAS flights in every category require authorization from Portugal’s National Aeronautical Authority (AAN).',
+  de:'Alle UAS-Flüge in sämtlichen Kategorien benötigen eine Genehmigung der portugiesischen nationalen Luftfahrtbehörde AAN.',
+  fr:'Tous les vols UAS, dans toutes les catégories, nécessitent l’autorisation de l’Autorité aéronautique nationale portugaise (AAN).',
+  es:'Todos los vuelos UAS, en todas las categorías, requieren autorización de la Autoridad Aeronáutica Nacional portuguesa (AAN).',
+  it:'Tutti i voli UAS, in ogni categoria, richiedono l’autorizzazione dell’Autorità aeronautica nazionale portoghese (AAN).',
+  pt:'Todos os voos UAS, em todas as categorias, carecem de autorização da Autoridade Aeronáutica Nacional (AAN).',
+  nl:'Alle UAS-vluchten in elke categorie vereisen toestemming van de Portugese nationale luchtvaartautoriteit (AAN).',
+  no:'Alle UAS-flyginger i alle kategorier krever tillatelse fra Portugals nasjonale luftfartsmyndighet (AAN).',
+  sv:'Alla UAS-flygningar i samtliga kategorier kräver tillstånd från Portugals nationella luftfartsmyndighet (AAN).',
+  da:'Alle UAS-flyvninger i samtlige kategorier kræver tilladelse fra Portugals nationale luftfartsmyndighed (AAN).',
+  fi:'Kaikki UAS-lennot kaikissa luokissa edellyttävät Portugalin kansallisen ilmailuviranomaisen (AAN) lupaa.',
+  pl:'Wszystkie loty UAS we wszystkich kategoriach wymagają zezwolenia portugalskiego krajowego organu lotniczego (AAN).',
+  cs:'Všechny lety UAS ve všech kategoriích vyžadují povolení portugalského národního leteckého úřadu (AAN).'
+ };
+ return messages[language()]??messages.en;
+};
+const portugalLegalReference=()=>{
+ const references:Record<string,string>={
+  en:'Portuguese geozones under Regulation No. 1093/2016 of 14 December',
+  de:'Portugiesische Geozonen gemäß Verordnung Nr. 1093/2016 vom 14. Dezember',
+  fr:'Zones géographiques portugaises conformément au règlement nº 1093/2016 du 14 décembre',
+  es:'Zonas geográficas portuguesas conforme al Reglamento n.º 1093/2016 de 14 de diciembre',
+  it:'Zone geografiche portoghesi ai sensi del regolamento n. 1093/2016 del 14 dicembre',
+  pt:'Zonas geográficas portuguesas nos termos do Regulamento n.º 1093/2016, de 14 de dezembro',
+  nl:'Portugese geografische zones volgens Verordening nr. 1093/2016 van 14 december',
+  no:'Portugisiske geografiske soner i henhold til forskrift nr. 1093/2016 av 14. desember',
+  sv:'Portugisiska geografiska zoner enligt förordning nr 1093/2016 av den 14 december',
+  da:'Portugisiske geografiske zoner i henhold til forordning nr. 1093/2016 af 14. december',
+  fi:'Portugalin maantieteelliset vyöhykkeet 14. joulukuuta annetun asetuksen nro 1093/2016 mukaisesti',
+  pl:'Portugalskie strefy geograficzne zgodnie z rozporządzeniem nr 1093/2016 z 14 grudnia',
+  cs:'Portugalské zeměpisné zóny podle nařízení č. 1093/2016 ze dne 14. prosince'
+ };
+ return references[language()]??references.en;
+};
 const base=(code:string,name:string,sourceName:string,sourceUrl:string):ZoneInfo=>({countryCode:code,countryName:name,sourceName,sourceUrl,status:'none',zones:[],checkedAt:new Date().toISOString(),warning:'This is planning information, not legal clearance. Check the official source before takeoff.'});
 const geoJsonCache=new Map<string,Promise<any>>();
 const fetchGeoJson=(url:string)=>{let pending=geoJsonCache.get(url);if(!pending){pending=fetch(url).then(response=>{if(!response.ok)throw new Error(`Zone file unavailable: ${response.status}`);return response.json()});geoJsonCache.set(url,pending)}return pending};
@@ -188,7 +246,19 @@ async function dipul(point:Location):Promise<ZoneInfo>{
  result.status=result.zones.length?'loaded':'none';return result;
 }
 
-async function enaire(point:Location):Promise<ZoneInfo>{const result=base('ES',language()==='es'?'España':'Spain','ENAIRE servAIS','https://drones.enaire.es/'),d=.12;const params=new URLSearchParams({geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',sr:'4326',tolerance:'3',mapExtent:`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,imageDisplay:'800,600,96',layers:'all:0,2,3',returnGeometry:'false',f:'json'});const response=await fetch(`https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer/identify?${params}`);if(!response.ok)throw new Error('ENAIRE query failed');const data=await response.json();result.zones=(data.results??[]).map((item:any,index:number)=>{const a=item.attributes??{},message=translateEnaireMessage(cleanHtml(a.message||a.description),a),rawName=a.name&&a.name!=='Nulo'?a.name:item.value||item.layerName;return{id:`ES-${item.layerId}-${a.OBJECTID??index}`,name:translateEnaireName(rawName),type:translate(a.type||a.restriction||'COMMON'),message:message.slice(0,2400),lower:a.lower!=null?`${a.lower} ${a.uom??''} ${a.lowerReference??''}`:undefined,upper:a.upper!=null?`${a.upper} ${a.uom??''} ${a.upperReference??''}`:undefined,legalReference:a.siteURL&&a.siteURL!=='Nulo'?a.siteURL:undefined,contact:[a.email,a.phone].filter((x:string)=>x&&x!=='Nulo').join(' · ')||undefined,source:'ENAIRE',updated:a.updateDateTime||undefined}});result.status=result.zones.length?'loaded':'none';return result}
+async function enaire(point:Location):Promise<ZoneInfo>{
+ const result=base('ES',language()==='es'?'España':'Spain','ENAIRE servAIS','https://drones.enaire.es/'),d=.12;
+ const params=new URLSearchParams({geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',sr:'4326',tolerance:'3',mapExtent:`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,imageDisplay:'800,600,96',layers:'all:0,2,3',returnGeometry:'false',f:'json'});
+ const response=await fetch(`https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer/identify?${params}`);
+ if(!response.ok)throw new Error('ENAIRE query failed');
+ const data=await response.json();
+ result.zones=sortZones((data.results??[]).map((item:any,index:number)=>{
+  const a=item.attributes??{},rawType=a.type||a.restriction||'COMMON',rawMessage=cleanHtml(a.message||a.description),message=translateEnaireMessage(rawMessage,a),rawName=a.name&&a.name!=='Nulo'?a.name:item.value||item.layerName,translatedName=translateEnaireName(rawName);
+  const authority=[a.name_authority,a.provider].find((value:unknown)=>typeof value==='string'&&value.trim()&&!/^nulo$/i.test(value.trim())) as string|undefined;
+  return{id:`ES-${item.layerId}-${a.OBJECTID??index}`,name:translatedName,originalName:rawName,nameLocalizedLanguage:translatedName!==rawName?language():undefined,type:translate(rawType),categoryCode:rawType,severity:severityFromRestriction(rawType),message:message.slice(0,2400),originalMessage:rawMessage||undefined,messageLocalizedLanguage:rawMessage&&(language()==='es'||message!==rawMessage)?language():undefined,lower:a.lower!=null?`${a.lower} ${a.uom??''} ${a.lowerReference??''}`:undefined,upper:a.upper!=null?`${a.upper} ${a.uom??''} ${a.upperReference??''}`:undefined,legalReference:a.siteURL&&a.siteURL!=='Nulo'?a.siteURL:undefined,contact:[a.email,a.phone].filter((x:string)=>x&&x!=='Nulo').join(' · ')||undefined,authority:authority??'ENAIRE / AESA',officialLayerName:item.layerName,layerCode:rawType,source:'ENAIRE',sourceUrl:'https://drones.enaire.es/',updated:a.updateDateTime||undefined} as ZoneDetail;
+ }));
+ result.status=result.zones.length?'loaded':'none';return result;
+}
 
 async function france(point:Location):Promise<ZoneInfo>{
  const source=COUNTRY_SOURCES.FR,result=base('FR',source.name,source.source,source.url),d=.02;
@@ -221,8 +291,8 @@ async function portugal(point:Location):Promise<ZoneInfo>{
  const source=COUNTRY_SOURCES.PT,result=base('PT',source.name,source.source,source.url);
  const data=normalizeEd269(await fetchGeoJson(await latestPortugalEd269Url()));
  result.zones=(data.features??[]).filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{
-  const p=feature.properties??{},reasons=Array.isArray(p.reason)?p.reason.join(', '):p.reason;
-  return{id:p.identifier??`PT-${index}`,name:p.name??'Portugal UAS geographical zone',type:translate(p.restriction??p.type??'COMMON'),message:[reasons,p.otherReasonInfo,p.message].filter(Boolean).join(' · '),lower:p.lowerLimit!=null?`${p.lowerLimit} ${p.uomDimensions??'M'} ${p.lowerVerticalReference??''}`:undefined,upper:p.upperLimit!=null?`${p.upperLimit} ${p.uomDimensions??'M'} ${p.upperVerticalReference??''}`:undefined,contact:[p.authorityName,p.authorityService,p.authorityEmail,p.authorityPhone].filter(Boolean).join(' · ')||undefined,source:source.source,updated:data.title};
+  const p=feature.properties??{},reasons=Array.isArray(p.reason)?p.reason.join(', '):p.reason,rawType=p.restriction??p.type??'COMMON',rawMessage=[reasons,p.otherReasonInfo,p.message].filter(Boolean).join(' · '),localizedMessage=translatePortugalMessage(rawMessage);
+  return{id:p.identifier??`PT-${index}`,name:p.name??'Portugal UAS geographical zone',originalName:p.name,type:translate(rawType),categoryCode:rawType,severity:severityFromRestriction(rawType),message:localizedMessage??rawMessage,originalMessage:rawMessage||undefined,messageLocalizedLanguage:localizedMessage?language():undefined,lower:p.lowerLimit!=null?`${p.lowerLimit} ${p.uomDimensions??'M'} ${p.lowerVerticalReference??''}`:undefined,upper:p.upperLimit!=null?`${p.upperLimit} ${p.uomDimensions??'M'} ${p.upperVerticalReference??''}`:undefined,legalReference:portugalLegalReference(),contact:[p.authorityName,p.authorityService,p.authorityEmail,p.authorityPhone].filter(Boolean).join(' · ')||undefined,authority:p.authorityName,source:source.source,sourceUrl:source.url};
  });
  result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
 }
