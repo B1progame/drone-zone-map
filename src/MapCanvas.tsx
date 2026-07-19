@@ -476,8 +476,25 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:'enaire-nature',type:'raster',source:'enaire-nature',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.82,'raster-fade-duration':100}},
       {id:'enaire-aero-sites',type:'raster',source:'enaire-aero-sites',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':1,'raster-fade-duration':100}},
       {id:'france-zones',type:'raster',source:'france',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.82,'raster-fade-duration':100}},
-      {id:'uk-zones',type:'fill',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['match',['get','category'],'Danger','#c43b73','Prohibited','#ff405d','Restricted','#e55270','#e55270'],'fill-opacity':['interpolate',['linear'],['zoom'],4.5,.2,8,.26,12,.32]}},
-      {id:'uk-lines',type:'line',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['match',['get','category'],'Danger','#ef6098','Prohibited','#ff667d','Restricted','#ff748c','#ff748c'],'line-width':['interpolate',['linear'],['zoom'],4.5,.75,12,2.2],'line-opacity':.98}},
+      {id:'uk-zones',type:'fill',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{
+        'fill-color':['case',
+          ['!=',['get','lower'],'SFC'],'#4387f5',
+          ['match',['get','category'],'Danger','#f0ad26','Prohibited','#ff405d','Restricted','#e55270','#e55270']
+        ] as any,
+        'fill-opacity':['case',
+          ['!=',['get','lower'],'SFC'],['interpolate',['linear'],['zoom'],4.5,.12,8,.18,12,.24],
+          ['==',['get','category'],'Danger'],['interpolate',['linear'],['zoom'],4.5,.12,8,.18,12,.25],
+          ['interpolate',['linear'],['zoom'],4.5,.16,8,.23,12,.3]
+        ] as any
+      }},
+      {id:'uk-lines',type:'line',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{
+        'line-color':['case',
+          ['!=',['get','lower'],'SFC'],'#3f91ff',
+          ['match',['get','category'],'Danger','#ffbd2f','Prohibited','#ff667d','Restricted','#ff748c','#ff748c']
+        ] as any,
+        'line-width':['interpolate',['linear'],['zoom'],4.5,.75,12,2.2],
+        'line-opacity':.98
+      }},
       {id:'swiss-zones',type:'fill',source:'switzerland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['coalesce',['get','fill'],'#b11313'] as any,'fill-opacity':['interpolate',['linear'],['zoom'],5,.2,10,.34,15,.42]}},
       {id:'swiss-lines',type:'line',source:'switzerland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['coalesce',['get','stroke'],['get','fill'],'#ff6b6b'] as any,'line-width':['interpolate',['linear'],['zoom'],5,.7,12,2.1],'line-opacity':.92}},
       {id:'us-facility-fill',type:'fill',source:'us-facility',minzoom:7,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['step',['to-number',['get','CEILING']], '#ff4056',1,'#ff7c4d',100,'#ffb44e',300,'#ffe069'],'fill-opacity':.2}},
