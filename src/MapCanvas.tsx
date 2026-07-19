@@ -380,6 +380,20 @@ const terrainDemSource=()=>({type:'raster-dem' as const,url:'https://tiles.mapte
 const buildingSource=()=>({type:'vector' as const,url:'https://tiles.openfreemap.org/planet',attribution:'<a href="https://openfreemap.org/" target="_blank">Buildings © OpenStreetMap · OpenMapTiles · OpenFreeMap</a>'});
 const terrainHillshadeLayer=()=>({id:'terrain-hillshade',type:'hillshade' as const,source:'terrain-dem',layout:{visibility:'visible' as const},paint:{'hillshade-shadow-color':'#15241e','hillshade-highlight-color':'#d7edce','hillshade-accent-color':'#6c806f','hillshade-exaggeration':.35}});
 const buildingLayer=()=>({id:'3d-buildings',type:'fill-extrusion' as const,source:'openfreemap-buildings','source-layer':'building',minzoom:14.5,filter:['!=',['get','hide_3d'],true] as any,layout:{visibility:'visible' as const},paint:{'fill-extrusion-color':['interpolate',['linear'],['coalesce',['get','render_height'],6],0,'#cfd8d2',20,'#e2d9ca',80,'#c6d4d2',200,'#a8c6c2'] as any,'fill-extrusion-height':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_height'],6]] as any,'fill-extrusion-base':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_min_height'],0]] as any,'fill-extrusion-opacity':.82,'fill-extrusion-vertical-gradient':true}});
+const offlineBasemapSource=(tiles=['aeris-offline://none/none/{z}/{x}/{y}'])=>({type:'vector' as const,tiles,minzoom:2,maxzoom:12,attribution:'<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>'});
+const offlineBasemapLayers=(visibility:'visible'|'none'='none'):any[]=>[
+  {id:'offline-map-background',type:'background',layout:{visibility},paint:{'background-color':'#07130f'}},
+  {id:'offline-map-landcover',type:'fill',source:'offline-basemap','source-layer':'landcover',layout:{visibility},paint:{'fill-color':['match',['get','class'],'wood','#183d2b','grass','#244834','farmland','#343f2a','ice','#a7c8c3','sand','#655c3a','#173326'],'fill-opacity':.9}},
+  {id:'offline-map-landuse',type:'fill',source:'offline-basemap','source-layer':'landuse',layout:{visibility},paint:{'fill-color':['match',['get','class'],'residential','#22332d','industrial','#313432','cemetery','#23402f','hospital','#293b35','school','#2d4037','#1d3029'],'fill-opacity':.82}},
+  {id:'offline-map-park',type:'fill',source:'offline-basemap','source-layer':'park',layout:{visibility},paint:{'fill-color':'#245336','fill-opacity':.72}},
+  {id:'offline-map-water',type:'fill',source:'offline-basemap','source-layer':'water',layout:{visibility},paint:{'fill-color':'#17495a'}},
+  {id:'offline-map-waterway',type:'line',source:'offline-basemap','source-layer':'waterway',layout:{visibility},paint:{'line-color':'#26718a','line-width':['interpolate',['linear'],['zoom'],5,.5,12,2]}},
+  {id:'offline-map-building',type:'fill',source:'offline-basemap','source-layer':'building',minzoom:12,layout:{visibility},paint:{'fill-color':'#647068','fill-opacity':.62,'fill-outline-color':'#89958d'}},
+  {id:'offline-map-road-casing',type:'line',source:'offline-basemap','source-layer':'transportation',minzoom:4,layout:{visibility,'line-cap':'round','line-join':'round'},paint:{'line-color':'#101b18','line-width':['interpolate',['linear'],['zoom'],4,1.2,8,2.5,12,7]}},
+  {id:'offline-map-roads',type:'line',source:'offline-basemap','source-layer':'transportation',minzoom:4,layout:{visibility,'line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','class'],'motorway','#d9b75e','trunk','#c9a955','primary','#b4a36b','secondary','#89968a','rail','#788b84','#687a73'],'line-width':['interpolate',['linear'],['zoom'],4,.5,8,1.2,12,4.5]}},
+  {id:'offline-map-boundary',type:'line',source:'offline-basemap','source-layer':'boundary',layout:{visibility},paint:{'line-color':'#7d9b8d','line-width':['interpolate',['linear'],['zoom'],3,.5,10,1.4],'line-dasharray':[3,2],'line-opacity':.65}}
+];
+const OFFLINE_BASEMAP_LAYER_IDS=offlineBasemapLayers().map(layer=>layer.id);
 
 function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
   const satellite = baseMap === 'satellite';
@@ -410,18 +424,6 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:`sweden-${id}-line`,type:'line' as const,source:`sweden-${id}`,minzoom:index>=5?5.5:5,...filterProperty,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'line-color':semanticLineColor(index<5?'#ffb06f':'#e2a1ff'),'line-width':['interpolate',['linear'],['zoom'],5,.7,12,1.8] as any,'line-opacity':.88}}
     ];
   });
-  const offlineBasemapLayers:any[]=[
-    {id:'offline-map-background',type:'background',layout:{visibility:'none'},paint:{'background-color':'#07130f'}},
-    {id:'offline-map-landcover',type:'fill',source:'offline-basemap','source-layer':'landcover',layout:{visibility:'none'},paint:{'fill-color':['match',['get','class'],'wood','#183d2b','grass','#244834','farmland','#343f2a','ice','#a7c8c3','sand','#655c3a','#173326'],'fill-opacity':.9}},
-    {id:'offline-map-landuse',type:'fill',source:'offline-basemap','source-layer':'landuse',layout:{visibility:'none'},paint:{'fill-color':['match',['get','class'],'residential','#22332d','industrial','#313432','cemetery','#23402f','hospital','#293b35','school','#2d4037','#1d3029'],'fill-opacity':.82}},
-    {id:'offline-map-park',type:'fill',source:'offline-basemap','source-layer':'park',layout:{visibility:'none'},paint:{'fill-color':'#245336','fill-opacity':.72}},
-    {id:'offline-map-water',type:'fill',source:'offline-basemap','source-layer':'water',layout:{visibility:'none'},paint:{'fill-color':'#17495a'}},
-    {id:'offline-map-waterway',type:'line',source:'offline-basemap','source-layer':'waterway',layout:{visibility:'none'},paint:{'line-color':'#26718a','line-width':['interpolate',['linear'],['zoom'],5,.5,12,2]}},
-    {id:'offline-map-building',type:'fill',source:'offline-basemap','source-layer':'building',minzoom:12,layout:{visibility:'none'},paint:{'fill-color':'#647068','fill-opacity':.62,'fill-outline-color':'#89958d'}},
-    {id:'offline-map-road-casing',type:'line',source:'offline-basemap','source-layer':'transportation',minzoom:4,layout:{visibility:'none','line-cap':'round','line-join':'round'},paint:{'line-color':'#101b18','line-width':['interpolate',['linear'],['zoom'],4,1.2,8,2.5,12,7]}},
-    {id:'offline-map-roads',type:'line',source:'offline-basemap','source-layer':'transportation',minzoom:4,layout:{visibility:'none','line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','class'],'motorway','#d9b75e','trunk','#c9a955','primary','#b4a36b','secondary','#89968a','rail','#788b84','#687a73'],'line-width':['interpolate',['linear'],['zoom'],4,.5,8,1.2,12,4.5]}},
-    {id:'offline-map-boundary',type:'line',source:'offline-basemap','source-layer':'boundary',layout:{visibility:'none'},paint:{'line-color':'#7d9b8d','line-width':['interpolate',['linear'],['zoom'],3,.5,10,1.4],'line-dasharray':[3,2],'line-opacity':.65}}
-  ];
   return {
     version: 8,
     projection:{type:'globe'},
@@ -440,7 +442,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       },
       'terrain-dem':terrainDemSource(),
       'openfreemap-buildings':buildingSource(),
-      'offline-basemap':{type:'vector',tiles:['aeris-offline://none/none/{z}/{x}/{y}'],minzoom:2,maxzoom:12,attribution:'<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>'},
+      'offline-basemap':offlineBasemapSource(),
       dipul: {
         type: 'raster',
         tiles: [dipulTiles(DIPUL_CORE_LAYERS)],
@@ -487,7 +489,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
       {...terrainHillshadeLayer(),layout:{visibility:'none'}},
       {...buildingLayer(),layout:{visibility:'none'}},
-      ...offlineBasemapLayers,
+      ...offlineBasemapLayers(),
       {id:'offline-package-fill',type:'fill',source:'offline-package',filter:['match',['geometry-type'],['Polygon','MultiPolygon'],true,false] as any,paint:{'fill-color':semanticFillColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff']),'fill-opacity':.27}},
       {id:'offline-package-line',type:'line',source:'offline-package',paint:{'line-color':semanticLineColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff7182','airports','#ffd078','controlled','#e5a2ff','nature','#80efa4','warnings','#ffea94','basic','#b1cbc5','#9ee3ff']),'line-width':['interpolate',['linear'],['zoom'],4,.7,12,2.2] as any,'line-opacity':.96}},
       {id:'offline-package-points',type:'circle',source:'offline-package',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,2.5,12,6] as any,'circle-color':semanticFillColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff']),'circle-stroke-color':'#06100d','circle-stroke-width':1.2}},
@@ -733,6 +735,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   const initialStyleRef=useRef(true);
   const [baseMap, setBaseMap] = useState<BaseMap>('satellite');
   const [zonesVisible, setZonesVisible] = useState(true);
+  const zonesVisibleRef=useRef(zonesVisible);
   const [weatherVisible,setWeatherVisible]=useState(true);
   const [weatherHour,setWeatherHour]=useState(0);
   const [weatherPlaying,setWeatherPlaying]=useState(false);
@@ -761,6 +764,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useEffect(()=>{planPointsRef.current=planPoints},[planPoints]);
   useEffect(()=>{flightRadiusRef.current=flightRadiusKm},[flightRadiusKm]);
   useEffect(()=>{settingsRef.current=settings},[settings]);
+  useEffect(()=>{zonesVisibleRef.current=zonesVisible},[zonesVisible]);
   const applyTerrain=(map:MapLibreMap,enabled:boolean,animate=true)=>{
     if(enabled){
       if(!map.getSource('terrain-dem'))map.addSource('terrain-dem',terrainDemSource());
@@ -787,11 +791,36 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     applyTerrain(map,settingsRef.current.terrain3d&&!mapShouldUseOffline(),false);
     const source=map.getSource('offline-package') as maplibregl.GeoJSONSource|undefined;
     const coverageSource=map.getSource('offline-coverage') as maplibregl.GeoJSONSource|undefined;
-    const mapSource=map.getSource('offline-basemap') as maplibregl.VectorTileSource|undefined;
-    if(!source||!coverageSource||!mapSource)return;
-    const showOfflineMap=(visible:boolean)=>{if(map.getLayer('basemap'))map.setLayoutProperty('basemap','visibility',visible?'none':'visible');for(const layer of map.getStyle().layers??[])if(layer.id.startsWith('offline-map-')||layer.id.startsWith('offline-coverage-'))map.setLayoutProperty(layer.id,'visibility',visible?'visible':'none')};
+    if(!source||!coverageSource)return;
+    const removeOfflineBasemap=()=>{
+      for(const id of [...OFFLINE_BASEMAP_LAYER_IDS].reverse())if(map.getLayer(id))map.removeLayer(id);
+      if(map.getSource('offline-basemap'))map.removeSource('offline-basemap');
+    };
+    const showOfflineMap=(visible:boolean,tiles?:string[])=>{
+      if(map.getLayer('basemap'))map.setLayoutProperty('basemap','visibility',visible?'none':'visible');
+      for(const id of ZONE_LAYER_IDS)if(!id.startsWith('offline-')&&map.getLayer(id))map.setLayoutProperty(id,'visibility',visible?'none':zonesVisibleRef.current?'visible':'none');
+      for(const id of ['weather-clouds','weather-rain','weather-wind'])if(map.getLayer(id))map.setLayoutProperty(id,'visibility',visible?'none':weatherStateRef.current.visible?'visible':'none');
+      for(const layer of map.getStyle().layers??[])if(layer.id.startsWith('offline-coverage-'))map.setLayoutProperty(layer.id,'visibility',visible?'visible':'none');
+      if(visible){
+        removeOfflineBasemap();
+        const beforeLayer=map.getLayer('offline-package-fill')?'offline-package-fill':undefined;
+        if(tiles){
+          map.addSource('offline-basemap',offlineBasemapSource(tiles));
+          for(const layer of offlineBasemapLayers('visible'))map.addLayer(layer,beforeLayer);
+        }else map.addLayer(offlineBasemapLayers('visible')[0],beforeLayer);
+      }else if(!visible)removeOfflineBasemap();
+    };
     const request=++offlineRequestRef.current;
-    if(!mapShouldUseOffline()){source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('');return}
+    if(!mapShouldUseOffline()){
+      source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('');
+      const state=weatherStateRef.current,hooks=hooksRef.current??undefined;
+      loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,settingsRef.current.renderDetail,hooks);ensureRadar(map,state.visible,state.hour,hooks);loadWeatherGrid(map,state.hour,state.visible,settingsRef.current.renderDetail,Boolean(state.location&&state.weather),hooks,!settingsRef.current.reducedMotion);
+      return;
+    }
+    const weatherGrid=map.getSource('weather-grid') as maplibregl.GeoJSONSource|undefined;
+    weatherGrid?.setData(emptyGeoJson);
+    if(map.getLayer('weather-radar'))map.removeLayer('weather-radar');
+    if(map.getSource('weather-radar'))map.removeSource('weather-radar');
     const center=point??map.getCenter(),pack=await getBestOfflinePack(center);
     if(request!==offlineRequestRef.current)return;
     if(pack){
@@ -799,13 +828,13 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       const bounds=point?[center.lng-span,center.lat-span,center.lng+span,center.lat+span] as [number,number,number,number]:[visible.getWest(),visible.getSouth(),visible.getEast(),visible.getNorth()] as [number,number,number,number];
       const data=await getOfflinePackageData(pack,bounds);
       if(request!==offlineRequestRef.current)return;
-      if(pack.generation&&pack.metadata.tileCount){mapSource.setTiles([`aeris-offline://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`]);showOfflineMap(true)}else showOfflineMap(false);
+      if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[`aeris-offline://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`]);else showOfflineMap(false);
       const[west,south,east,north]=pack.metadata.bounds;
       coverageSource.setData({type:'FeatureCollection',features:[{type:'Feature',properties:{name:pack.name},geometry:{type:'Polygon',coordinates:[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}}]} as any);
       const visibleData=pack.metadata.countryCode==='GB'?filterUkDroneRelevant(data):data;
       source.setData(enrichZoneSemantics(visibleData) as any);setOfflineNotice(`Offline · ${pack.name} · street map + ${visibleData.features.length.toLocaleString()} nearby official items`);
     }
-    else{source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
+    else{source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);showOfflineMap(true);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
   };
   useEffect(()=>{void syncOfflinePackage(location)},[location?.lat,location?.lng]);
   useEffect(()=>{
@@ -900,9 +929,9 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       .addTo(map);
   }, [location]);
 
-  useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);ensureRadar(map,weatherVisible,weatherHour,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined,!settingsRef.current.reducedMotion)}},[location,weather,weatherHour,weatherVisible]);
+  useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);if(!mapShouldUseOffline()){ensureRadar(map,weatherVisible,weatherHour,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined,!settingsRef.current.reducedMotion)}}},[location,weather,weatherHour,weatherVisible]);
 
-  useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,weatherHour,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks,!settings.reducedMotion)},[settings.renderDetail,settings.reducedMotion,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
+  useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded()||mapShouldUseOffline())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,weatherHour,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks,!settings.reducedMotion)},[settings.renderDetail,settings.reducedMotion,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
   useEffect(()=>{const map=mapRef.current;if(map&&loaded)applyTerrain(map,settings.terrain3d&&!mapShouldUseOffline())},[settings.terrain3d,loaded]);
 
   useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded()){applyFlightRange(map,planPoints,flightRadiusKm);applyFlightPlan(map,planPoints)}},[planPoints,flightRadiusKm,loaded,baseMap]);
@@ -925,6 +954,6 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       <button className={zonesVisible ? 'active zones' : ''} onClick={() => setZonesVisible(value => !value)} aria-pressed={zonesVisible} aria-label="Toggle verified official drone zones"><Layers3 size={16}/><span>Zones</span></button>
       <button className={weatherVisible?'active weather':''} onClick={()=>setWeatherVisible(value=>!value)} aria-pressed={weatherVisible} aria-label="Toggle weather forecast overlay"><CloudSun size={16}/><span>Weather</span></button>
     </div>
-    {weather&&location&&weatherVisible&&<div className="mapWeatherControl liquid"><div className="mapWeatherNow">{(weather.hourly[weatherHour]?.rainProbability??0)>45?<CloudRain/>:<CloudSun/>}<div><small>FORECAST OVERLAY · +{weatherHour}H</small><b>{weather.hourly[weatherHour]?.score??weather.score}/100</b><span><Wind/> {weather.hourly[weatherHour]?.wind??weather.wind} km/h · {weather.hourly[weatherHour]?.rainProbability??weather.rainProbability}% rain</span></div><button className="weatherPlay" onClick={()=>setWeatherPlaying(value=>!value)} aria-label={weatherPlaying?'Pause forecast animation':'Play forecast animation'}>{weatherPlaying?<Pause/>:<Play/>}</button></div><div className="weatherLegend" aria-label="Weather overlay legend"><span className="cloudKey">Cloud forecast</span><span className="rainKey">Rain forecast</span><span className="windKey">Animated wind</span><small>{weatherHour===0?'LIVE RADAR + forecast field':'FUTURE FORECAST · live radar is available at Now only'}</small></div><input type="range" min="0" max="11" step="1" value={weatherHour} onChange={event=>{setWeatherPlaying(false);setWeatherHour(Number(event.target.value))}} aria-label="Weather forecast hour"/><div className="weatherTicks">{Array.from({length:12},(_,i)=><button className={i===weatherHour?'active':''} onClick={()=>{setWeatherPlaying(false);setWeatherHour(i)}} key={i}>{i===0?'Now':`+${i}`}</button>)}</div></div>}
+    {weather&&location&&weatherVisible&&<div className="mapWeatherControl liquid"><div className="mapWeatherNow">{(weather.hourly[weatherHour]?.rainProbability??0)>45?<CloudRain/>:<CloudSun/>}<div><small>{mapShouldUseOffline()?'OFFLINE WEATHER SNAPSHOT':`FORECAST OVERLAY · +${weatherHour}H`}</small><b>{weather.hourly[weatherHour]?.score??weather.score}/100</b><span><Wind/> {weather.hourly[weatherHour]?.wind??weather.wind} km/h · {weather.hourly[weatherHour]?.rainProbability??weather.rainProbability}% rain</span></div><button className="weatherPlay" onClick={()=>setWeatherPlaying(value=>!value)} aria-label={weatherPlaying?'Pause forecast animation':'Play forecast animation'}>{weatherPlaying?<Pause/>:<Play/>}</button></div><div className="weatherLegend" aria-label="Weather overlay legend"><span className="cloudKey">Cloud forecast</span><span className="rainKey">Rain forecast</span><span className="windKey">Animated wind</span><small>{mapShouldUseOffline()?'SAVED WITH THIS PACKAGE · reconnect for live radar':weatherHour===0?'LIVE RADAR + forecast field':'FUTURE FORECAST · live radar is available at Now only'}</small></div><input type="range" min="0" max="11" step="1" value={weatherHour} onChange={event=>{setWeatherPlaying(false);setWeatherHour(Number(event.target.value))}} aria-label="Weather forecast hour"/><div className="weatherTicks">{Array.from({length:12},(_,i)=><button className={i===weatherHour?'active':''} onClick={()=>{setWeatherPlaying(false);setWeatherHour(i)}} key={i}>{i===0?'Now':`+${i}`}</button>)}</div></div>}
   </div>;
 });
