@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Bot, CloudSun, Heart, Home, Layers3, LocateFixed, Map, Search, Settings, ShieldAlert, Sparkles, X } from 'lucide-react';
+import { Bot, CloudSun, Heart, Home, Layers3, LocateFixed, Map, MapPin, Search, Settings, ShieldAlert, Sparkles, X } from 'lucide-react';
 import type { Page, Location, Weather, ZoneInfo } from './types';
 import { sources, sourceFor, type Source } from './data/sources';
-import { searchLocation } from './services';
+import { searchLocation, searchLocationSuggestions, type LocationSuggestion } from './services';
 import { t } from './languages';
 import { zoneDisclaimer, zoneText, zoneWeatherMetrics, zoneWeatherQuality } from './zoneTranslations';
 
@@ -47,15 +47,24 @@ export function Nav({page,setPage,language='en'}:{page:Page;setPage:(p:Page)=>vo
   return <nav ref={dockRef} className="dock" aria-label="Main navigation"><i ref={sliderRef} className="dockSlider" aria-hidden="true"/>{pageMeta.map((x,index)=>{const I=x.icon,label=t(language,x.id);return <button ref={node=>{buttonRefs.current[index]=node}} className={page===x.id?'active':''} onClick={()=>setPage(x.id)} aria-label={label} aria-current={page===x.id?'page':undefined} key={x.id}><span className="navIcon"><I size={19}/></span><span className="navLabel">{label}</span></button>})}</nav>
 }
 export function SearchBox({onLocation,hero=false,language='en',compact=false}:{onLocation:(l:Location)=>void;hero?:boolean;language?:string;compact?:boolean}) {
-  const [value,setValue]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[open,setOpen]=useState(false);
+  const [value,setValue]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[open,setOpen]=useState(false),[suggestions,setSuggestions]=useState<LocationSuggestion[]>([]),[suggestionsOpen,setSuggestionsOpen]=useState(false),[activeSuggestion,setActiveSuggestion]=useState(0),[suggesting,setSuggesting]=useState(false);
   const inputRef=useRef<HTMLInputElement>(null);
   useEffect(()=>{if(open)window.setTimeout(()=>inputRef.current?.focus(),30)},[open]);
+  useEffect(()=>{
+    const query=value.trim();if(query.length<2){setSuggestions([]);setSuggestionsOpen(false);setSuggesting(false);return}
+    const controller=new AbortController(),timer=window.setTimeout(()=>{
+      setSuggesting(true);
+      void searchLocationSuggestions(query,language,controller.signal).then(results=>{setSuggestions(results);setActiveSuggestion(0);setSuggestionsOpen(results.length>0)}).catch(reason=>{if(reason?.name!=='AbortError')setSuggestions([])}).finally(()=>setSuggesting(false));
+    },220);
+    return()=>{window.clearTimeout(timer);controller.abort()};
+  },[value,language]);
+  const chooseSuggestion=(location:LocationSuggestion)=>{setValue(location.name);setSuggestionsOpen(false);setError('');onLocation(location);setOpen(false)};
   const submit=async()=>{
     if(!value.trim())return inputRef.current?.focus();
     setBusy(true);setError('');
     try{
       const location=await searchLocation(value,language);
-      if(location){onLocation(location);setOpen(false)}
+      if(location){onLocation(location);setSuggestionsOpen(false);setOpen(false)}
       else setError(t(language,'noPlace'));
     }catch{setError(t(language,'searchError'))}
     finally{setBusy(false)}
@@ -63,10 +72,17 @@ export function SearchBox({onLocation,hero=false,language='en',compact=false}:{o
   const locate=()=>navigator.geolocation?.getCurrentPosition(position=>{onLocation({lat:position.coords.latitude,lng:position.coords.longitude,name:'My location'});setOpen(false)},()=>setError('Location permission was not granted.'),{enableHighAccuracy:true,timeout:10000});
   const search=<div className={'searchWrap '+(hero?'heroSearch':'')}>
     <Search size={19}/>
-    <input ref={inputRef} value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void submit();if(e.key==='Escape')setOpen(false)}} placeholder={t(language,'search')} aria-label="Place or coordinates"/>
+    <input ref={inputRef} value={value} onChange={e=>{setValue(e.target.value);setError('');setSuggestionsOpen(true)}} onFocus={()=>suggestions.length&&setSuggestionsOpen(true)} onBlur={()=>window.setTimeout(()=>setSuggestionsOpen(false),100)} onKeyDown={e=>{
+      if(e.key==='ArrowDown'&&suggestionsOpen){e.preventDefault();setActiveSuggestion(index=>Math.min(suggestions.length-1,index+1))}
+      else if(e.key==='ArrowUp'&&suggestionsOpen){e.preventDefault();setActiveSuggestion(index=>Math.max(0,index-1))}
+      else if(e.key==='Enter'){e.preventDefault();if(suggestionsOpen&&suggestions[activeSuggestion])chooseSuggestion(suggestions[activeSuggestion]);else void submit()}
+      else if(e.key==='Escape'){setSuggestionsOpen(false);if(compact)setOpen(false)}
+    }} placeholder={t(language,'search')} aria-label="Place or coordinates" role="combobox" aria-autocomplete="list" aria-expanded={suggestionsOpen} aria-controls="location-suggestions" aria-activedescendant={suggestionsOpen?`location-suggestion-${activeSuggestion}`:undefined}/>
     <button className="searchSubmit" onClick={()=>void submit()} disabled={busy} aria-label={busy?t(language,'finding'):t(language,'check')}><Search className="searchSubmitIcon"/><span>{busy?t(language,'finding'):t(language,'check')}</span></button>
     <button className="searchLocate" onClick={locate} aria-label={t(language,'locate')} title={t(language,'locate')}><LocateFixed/></button>
     {compact&&<button className="compactSearchClose" onClick={()=>setOpen(false)} aria-label="Close location search"><X/></button>}
+    {suggestionsOpen&&<div className="searchSuggestions" id="location-suggestions" role="listbox" aria-label="Place suggestions">{suggestions.map((suggestion,index)=><button id={`location-suggestion-${index}`} role="option" aria-selected={index===activeSuggestion} className={index===activeSuggestion?'active':''} key={`${suggestion.lat},${suggestion.lng}`} onMouseDown={event=>event.preventDefault()} onMouseEnter={()=>setActiveSuggestion(index)} onClick={()=>chooseSuggestion(suggestion)}><MapPin/><span><b>{suggestion.primary}</b><small>{suggestion.secondary}</small></span><i>{suggestion.lat.toFixed(2)}, {suggestion.lng.toFixed(2)}</i></button>)}</div>}
+    {suggesting&&value.trim().length>=2&&!suggestionsOpen&&<div className="searchSuggesting" role="status">Finding places…</div>}
     {error&&<small>{error}</small>}
   </div>;
   if(!compact)return search;

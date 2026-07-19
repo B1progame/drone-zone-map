@@ -9,6 +9,22 @@ export function parseCoordinates(input:string): Location | null {
  if (!m) return null; const lat=Number(m[1]), lng=Number(m[2]);
  return Math.abs(lat)<=90 && Math.abs(lng)<=180 ? {lat,lng,name:`${lat.toFixed(5)}, ${lng.toFixed(5)}`} : null;
 }
+export type LocationSuggestion=Location&{primary:string;secondary:string};
+export async function searchLocationSuggestions(input:string,language=navigator.language.split('-')[0]||'en',signal?:AbortSignal):Promise<LocationSuggestion[]>{
+ const coordinates=parseCoordinates(input);
+ if(coordinates)return[{...coordinates,primary:coordinates.name,secondary:'Coordinates'}];
+ const query=input.trim();if(query.length<2)return[];
+ const response=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=${encodeURIComponent(language)}&format=json`,{signal});
+ if(!response.ok)throw new Error('Location search unavailable');
+ const seen=new Set<string>(),items:LocationSuggestion[]=[];
+ for(const item of (await response.json()).results??[]){
+  const primary=String(item.name??'').trim(),secondary=[item.admin1,item.country].filter(Boolean).join(', ');
+  const key=`${Number(item.latitude).toFixed(5)},${Number(item.longitude).toFixed(5)}`;
+  if(!primary||seen.has(key))continue;seen.add(key);
+  items.push({lat:item.latitude,lng:item.longitude,name:[primary,secondary].filter(Boolean).join(', '),primary,secondary});
+ }
+ return items;
+}
 export async function getWeather(location:Location):Promise<Weather> {
  const fresh=readWeatherCache(location,20*60*1000);if(fresh)return fresh;
  const key=weatherCacheKey(location),existing=weatherRequests.get(key);if(existing)return existing;
@@ -29,10 +45,6 @@ export async function getWeather(location:Location):Promise<Weather> {
  weatherRequests.set(key,pending);return pending;
 }
 export async function searchLocation(input:string,language=navigator.language.split('-')[0]||'en'):Promise<Location|null>{
- const coordinates=parseCoordinates(input);if(coordinates)return coordinates;
- const query=input.trim();if(query.length<2)return null;
- const response=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=${encodeURIComponent(language)}&format=json`);
- if(!response.ok)throw new Error('Location search unavailable');const item=(await response.json()).results?.[0];
- return item?{lat:item.latitude,lng:item.longitude,name:[item.name,item.admin1,item.country].filter(Boolean).join(', ')}:null;
+ return (await searchLocationSuggestions(input,language))[0]??null;
 }
 export function quality(score:number){ return score>=90?'Great flying weather':score>=70?'Good conditions':score>=50?'Okay, be careful':score>=30?'Bad for small drones':'Do not fly'; }
