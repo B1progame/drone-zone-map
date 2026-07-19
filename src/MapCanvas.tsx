@@ -376,6 +376,10 @@ const geozoneColor=['match',['get','restriction'],'PROHIBITED','#ff405d','REQ_AU
 const geozoneOpacity=['match',['get','restriction'],'NO_RESTRICTION',.075,'CONDITIONAL',.16,.24] as any;
 const semanticFillColor=(fallback:any)=>['match',['get','_aerisSemantic'],'altitude','#4387f5','nature','#26c96f',fallback] as any;
 const semanticLineColor=(fallback:any)=>['match',['get','_aerisSemantic'],'altitude','#3f91ff','nature','#72efaa',fallback] as any;
+const terrainDemSource=()=>({type:'raster-dem' as const,url:'https://tiles.mapterhorn.com/tilejson.json',tileSize:512,attribution:'<a href="https://tiles.mapterhorn.com/" target="_blank">Elevation © Mapterhorn</a>'});
+const buildingSource=()=>({type:'vector' as const,url:'https://tiles.openfreemap.org/planet',attribution:'<a href="https://openfreemap.org/" target="_blank">Buildings © OpenStreetMap · OpenMapTiles · OpenFreeMap</a>'});
+const terrainHillshadeLayer=()=>({id:'terrain-hillshade',type:'hillshade' as const,source:'terrain-dem',layout:{visibility:'visible' as const},paint:{'hillshade-shadow-color':'#15241e','hillshade-highlight-color':'#d7edce','hillshade-accent-color':'#6c806f','hillshade-exaggeration':.35}});
+const buildingLayer=()=>({id:'3d-buildings',type:'fill-extrusion' as const,source:'openfreemap-buildings','source-layer':'building',minzoom:14.5,filter:['!=',['get','hide_3d'],true] as any,layout:{visibility:'visible' as const},paint:{'fill-extrusion-color':['interpolate',['linear'],['coalesce',['get','render_height'],6],0,'#cfd8d2',20,'#e2d9ca',80,'#c6d4d2',200,'#a8c6c2'] as any,'fill-extrusion-height':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_height'],6]] as any,'fill-extrusion-base':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_min_height'],0]] as any,'fill-extrusion-opacity':.82,'fill-extrusion-vertical-gradient':true}});
 
 function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
   const satellite = baseMap === 'satellite';
@@ -434,8 +438,8 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
           ? 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
           : '© OpenStreetMap contributors'
       },
-      'terrain-dem':{type:'raster-dem',url:'https://tiles.mapterhorn.com/tilejson.json',tileSize:512,attribution:'<a href="https://tiles.mapterhorn.com/" target="_blank">Elevation © Mapterhorn</a>'},
-      'openfreemap-buildings':{type:'vector',url:'https://tiles.openfreemap.org/planet',attribution:'<a href="https://openfreemap.org/" target="_blank">Buildings © OpenStreetMap · OpenMapTiles · OpenFreeMap</a>'},
+      'terrain-dem':terrainDemSource(),
+      'openfreemap-buildings':buildingSource(),
       'offline-basemap':{type:'vector',tiles:['aeris-offline://none/none/{z}/{x}/{y}'],minzoom:2,maxzoom:12,attribution:'<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>'},
       dipul: {
         type: 'raster',
@@ -481,8 +485,8 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
     },
     layers: [
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
-      {id:'terrain-hillshade',type:'hillshade',source:'terrain-dem',layout:{visibility:'none'},paint:{'hillshade-shadow-color':'#15241e','hillshade-highlight-color':'#d7edce','hillshade-accent-color':'#6c806f','hillshade-exaggeration':.35}},
-      {id:'3d-buildings',type:'fill-extrusion',source:'openfreemap-buildings','source-layer':'building',minzoom:14.5,filter:['!=',['get','hide_3d'],true] as any,layout:{visibility:'none'},paint:{'fill-extrusion-color':['interpolate',['linear'],['coalesce',['get','render_height'],6],0,'#cfd8d2',20,'#e2d9ca',80,'#c6d4d2',200,'#a8c6c2'] as any,'fill-extrusion-height':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_height'],6]] as any,'fill-extrusion-base':['interpolate',['linear'],['zoom'],14.5,0,15.2,['coalesce',['get','render_min_height'],0]] as any,'fill-extrusion-opacity':.82,'fill-extrusion-vertical-gradient':true}},
+      {...terrainHillshadeLayer(),layout:{visibility:'none'}},
+      {...buildingLayer(),layout:{visibility:'none'}},
       ...offlineBasemapLayers,
       {id:'offline-package-fill',type:'fill',source:'offline-package',filter:['match',['geometry-type'],['Polygon','MultiPolygon'],true,false] as any,paint:{'fill-color':semanticFillColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff']),'fill-opacity':.27}},
       {id:'offline-package-line',type:'line',source:'offline-package',paint:{'line-color':semanticLineColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff7182','airports','#ffd078','controlled','#e5a2ff','nature','#80efa4','warnings','#ffea94','basic','#b1cbc5','#9ee3ff']),'line-width':['interpolate',['linear'],['zoom'],4,.7,12,2.2] as any,'line-opacity':.96}},
@@ -758,11 +762,24 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useEffect(()=>{flightRadiusRef.current=flightRadiusKm},[flightRadiusKm]);
   useEffect(()=>{settingsRef.current=settings},[settings]);
   const applyTerrain=(map:MapLibreMap,enabled:boolean,animate=true)=>{
-    if(!map.getSource('terrain-dem'))return;
-    map.setTerrain(enabled?{source:'terrain-dem',exaggeration:1}:null);
-    if(map.getLayer('terrain-hillshade'))map.setLayoutProperty('terrain-hillshade','visibility',enabled?'visible':'none');
-    if(map.getLayer('3d-buildings'))map.setLayoutProperty('3d-buildings','visibility',enabled?'visible':'none');
-    if(animate)map.easeTo({pitch:enabled?58:0,bearing:enabled?-18:0,zoom:enabled&&weatherStateRef.current.location?Math.max(map.getZoom(),15.2):map.getZoom(),duration:settingsRef.current.reducedMotion?0:850,essential:false});
+    if(enabled){
+      if(!map.getSource('terrain-dem'))map.addSource('terrain-dem',terrainDemSource());
+      if(!map.getSource('openfreemap-buildings'))map.addSource('openfreemap-buildings',buildingSource());
+      const beforeLayer=map.getLayer('offline-package-fill')?'offline-package-fill':undefined;
+      if(!map.getLayer('terrain-hillshade'))map.addLayer(terrainHillshadeLayer(),beforeLayer);
+      if(!map.getLayer('3d-buildings'))map.addLayer(buildingLayer(),beforeLayer);
+      map.setTerrain({source:'terrain-dem',exaggeration:1});
+    }else{
+      map.setTerrain(null);
+      if(map.getLayer('3d-buildings'))map.removeLayer('3d-buildings');
+      if(map.getLayer('terrain-hillshade'))map.removeLayer('terrain-hillshade');
+      if(map.getSource('openfreemap-buildings'))map.removeSource('openfreemap-buildings');
+      if(map.getSource('terrain-dem'))map.removeSource('terrain-dem');
+    }
+    if(animate){
+      if(enabled)map.easeTo({pitch:58,bearing:-18,zoom:weatherStateRef.current.location?Math.max(map.getZoom(),15.2):map.getZoom(),duration:settingsRef.current.reducedMotion?0:850,essential:false});
+      else{map.stop();map.jumpTo({pitch:0,bearing:0})}
+    }
   };
   const syncOfflinePackage=async(point?:{lat:number;lng:number})=>{
     const map=mapRef.current;
@@ -886,7 +903,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);ensureRadar(map,weatherVisible,weatherHour,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined,!settingsRef.current.reducedMotion)}},[location,weather,weatherHour,weatherVisible]);
 
   useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,weatherHour,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks,!settings.reducedMotion)},[settings.renderDetail,settings.reducedMotion,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
-  useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded())applyTerrain(map,settings.terrain3d&&!mapShouldUseOffline())},[settings.terrain3d,loaded,baseMap]);
+  useEffect(()=>{const map=mapRef.current;if(map)applyTerrain(map,settings.terrain3d&&!mapShouldUseOffline())},[settings.terrain3d,loaded,baseMap]);
 
   useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded()){applyFlightRange(map,planPoints,flightRadiusKm);applyFlightPlan(map,planPoints)}},[planPoints,flightRadiusKm,loaded,baseMap]);
 
