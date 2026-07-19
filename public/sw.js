@@ -1,5 +1,5 @@
-const VERSION='aeris-shell-v8';
-const RUNTIME='aeris-runtime-v5';
+const VERSION='aeris-shell-v9';
+const RUNTIME='aeris-runtime-v6';
 const SHELL=['./','./index.html','./manifest.webmanifest','./data/sources/countries.json'];
 
 self.addEventListener('install',event=>{

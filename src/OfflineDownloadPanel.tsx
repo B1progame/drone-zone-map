@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Check, Database, Download, Map, MapPin, Satellite, X } from 'lucide-react';
 import type { Location, Weather, ZoneInfo } from './types';
-import { createOfflineConfig, createOfflinePack, estimateOfflinePackage, estimateOfflinePackageFromSource, formatBytes, getOfflineStorageStatus, GERMAN_STATES, maxOfflineBasemapZoom, OFFLINE_COUNTRIES, OFFLINE_LAYERS, type OfflineBasemapType, type OfflineCountryCode, type OfflineDownloadProgress, type OfflineLayerId, type OfflineScope, type OfflineStorageStatus } from './offline';
+import { createOfflineConfig, createOfflinePack, estimateOfflinePackage, estimateOfflinePackageFromSource, formatBytes, getOfflineStorageStatus, GERMAN_STATES, MAX_OFFLINE_TILES, maxOfflineBasemapZoom, OFFLINE_COUNTRIES, OFFLINE_LAYERS, type OfflineBasemapType, type OfflineCountryCode, type OfflineDownloadProgress, type OfflineLayerId, type OfflineScope, type OfflineStorageStatus } from './offline';
 
 export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}:{location:Location;weather?:Weather;zoneInfo?:ZoneInfo;onClose:()=>void;onSaved:()=>void}){
  const detected=(zoneInfo?.countryCode&&zoneInfo.countryCode in OFFLINE_COUNTRIES?zoneInfo.countryCode:'DE') as OfflineCountryCode;
@@ -13,6 +13,7 @@ export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}
  const config=useMemo(()=>({...baseConfig,basemapType,basemapMaxZoom:qualityZoom}),[baseConfig,basemapType,qualityZoom]);
  const estimate=useMemo(()=>estimateOfflinePackage(config),[config]);
  const shownEstimate=sourceEstimate??estimate;
+ const tooLarge=(shownEstimate.tileCount??0)>MAX_OFFLINE_TILES;
  useEffect(()=>{let active=true;setSourceEstimate(undefined);const timer=window.setTimeout(()=>void estimateOfflinePackageFromSource(config).then(value=>{if(active)setSourceEstimate(value)}).catch(()=>{}),250);return()=>{active=false;window.clearTimeout(timer)}},[config]);
  useEffect(()=>{let active=true;void getOfflineStorageStatus().then(value=>{if(active)setStorage(value)});return()=>{active=false}},[]);
  const toggle=(id:OfflineLayerId)=>setLayers(value=>value.includes(id)?value.filter(item=>item!==id):[...value,id]);
@@ -27,7 +28,7 @@ export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}
    <button className="close" onClick={onClose} aria-label="Close offline download"><X/></button>
    <div className="eyebrow">OFFLINE FLIGHT PACKAGE · {OFFLINE_COUNTRIES[country].name.toUpperCase()}</div>
    <h2 id="offline-title">Download this area</h2>
-   <p>Only the selected area and official layers are stored on this device. The app automatically uses the smallest matching package when there is no connection.</p>
+   <p>Every package includes a low-detail world map. Your selected area and official layers are stored at the quality you choose, and the app automatically uses the smallest matching package when there is no connection.</p>
    <label>Country<select value={country} onChange={event=>chooseCountry(event.target.value as OfflineCountryCode)} disabled={Boolean(progress)}>{(Object.keys(OFFLINE_COUNTRIES) as OfflineCountryCode[]).map(code=><option value={code} key={code}>{OFFLINE_COUNTRIES[code].name}</option>)}</select></label>
    <label>Area<select value={scope} onChange={event=>setScope(event.target.value as OfflineScope)} disabled={Boolean(progress)}>
     <option value="radius">Custom radius around selected location</option><option value="city">City / place</option>{country==='DE'&&<option value="state">Federal state</option>}<option value="country">{OFFLINE_COUNTRIES[country].scopeLabel??`All ${OFFLINE_COUNTRIES[country].name}`}</option>
@@ -47,8 +48,9 @@ export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}
    <div className="offlineEstimate"><Database/><span><small>{sourceEstimate?'SOURCE-CHECKED ESTIMATE':'ESTIMATING PACKAGE'}</small><b>{shownEstimate.label}</b><i>about {shownEstimate.items.toLocaleString()} items · final size depends on feature geometry</i></span></div>
    {storage?.supported&&<div className="offlineStorage"><span><b>{storage.persistent?'Protected storage':'Browser-managed storage'}</b>{formatBytes(storage.usageBytes)} used of {formatBytes(storage.quotaBytes)} · {formatBytes(storage.freeBytes)} available</span><i><b style={{width:`${storage.quotaBytes?Math.min(100,storage.usageBytes/storage.quotaBytes*100):0}%`}}/></i><small>{storage.persistent?'This browser has granted persistent storage.':'A persistence request is made when you download.'}</small></div>}
    {progress&&<div className="offlineBuildProgress" role="status" aria-live="polite"><span><b>{progress.percent}%</b>{progress.stage}</span><i><b style={{width:`${progress.percent}%`}}/></i><small>{progress.items.toLocaleString()} items received</small></div>}
+   {tooLarge&&<div className="offlineError">This full-quality country would need {shownEstimate.tileCount?.toLocaleString()} tiles. Lower the selected-area quality until it is below {MAX_OFFLINE_TILES.toLocaleString()} tiles.</div>}
    {error&&<div className="offlineError">{error}</div>}
-   <button className="primary offlineDownload" disabled={Boolean(progress)} onClick={()=>void download()}><Download/>{progress?'Downloading package…':`Download about ${shownEstimate.label}`}</button>
+   <button className="primary offlineDownload" disabled={Boolean(progress)||tooLarge} onClick={()=>void download()}><Download/>{progress?'Downloading package…':tooLarge?'Reduce selected-area quality':`Download about ${shownEstimate.label}`}</button>
    <small>Official context: {OFFLINE_COUNTRIES[country].source}. {basemapType==='satellite'?'Satellite: Sentinel-2 cloudless by EOX IT Services GmbH (modified Copernicus Sentinel data 2016/2017), CC BY 4.0.':'Basemap: OpenFreeMap / OpenMapTiles with © OpenStreetMap contributors.'} Offline data is planning support, not legal clearance. Temporary restrictions can change after download.</small>
   </section>
  </div>;

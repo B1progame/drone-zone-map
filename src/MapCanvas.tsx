@@ -4,7 +4,7 @@ import { CloudRain, CloudSun, Layers3, Map as MapIcon, Pause, Play, Satellite, W
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
-import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData, isOfflineTestMode, setOfflineTestMode, type OfflineBasemapType } from './offline';
+import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData, getOfflineWorldPack, isOfflineTestMode, setOfflineTestMode, type OfflineBasemapType, type OfflinePack } from './offline';
 import { enrichZoneSemantics, filterUkDroneRelevant, type ZoneSemantic } from './zoneSemantics';
 
 type BaseMap = 'satellite' | 'streets';
@@ -834,14 +834,22 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     weatherGrid?.setData(emptyGeoJson);
     if(map.getLayer('weather-radar'))map.removeLayer('weather-radar');
     if(map.getSource('weather-radar'))map.removeSource('weather-radar');
-    const center=point??map.getCenter(),pack=await getBestOfflinePack(center);
+    const center=point??map.getCenter();
+    let pack:OfflinePack|undefined=await getBestOfflinePack(center),worldOverview=false;
+    if(!pack&&map.getZoom()<=2.5){pack=await getOfflineWorldPack();worldOverview=Boolean(pack)}
     if(request!==offlineRequestRef.current)return;
     if(pack){
+      const basemapType=pack.config.basemapType??pack.metadata.basemapType??'street',protocol=basemapType==='satellite'?'aeris-offline-raster':'aeris-offline';
+      if(worldOverview){
+        source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);
+        if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[`${protocol}://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`],basemapType,2);else showOfflineMap(false);
+        setOfflineNotice(`Offline · worldwide overview · ${basemapType} map through zoom 2`);
+        return;
+      }
       const visible=map.getBounds(),span=point?Math.min(2,Math.max(.2,8/2**Math.max(0,map.getZoom()-5))):0;
       const bounds=point?[center.lng-span,center.lat-span,center.lng+span,center.lat+span] as [number,number,number,number]:[visible.getWest(),visible.getSouth(),visible.getEast(),visible.getNorth()] as [number,number,number,number];
       const data=await getOfflinePackageData(pack,bounds);
       if(request!==offlineRequestRef.current)return;
-      const basemapType=pack.config.basemapType??pack.metadata.basemapType??'street',protocol=basemapType==='satellite'?'aeris-offline-raster':'aeris-offline';
       if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[`${protocol}://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`],basemapType,pack.config.basemapMaxZoom??pack.metadata.basemapMaxZoom??12);else showOfflineMap(false);
       const[west,south,east,north]=pack.metadata.bounds;
       coverageSource.setData({type:'FeatureCollection',features:[{type:'Feature',properties:{name:pack.name},geometry:{type:'Polygon',coordinates:[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}}]} as any);

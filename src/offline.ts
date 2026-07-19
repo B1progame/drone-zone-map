@@ -3,7 +3,7 @@ import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 import { localizeZoneInfo } from './zoneTranslations';
 import { classifyZoneSemantic, filterUkDroneRelevant } from './zoneSemantics';
 
-export const OFFLINE_PACKAGE_VERSION=7;
+export const OFFLINE_PACKAGE_VERSION=8;
 const DB_NAME='aeris-offline',PACKAGES='packages',CHUNKS='chunks',TILES='mapTiles',DB_VERSION=4;
 const DIPUL_WFS='https://uas-betrieb.de/geoservices/dipul/wfs';
 const FRANCE_WFS='https://data.geopf.fr/wfs/ows';
@@ -18,7 +18,7 @@ const DENMARK_ZONES='https://trafikstyrelsen.maps.arcgis.com/sharing/rest/conten
 const DENMARK_NATURE='https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/ff657943724944faaf19807380f5e24a/data';
 const OPENFREEMAP_TILEJSON='https://tiles.openfreemap.org/planet';
 const EOX_SATELLITE_TILE_TEMPLATE='https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg';
-export const MAX_OFFLINE_TILES=3000;
+export const MAX_OFFLINE_TILES=250000;
 const GERMANY_BOUNDS:[number,number,number,number]=[5.5,47,15.5,55.2];
 const EMPTY_DATA={type:'FeatureCollection' as const,features:[],properties:{}};
 
@@ -153,22 +153,21 @@ export function createOfflineConfig(scope:OfflineScope,center:Location,layers:Of
 const areaKm2=([west,south,east,north]:OfflineBounds)=>Math.max(1,(east-west)*111.32*Math.cos(rad((south+north)/2))*(north-south)*110.574);
 const lngToTile=(lng:number,z:number)=>Math.floor((lng+180)/360*2**z);
 const latToTile=(lat:number,z:number)=>Math.floor((1-Math.asinh(Math.tan(rad(Math.max(-85.0511,Math.min(85.0511,lat)))))/Math.PI)/2*2**z);
-export function offlineTileCoordinates(bounds:OfflineBounds,maxZoom:number){
- const tiles:{z:number;x:number;y:number}[]=[];
+function* offlineTileCoordinateIterator(bounds:OfflineBounds,maxZoom:number){
  // Keep a complete, low-detail globe in every package. This avoids blank tiles
  // when a phone opens the map zoomed farther out than the selected area.
- for(let z=0;z<=Math.min(2,maxZoom);z++)for(let x=0;x<2**z;x++)for(let y=0;y<2**z;y++)tiles.push({z,x,y});
- for(let z=3;z<=maxZoom;z++){const limit=2**z-1,x0=Math.max(0,lngToTile(bounds[0],z)),x1=Math.min(limit,lngToTile(bounds[2],z)),y0=Math.max(0,latToTile(bounds[3],z)),y1=Math.min(limit,latToTile(bounds[1],z));for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)tiles.push({z,x,y})}
- return tiles;
+ for(let z=0;z<=Math.min(2,maxZoom);z++)for(let x=0;x<2**z;x++)for(let y=0;y<2**z;y++)yield{z,x,y};
+ for(let z=3;z<=maxZoom;z++){const limit=2**z-1,x0=Math.max(0,lngToTile(bounds[0],z)),x1=Math.min(limit,lngToTile(bounds[2],z)),y0=Math.max(0,latToTile(bounds[3],z)),y1=Math.min(limit,latToTile(bounds[1],z));for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)yield{z,x,y}}
 }
-export function maxOfflineBasemapZoom(bounds:OfflineBounds,type:OfflineBasemapType='street'){
- const ceiling=type==='satellite'?13:14;
- let zoom=5;
- for(let candidate=6;candidate<=ceiling;candidate++){if(offlineTileCoordinates(bounds,candidate).length>MAX_OFFLINE_TILES)break;zoom=candidate}
- return zoom;
+export function offlineTileCoordinates(bounds:OfflineBounds,maxZoom:number){return[...offlineTileCoordinateIterator(bounds,maxZoom)]}
+export function offlineTileCount(bounds:OfflineBounds,maxZoom:number){
+ let count=maxZoom<0?0:maxZoom===0?1:maxZoom===1?5:21;
+ for(let z=3;z<=maxZoom;z++){const limit=2**z-1,x0=Math.max(0,lngToTile(bounds[0],z)),x1=Math.min(limit,lngToTile(bounds[2],z)),y0=Math.max(0,latToTile(bounds[3],z)),y1=Math.min(limit,latToTile(bounds[1],z));count+=(x1-x0+1)*(y1-y0+1)}
+ return count;
 }
+export const maxOfflineBasemapZoom=(_bounds:OfflineBounds,type:OfflineBasemapType='street')=>type==='satellite'?13:14;
 const estimatedTileBytes=(type:OfflineBasemapType|undefined)=>type==='satellite'?70000:28000;
-export function estimateOfflinePackage(config:OfflinePackConfig){const density:Record<OfflineLayerId,number>={droneZones:120,restricted:55,airports:18,controlled:12,nature:310,warnings:220,basic:530},area=areaKm2(config.bounds),features=Math.round(config.layers.reduce((sum,id)=>sum+density[id]*Math.pow(area/1000,.72),0)),tileCount=offlineTileCoordinates(config.bounds,config.basemapMaxZoom).length,bytes=Math.round(180000+features*1150+tileCount*estimatedTileBytes(config.basemapType));return{bytes,items:features+tileCount,tileCount,label:formatBytes(bytes)}}
+export function estimateOfflinePackage(config:OfflinePackConfig){const density:Record<OfflineLayerId,number>={droneZones:120,restricted:55,airports:18,controlled:12,nature:310,warnings:220,basic:530},area=areaKm2(config.bounds),features=Math.round(config.layers.reduce((sum,id)=>sum+density[id]*Math.pow(area/1000,.72),0)),tileCount=offlineTileCount(config.bounds,config.basemapMaxZoom),bytes=Math.round(180000+features*1150+tileCount*estimatedTileBytes(config.basemapType));return{bytes,items:features+tileCount,tileCount,label:formatBytes(bytes)}}
 export const formatBytes=(bytes:number)=>bytes<1024*1024?`${Math.max(1,Math.round(bytes/1024))} KB`:bytes<1024*1024*1024?`${(bytes/1024/1024).toFixed(bytes<10*1024*1024?1:0)} MB`:`${(bytes/1024/1024/1024).toFixed(1)} GB`;
 export async function getOfflineStorageStatus(requestPersistence=false):Promise<OfflineStorageStatus>{
  const manager=navigator.storage;
@@ -199,7 +198,7 @@ export async function estimateOfflinePackageFromSource(config:OfflinePackConfig)
   counts.forEach(result=>{if(result.status==='fulfilled')results.push(result.value)});
  }
  if(!results.length)return fallback;
- const tileCount=offlineTileCoordinates(config.bounds,config.basemapMaxZoom).length,items=results.reduce((sum,item)=>sum+item.count,0)+tileCount,bytes=Math.round(240000+results.reduce((sum,item)=>sum+item.count*(item.sampleBytes+140)*1.08,0)+tileCount*estimatedTileBytes(config.basemapType));
+ const tileCount=offlineTileCount(config.bounds,config.basemapMaxZoom),items=results.reduce((sum,item)=>sum+item.count,0)+tileCount,bytes=Math.round(240000+results.reduce((sum,item)=>sum+item.count*(item.sampleBytes+140)*1.08,0)+tileCount*estimatedTileBytes(config.basemapType));
  return{bytes,items,tileCount,label:formatBytes(bytes)};
 }
 
@@ -328,10 +327,11 @@ async function downloadTile(url:string){
  throw new Error(`A map tile could not be loaded after 3 attempts${detail}. Check the connection, keep Aeris open, and retry.`);
 }
 async function saveBasemap(config:OfflinePackConfig,packageId:string,generation:string,onProgress?:(done:number,total:number)=>void){
- const coordinates=offlineTileCoordinates(config.bounds,config.basemapMaxZoom);if(coordinates.length>MAX_OFFLINE_TILES)throw new Error('This basemap selection is too large. Reduce the map quality or choose a smaller area.');
- const template=config.basemapType==='satellite'?EOX_SATELLITE_TILE_TEMPLATE:await getOpenFreeMapTileTemplate(),batchSize=config.basemapType==='satellite'?3:5;let sizeBytes=0,tileCount=0;
- for(let offset=0;offset<coordinates.length;offset+=batchSize){
-  const group=coordinates.slice(offset,offset+batchSize),results=await Promise.all(group.map(async coordinate=>{const url=template.replace('{z}',String(coordinate.z)).replace('{x}',String(coordinate.x)).replace('{y}',String(coordinate.y));return{coordinate,data:await downloadTile(url)}})),tiles:OfflineTile[]=[];
+ const total=offlineTileCount(config.bounds,config.basemapMaxZoom);if(total>MAX_OFFLINE_TILES)throw new Error(`This full-quality selection contains ${total.toLocaleString()} tiles, above the browser-safe limit of ${MAX_OFFLINE_TILES.toLocaleString()}. Reduce quality or choose a smaller area.`);
+ const coordinates=offlineTileCoordinateIterator(config.bounds,config.basemapMaxZoom),template=config.basemapType==='satellite'?EOX_SATELLITE_TILE_TEMPLATE:await getOpenFreeMapTileTemplate(),batchSize=config.basemapType==='satellite'?3:5;let sizeBytes=0,tileCount=0,done=0;
+ while(done<total){
+  const group:{z:number;x:number;y:number}[]=[];for(let index=0;index<batchSize;index++){const next=coordinates.next();if(next.done)break;group.push(next.value)}
+  const results=await Promise.all(group.map(async coordinate=>{const url=template.replace('{z}',String(coordinate.z)).replace('{x}',String(coordinate.x)).replace('{y}',String(coordinate.y));return{coordinate,data:await downloadTile(url)}})),tiles:OfflineTile[]=[];
   for(const {coordinate,data} of results){if(!data)continue;sizeBytes+=data.byteLength;tileCount++;tiles.push({id:`${packageId}:${generation}:${coordinate.z}:${coordinate.x}:${coordinate.y}`,packageId,generation,...coordinate,data,sizeBytes:data.byteLength})}
   try{await putTiles(tiles)}
   catch(error){
@@ -344,7 +344,7 @@ async function saveBasemap(config:OfflinePackConfig,packageId:string,generation:
     catch(retryError){if(retryError instanceof DOMException&&retryError.name==='QuotaExceededError')throw new Error('Browser storage is full. Delete an offline package or select a smaller area.');throw new Error('The phone could not save the map tile. Keep Aeris in the foreground and retry the download.')}
    }else throw error;
   }
-  onProgress?.(Math.min(offset+group.length,coordinates.length),coordinates.length);
+  done+=group.length;onProgress?.(done,total);
  }
  return{sizeBytes,tileCount};
 }
@@ -374,6 +374,7 @@ export async function verifyOfflinePack(packOrId:OfflinePack|string):Promise<Off
 export async function createOfflinePack(config:OfflinePackConfig,weather?:Weather,zoneInfo?:ZoneInfo,onProgress?:(value:OfflineDownloadProgress)=>void,replaceId?:string):Promise<OfflinePack>{
  if(!navigator.onLine)throw new Error('Connect to the internet to download or update an offline package.');
  const estimate=await estimateOfflinePackageFromSource(config),storage=await navigator.storage?.estimate?.();
+ if((estimate.tileCount??0)>MAX_OFFLINE_TILES)throw new Error(`This selection contains ${(estimate.tileCount??0).toLocaleString()} tiles, above the browser-safe limit of ${MAX_OFFLINE_TILES.toLocaleString()}. Reduce quality or choose a smaller area.`);
  if(storage?.quota&&storage.usage!=null&&storage.quota-storage.usage<estimate.bytes*1.15)throw new Error(`Not enough browser storage. This package needs about ${estimate.label}.`);
  await navigator.storage?.persist?.().catch(()=>false);
  const entries=config.country==='DE'?config.layers.flatMap(category=>OFFLINE_LAYERS[category].layers.map(layer=>({category,layer}))):[],featuresByKey=new Set<string>(),warnings:string[]=[];
@@ -415,6 +416,7 @@ export async function deleteAllOfflinePacks(){const database=await openDb();awai
 export async function refreshOfflinePack(id:string,onProgress?:(value:OfflineDownloadProgress)=>void){const pack=await getOfflinePack(id);if(!pack)throw new Error('Offline package no longer exists.');const config={...pack.config,country:pack.config.country??'DE',basemapMaxZoom:pack.config.basemapMaxZoom??8,basemapType:pack.config.basemapType??pack.metadata.basemapType??'street'} as OfflinePackConfig;return createOfflinePack(config,pack.weather,pack.zoneInfo,onProgress,id)}
 const contains=(pack:OfflinePack,point:{lat:number;lng:number})=>{const[west,south,east,north]=pack.metadata.bounds;return point.lng>=west&&point.lng<=east&&point.lat>=south&&point.lat<=north&&(!pack.metadata.radiusKm||distanceKm(pack.metadata.center,point)<=pack.metadata.radiusKm)};
 export async function getBestOfflinePack(point:{lat:number;lng:number}){const matches=(await getOfflinePacks()).filter(pack=>contains(pack,point));return matches.sort((a,b)=>areaKm2(a.metadata.bounds)-areaKm2(b.metadata.bounds)||new Date(b.metadata.updatedAt).getTime()-new Date(a.metadata.updatedAt).getTime())[0]}
+export async function getOfflineWorldPack(){return(await getOfflinePacks()).find(pack=>pack.metadata.version>=7&&Boolean(pack.generation)&&Boolean(pack.metadata.tileCount))}
 export async function getOfflineMapTile(packageId:string,generation:string,z:number,x:number,y:number){
  const tile=await storeRequest(TILES,'readonly',store=>store.get(`${packageId}:${generation}:${z}:${x}:${y}`)) as OfflineTile|undefined;return tile?.data;
 }
