@@ -49,7 +49,10 @@ const FRANCE_WFS='https://data.geopf.fr/wfs/ows';
 const FRANCE_WFS_LAYER='TRANSPORTS.DRONES.RESTRICTIONS:carte_restriction_drones_lf';
 
 const dipulTiles=(layers:string)=>`https://uas-betrieb.de/geoservices/dipul/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=${encodeURIComponent(layers)}&STYLES=&FORMAT=image%2Fpng&TRANSPARENT=true&SRS=EPSG%3A3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256`;
-const ENAIRE='https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer';
+const ENAIRE_SERVICES='https://servais.enaire.es/insignias/rest/services';
+const arcGisMapTiles=(service:string,layers:number[])=>`${service}/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&layers=show:${layers.join(',')}&f=image`;
+const ENAIRE_AERO=`${ENAIRE_SERVICES}/NSF/Drones_ZG_Aero_V3/MapServer`;
+const ENAIRE_BOUNDS:[number,number,number,number]=[-18.5,27.5,4.5,44.5];
 const FAA_UAS='https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0';
 const CANADA_AIRPORTS='https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0';
 const CANADA_NATIONAL_PARKS='https://proxyinternet.nrcan-rncan.gc.ca/arcgis/rest/services/CLSS-SATC/CLSS_Administrative_Boundaries/MapServer/1';
@@ -70,7 +73,7 @@ const FRANCE_EXTENTS:[number,number,number,number][]=[
  [-56.6,46.7,-55.8,47.3],[44.9,-13.1,45.4,-12.5],[55,-21.6,56,-20.7],
  [39,-50,78,-11]
 ];
-const ZONE_LAYER_IDS = ['offline-package-fill','offline-package-line','offline-package-points','dipul-zones','dipul-detail','enaire-infrastructure-fill','enaire-infrastructure-line','enaire-aero-fill','enaire-aero-line','enaire-urban-fill','enaire-urban-line','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
+const ZONE_LAYER_IDS = ['offline-package-fill','offline-package-line','offline-package-points','dipul-zones','dipul-detail','enaire-nature','enaire-urban','enaire-infrastructure','enaire-aero-zones','enaire-notam','enaire-aero-sites','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airport-rings','canada-airport-lines','canada-airports','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
 const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const dynamicRequestKeys=new WeakMap<MapLibreMap,Map<string,string>>();
 const radarUnavailableMaps=new WeakSet<MapLibreMap>();
@@ -127,29 +130,7 @@ type ArcGisViewportConfig={
  transform?:(data:any)=>any;
 };
 
-function tagEnaireScale(data:any){
- const features=(data.features??[]).map((feature:any)=>{
-   const coordinates=feature.geometry?.type==='Polygon'
-     ? feature.geometry.coordinates.flat()
-     : feature.geometry?.type==='MultiPolygon'
-       ? feature.geometry.coordinates.flat(2)
-       : [];
-   if(!coordinates.length)return feature;
-   const longitudes=coordinates.map((coordinate:number[])=>coordinate[0]),latitudes=coordinates.map((coordinate:number[])=>coordinate[1]);
-   const west=Math.min(...longitudes),east=Math.max(...longitudes),south=Math.min(...latitudes),north=Math.max(...latitudes);
-   const middleLatitude=(south+north)/2;
-   const areaKm2=Math.max(0,(east-west)*111.32*Math.cos(middleLatitude*Math.PI/180)*(north-south)*110.574);
-   return{...feature,properties:{...feature.properties,_aerisAreaKm2:Math.round(areaKm2)}};
- });
- return{...data,features};
-}
-
 const arcGisViewportSources:ArcGisViewportConfig[]=[
- {id:'enaire-infrastructure',endpoint:`${ENAIRE}/0`,bounds:[-25,19,5,45],minZoom:4,pageSize:5000,maxFeatures:15000,outFields:'OBJECTID,identifier,name,type,reasons,variant,provider,lower,upper,uom,updateDateTime',transform:tagEnaireScale},
- {id:'enaire-aero',endpoint:`${ENAIRE}/2`,bounds:[-25,19,5,45],minZoom:4,pageSize:5000,maxFeatures:15000,outFields:'OBJECTID,identifier,name,type,reasons,variant,provider,lower,upper,uom,updateDateTime',transform:tagEnaireScale},
- // ENAIRE's urban layer contains province-sized coverage polygons. Its own
- // viewer only makes that detail useful locally, so do not paint it nationwide.
- {id:'enaire-urban',endpoint:`${ENAIRE}/3`,bounds:[-25,19,5,45],minZoom:8,pageSize:5000,maxFeatures:15000,outFields:'OBJECTID,identifier,name,type,reasons,lower,upper,uom,updateDateTime',transform:tagEnaireScale},
  {id:'us-facility',endpoint:FAA_UAS,bounds:[-179,13,-64,72],minZoom:6,pageSize:1000,maxFeatures:6000,outFields:'OBJECTID,CEILING,UNIT,MAP_EFF,LAST_EDIT,APT1_FAAID,APT1_ICAO,APT1_NAME,APT1_LAANC,AIRSPACE_1,REGION'},
  {id:'canada-airports',endpoint:CANADA_AIRPORTS,bounds:[-141,41,-52,84],minZoom:3.5,pageSize:1000,maxFeatures:2000,outFields:'*',transform:bufferCanadaAirports},
  {id:'canada-national-parks',endpoint:CANADA_NATIONAL_PARKS,bounds:[-141,41,-52,84],minZoom:3,pageSize:200,maxFeatures:600,outFields:'OBJECTID,adminAreaId,adminAreaNameEng,adminAreaNameFra,distributionTypeEng,jurisdictionEng,webReference'}
@@ -351,19 +332,8 @@ function loadWeatherGrid(map:MapLibreMap,hourIndex:number,visible:boolean,detail
  }).catch(error=>{if(keys.get('weather-grid')===key)keys.delete('weather-grid');console.warn(error)}).finally(()=>hooks?.finish(key));
 }
 
-// ENAIRE publishes all three official UAS polygon layers with the same pale-red
-// fill and red outline. Semantic recolouring made Spain appear mostly orange or
-// yellow and no longer matched the authority's map.
-const spainFillColor='#ffbebe';
-const spainLineColor='#ff0000';
 const geozoneColor=['match',['get','restriction'],'PROHIBITED','#ff405d','REQ_AUTHORISATION','#ff9e43','REQ_AUTHORIZATION','#ff9e43','CONDITIONAL','#ffd45d','NO_RESTRICTION','#56d78d','#7fb4ff'] as any;
 const geozoneOpacity=['match',['get','restriction'],'NO_RESTRICTION',.075,'CONDITIONAL',.16,.24] as any;
-const enaireOpacityAt=(localOpacity:number)=>['case',
- ['>', ['coalesce',['get','_aerisAreaKm2'],0],2500],.035,
- ['>', ['coalesce',['get','_aerisAreaKm2'],0],600],.075,
- localOpacity
-] as any;
-const enaireFillOpacity=['interpolate',['linear'],['zoom'],3,enaireOpacityAt(.13),8,enaireOpacityAt(.22),12,enaireOpacityAt(.3)] as any;
 
 function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
   const satellite = baseMap === 'satellite';
@@ -437,9 +407,12 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
         bounds:[5.5,47,15.5,55.2],
         attribution:'DIPUL detail objects © DFS, BKG 2026'
       },
-      'enaire-infrastructure':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://aip.enaire.es/AIP/UAS-en.html" target="_blank">UAS zones © ENAIRE / AIS</a>'},
-      'enaire-aero':{type:'geojson',data:emptyGeoJson,attribution:'UAS zones © ENAIRE / AIS'},
-      'enaire-urban':{type:'geojson',data:emptyGeoJson,attribution:'UAS zones © ENAIRE / AIS'},
+      'enaire-nature':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/ENP/ENP_APP_Local_V4/MapServer`,[0,1])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'<a href="https://drones.enaire.es/" target="_blank">Official UAS map © ENAIRE / AIS</a>'},
+      'enaire-urban':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NSF/Drones_ZG_Urbano_V0/MapServer`,[11])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS urban zones © ENAIRE / AIS'},
+      'enaire-infrastructure':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NSF/Drones_ZG_Infra_V0/MapServer`,[11])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS infrastructure zones © ENAIRE / AIS'},
+      'enaire-aero-zones':{type:'raster',tiles:[arcGisMapTiles(ENAIRE_AERO,[2,3,10,1,6])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS aeronautical zones © ENAIRE / AIS'},
+      'enaire-notam':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NOTAM/NOTAM_UAS_APP_V3/MapServer`,[1])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Prototype NOTAM display © ENAIRE / AIS · verify operationally in ICARO'},
+      'enaire-aero-sites':{type:'raster',tiles:[arcGisMapTiles(ENAIRE_AERO,[0,4])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Aerodromes and model-aircraft sites © ENAIRE / AIS'},
       france: {type:'raster',tiles:[franceTiles],tileSize:256,bounds:[-63.7,-50,78,51.6],minzoom:6,maxzoom:18,attribution:'<a href="https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme" target="_blank">Restrictions UAS © IGN / Géoportail</a>'},
       uk:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/" target="_blank">NATS UK AIS · effective 9 Jul 2026</a>'},
       switzerland:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://opendata.swiss/en/dataset/geografische-uas-gebiete-der-schweiz" target="_blank">UAS zones © FOCA / geo.admin.ch</a>'},
@@ -469,12 +442,15 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:'offline-coverage-line',type:'line',source:'offline-coverage',layout:{visibility:'none'},paint:{'line-color':'#b7ff9c','line-width':['interpolate',['linear'],['zoom'],2,1,12,2.5] as any,'line-dasharray':[3,2],'line-opacity':.95}},
       { id: 'dipul-zones', type: 'raster', source: 'dipul', layout: { visibility: zonesVisible ? 'visible' : 'none' }, paint: { 'raster-opacity': 0.78, 'raster-fade-duration': 150 } },
       { id:'dipul-detail',type:'raster',source:'dipul-detail',minzoom:8.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.76,'raster-fade-duration':120}},
-      {id:'enaire-infrastructure-fill',type:'fill',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainFillColor,'fill-opacity':enaireFillOpacity}},
-      {id:'enaire-infrastructure-line',type:'line',source:'enaire-infrastructure',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':spainLineColor,'line-width':['interpolate',['linear'],['zoom'],3,.65,12,2.1],'line-opacity':.95}},
-      {id:'enaire-aero-fill',type:'fill',source:'enaire-aero',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainFillColor,'fill-opacity':enaireFillOpacity}},
-      {id:'enaire-aero-line',type:'line',source:'enaire-aero',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':spainLineColor,'line-width':['interpolate',['linear'],['zoom'],3,.75,12,2.2],'line-opacity':.98}},
-      {id:'enaire-urban-fill',type:'fill',source:'enaire-urban',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':spainFillColor,'fill-opacity':enaireFillOpacity}},
-      {id:'enaire-urban-line',type:'line',source:'enaire-urban',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':spainLineColor,'line-width':1.1,'line-opacity':.86}},
+      // These are the exact public operational services used by drones.enaire.es.
+      // Server-side rendering preserves ENAIRE's scale rules, thin symbology and
+      // facility icons without loading tens of thousands of raw polygons.
+      {id:'enaire-nature',type:'raster',source:'enaire-nature',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.11,'raster-fade-duration':100}},
+      {id:'enaire-urban',type:'raster',source:'enaire-urban',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.71,'raster-fade-duration':100}},
+      {id:'enaire-infrastructure',type:'raster',source:'enaire-infrastructure',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.9,'raster-fade-duration':100}},
+      {id:'enaire-aero-zones',type:'raster',source:'enaire-aero-zones',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.72,'raster-fade-duration':100}},
+      {id:'enaire-notam',type:'raster',source:'enaire-notam',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.66,'raster-fade-duration':100}},
+      {id:'enaire-aero-sites',type:'raster',source:'enaire-aero-sites',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':1,'raster-fade-duration':100}},
       {id:'france-zones',type:'raster',source:'france',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.82,'raster-fade-duration':100}},
       {id:'uk-zones',type:'fill',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['match',['get','category'],'Danger','#c43b73','Prohibited','#ff405d','Restricted','#e55270','#e55270'],'fill-opacity':['interpolate',['linear'],['zoom'],4.5,.2,8,.26,12,.32]}},
       {id:'uk-lines',type:'line',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['match',['get','category'],'Danger','#ef6098','Prohibited','#ff667d','Restricted','#ff748c','#ff748c'],'line-width':['interpolate',['linear'],['zoom'],4.5,.75,12,2.2],'line-opacity':.98}},
