@@ -1,6 +1,7 @@
 import type { Location, Weather, ZoneInfo } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 import { localizeZoneInfo } from './zoneTranslations';
+import { classifyZoneSemantic } from './zoneSemantics';
 
 export const OFFLINE_PACKAGE_VERSION=5;
 const DB_NAME='aeris-offline',PACKAGES='packages',CHUNKS='chunks',TILES='mapTiles',DB_VERSION=4;
@@ -202,7 +203,8 @@ async function saveLayer(layer:string,category:OfflineLayerId,bounds:OfflineBoun
    const payload=pages[pageIndex],start=starts[pageIndex];
   const groups=new Map<string,{features:any[];cells:Set<string>}>();
   payload.features.forEach((feature:any)=>{
-   const tagged={...feature,properties:{...feature.properties,_aerisOfflineLayer:layer,_aerisOfflineCategory:category}},spatial=cellsForFeature(tagged,bounds),group=groups.get(spatial.primary)??{features:[],cells:new Set<string>()};
+   const properties={...feature.properties,_aerisOfflineLayer:layer,_aerisOfflineCategory:category};
+   const tagged={...feature,properties:{...properties,_aerisSemantic:classifyZoneSemantic(properties,category==='nature'?'nature':undefined)}},spatial=cellsForFeature(tagged,bounds),group=groups.get(spatial.primary)??{features:[],cells:new Set<string>()};
    group.features.push(tagged);spatial.cells.forEach(cell=>group.cells.add(cell));groups.set(spatial.primary,group);
   });
   const chunks:OfflineChunk[]=[];
@@ -219,7 +221,8 @@ async function saveFeatureCollection(features:any[],category:OfflineLayerId,boun
  const groups=new Map<string,{features:any[];cells:Set<string>}>();
  for(const feature of features){
   const featureBounds=geometryBounds(feature.geometry);if(featureBounds&&!boundsOverlap(bounds,featureBounds))continue;
-  const tagged={...feature,properties:{...feature.properties,_aerisOfflineLayer:sourceName,_aerisOfflineCategory:category}},spatial=cellsForFeature(tagged,bounds),group=groups.get(spatial.primary)??{features:[],cells:new Set<string>()};
+  const properties={...feature.properties,_aerisOfflineLayer:sourceName,_aerisOfflineCategory:category};
+  const tagged={...feature,properties:{...properties,_aerisSemantic:classifyZoneSemantic(properties,category==='nature'?'nature':undefined)}},spatial=cellsForFeature(tagged,bounds),group=groups.get(spatial.primary)??{features:[],cells:new Set<string>()};
   group.features.push(tagged);spatial.cells.forEach(cell=>group.cells.add(cell));groups.set(spatial.primary,group);
  }
  let items=0,sizeBytes=0,index=0;const chunks:OfflineChunk[]=[];

@@ -5,6 +5,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 import { getBestOfflinePack, getOfflineMapTile, getOfflinePackageData } from './offline';
+import { enrichZoneSemantics, type ZoneSemantic } from './zoneSemantics';
 
 type BaseMap = 'satellite' | 'streets';
 
@@ -119,14 +120,14 @@ function swedenDisplayFilter(id:typeof SWEDEN_POLYGON_SOURCES[number]):FilterSpe
  return undefined;
 }
 
-type VectorSourceConfig={id:string;url:string|(()=>Promise<string>);bounds:[number,number,number,number];transform?:(data:any)=>any};
+type VectorSourceConfig={id:string;url:string|(()=>Promise<string>);bounds:[number,number,number,number];transform?:(data:any)=>any;semantic?:ZoneSemantic};
 const vectorSources=():VectorSourceConfig[]=>[
  {id:'luxembourg',url:`${import.meta.env.BASE_URL}data/zones/LU.geojson`,bounds:[5.65,49.35,6.65,50.25]},
  {id:'ireland',url:`${import.meta.env.BASE_URL}data/zones/IE.geojson`,bounds:[-11,51.2,-5,55.6]},
  {id:'uk',url:`${import.meta.env.BASE_URL}data/zones/GB.geojson`,bounds:[-9,49,2.5,61]},
  {id:'switzerland',url:SWISS_UAS,bounds:[5.75,45.75,10.65,47.85]},
  {id:'denmark',url:DENMARK_ZONES,bounds:[7.8,54.4,15.3,58]},
- {id:'denmark-nature',url:DENMARK_NATURE,bounds:[7.8,54.4,15.3,58]},
+ {id:'denmark-nature',url:DENMARK_NATURE,bounds:[7.8,54.4,15.3,58],semantic:'nature'},
  ...NATIONAL_GEOZONE_SOURCES.map(source=>({id:source.id,url:'url' in source?source.url:`${import.meta.env.BASE_URL}data/zones/${source.file}`,bounds:source.bounds as [number,number,number,number],...('transform' in source?{transform:source.transform}:{})})),
  ...SWEDEN_SOURCE_IDS.map(id=>({id:`sweden-${id}`,url:`${import.meta.env.BASE_URL}data/zones/sweden/${id}.geojson`,bounds:[10.4,55,24.5,69.2] as [number,number,number,number]}))
 ];
@@ -145,12 +146,13 @@ type ArcGisViewportConfig={
  maxFeatures:number;
  outFields:string;
  transform?:(data:any)=>any;
+ semantic?:ZoneSemantic;
 };
 
 const arcGisViewportSources:ArcGisViewportConfig[]=[
  {id:'us-facility',endpoint:FAA_UAS,bounds:[-179,13,-64,72],minZoom:6,pageSize:1000,maxFeatures:6000,outFields:'OBJECTID,CEILING,UNIT,MAP_EFF,LAST_EDIT,APT1_FAAID,APT1_ICAO,APT1_NAME,APT1_LAANC,AIRSPACE_1,REGION'},
  {id:'canada-airports',endpoint:CANADA_AIRPORTS,bounds:[-141,41,-52,84],minZoom:3.5,pageSize:1000,maxFeatures:2000,outFields:'*',transform:bufferCanadaAirports},
- {id:'canada-national-parks',endpoint:CANADA_NATIONAL_PARKS,bounds:[-141,41,-52,84],minZoom:3,pageSize:200,maxFeatures:600,outFields:'OBJECTID,adminAreaId,adminAreaNameEng,adminAreaNameFra,distributionTypeEng,jurisdictionEng,webReference'}
+ {id:'canada-national-parks',endpoint:CANADA_NATIONAL_PARKS,bounds:[-141,41,-52,84],minZoom:3,pageSize:200,maxFeatures:600,outFields:'OBJECTID,adminAreaId,adminAreaNameEng,adminAreaNameFra,distributionTypeEng,jurisdictionEng,webReference',semantic:'nature'}
 ];
 
 const detailConfig:Record<RenderDetail,{zoomDelta:number;featureScale:number;weatherColumns:number;weatherRows:number}> = {
@@ -196,7 +198,7 @@ async function queryArcGisViewport(map:MapLibreMap,config:ArcGisViewportConfig,d
    if(page.features.length<config.pageSize&&!page.properties?.exceededTransferLimit)break;
  }
  const data={type:'FeatureCollection' as const,features};
- return config.transform?config.transform(data):data;
+ return enrichZoneSemantics(config.transform?config.transform(data):data,config.semantic);
 }
 
 function loadDynamicCountrySources(map:MapLibreMap,detail:RenderDetail,hooks?:OverlayHooks){
@@ -231,7 +233,7 @@ function loadVisibleVectorSources(map:MapLibreMap,hooks?:OverlayHooks){
    const key=`vector:${config.id}`;
    hooks?.start(key,config.id.replaceAll('-',' '));
    void Promise.resolve(typeof config.url==='function'?config.url():config.url).then(url=>fetch(url)).then(response=>{if(!response.ok)throw new Error(`${config.id} failed (${response.status})`);return response.json()}).then(data=>{
-     source.setData(config.transform?config.transform(data):data);loaded.add(config.id);
+     source.setData(enrichZoneSemantics(config.transform?config.transform(data):data,config.semantic));loaded.add(config.id);
    }).catch(error=>console.warn(error)).finally(()=>hooks?.finish(key));
  }
 }
@@ -351,6 +353,8 @@ function loadWeatherGrid(map:MapLibreMap,hourIndex:number,visible:boolean,detail
 
 const geozoneColor=['match',['get','restriction'],'PROHIBITED','#ff405d','REQ_AUTHORISATION','#ff9e43','REQ_AUTHORIZATION','#ff9e43','CONDITIONAL','#ffd45d','NO_RESTRICTION','#56d78d','#7fb4ff'] as any;
 const geozoneOpacity=['match',['get','restriction'],'NO_RESTRICTION',.075,'CONDITIONAL',.16,.24] as any;
+const semanticFillColor=(fallback:any)=>['match',['get','_aerisSemantic'],'altitude','#4387f5','nature','#26c96f',fallback] as any;
+const semanticLineColor=(fallback:any)=>['match',['get','_aerisSemantic'],'altitude','#3f91ff','nature','#72efaa',fallback] as any;
 
 function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
   const satellite = baseMap === 'satellite';
@@ -370,15 +374,15 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       : geozoneColor;
     const fillOpacity=source.id==='portugal'?.07:geozoneOpacity;
     return[
-      {id:`${source.id}-zones`,type:'fill' as const,source:source.id,minzoom:source.minzoom,...filter,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'fill-color':fillColor as any,'fill-opacity':fillOpacity}},
-      {id:`${source.id}-lines`,type:'line' as const,source:source.id,minzoom:source.minzoom,...filter,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'line-color':lineColor as any,'line-width':['interpolate',['linear'],['zoom'],source.minzoom,.7,12,2.2] as any,'line-opacity':.94}}
+      {id:`${source.id}-zones`,type:'fill' as const,source:source.id,minzoom:source.minzoom,...filter,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'fill-color':semanticFillColor(fillColor),'fill-opacity':fillOpacity}},
+      {id:`${source.id}-lines`,type:'line' as const,source:source.id,minzoom:source.minzoom,...filter,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'line-color':semanticLineColor(lineColor),'line-width':['interpolate',['linear'],['zoom'],source.minzoom,.7,12,2.2] as any,'line-opacity':.94}}
     ];
   });
   const swedenLayers=SWEDEN_POLYGON_SOURCES.flatMap((id,index)=>{
     const filter=swedenDisplayFilter(id),filterProperty=filter?{filter}:{};
     return[
-      {id:`sweden-${id}-fill`,type:'fill' as const,source:`sweden-${id}`,minzoom:index>=5?5.5:5,...filterProperty,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'fill-color':index<5?'#ff8b5b':'#cf6cff','fill-opacity':index<5?.16:.1}},
-      {id:`sweden-${id}-line`,type:'line' as const,source:`sweden-${id}`,minzoom:index>=5?5.5:5,...filterProperty,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'line-color':index<5?'#ffb06f':'#e2a1ff','line-width':['interpolate',['linear'],['zoom'],5,.7,12,1.8] as any,'line-opacity':.88}}
+      {id:`sweden-${id}-fill`,type:'fill' as const,source:`sweden-${id}`,minzoom:index>=5?5.5:5,...filterProperty,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'fill-color':semanticFillColor(index<5?'#ff8b5b':'#cf6cff'),'fill-opacity':index<5?.16:.1}},
+      {id:`sweden-${id}-line`,type:'line' as const,source:`sweden-${id}`,minzoom:index>=5?5.5:5,...filterProperty,layout:{visibility:zonesVisible?'visible' as const:'none' as const},paint:{'line-color':semanticLineColor(index<5?'#ffb06f':'#e2a1ff'),'line-width':['interpolate',['linear'],['zoom'],5,.7,12,1.8] as any,'line-opacity':.88}}
     ];
   });
   const offlineBasemapLayers:any[]=[
@@ -455,9 +459,9 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
     layers: [
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
       ...offlineBasemapLayers,
-      {id:'offline-package-fill',type:'fill',source:'offline-package',filter:['match',['geometry-type'],['Polygon','MultiPolygon'],true,false] as any,paint:{'fill-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff'] as any,'fill-opacity':.27}},
-      {id:'offline-package-line',type:'line',source:'offline-package',paint:{'line-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff7182','airports','#ffd078','controlled','#e5a2ff','nature','#80efa4','warnings','#ffea94','basic','#b1cbc5','#9ee3ff'] as any,'line-width':['interpolate',['linear'],['zoom'],4,.7,12,2.2] as any,'line-opacity':.96}},
-      {id:'offline-package-points',type:'circle',source:'offline-package',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,2.5,12,6] as any,'circle-color':['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff'] as any,'circle-stroke-color':'#06100d','circle-stroke-width':1.2}},
+      {id:'offline-package-fill',type:'fill',source:'offline-package',filter:['match',['geometry-type'],['Polygon','MultiPolygon'],true,false] as any,paint:{'fill-color':semanticFillColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff']),'fill-opacity':.27}},
+      {id:'offline-package-line',type:'line',source:'offline-package',paint:{'line-color':semanticLineColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff7182','airports','#ffd078','controlled','#e5a2ff','nature','#80efa4','warnings','#ffea94','basic','#b1cbc5','#9ee3ff']),'line-width':['interpolate',['linear'],['zoom'],4,.7,12,2.2] as any,'line-opacity':.96}},
+      {id:'offline-package-points',type:'circle',source:'offline-package',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,2.5,12,6] as any,'circle-color':semanticFillColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff']),'circle-stroke-color':'#06100d','circle-stroke-width':1.2}},
       {id:'offline-coverage-fill',type:'fill',source:'offline-coverage',layout:{visibility:'none'},paint:{'fill-color':'#b7ff9c','fill-opacity':.025}},
       {id:'offline-coverage-line',type:'line',source:'offline-coverage',layout:{visibility:'none'},paint:{'line-color':'#b7ff9c','line-width':['interpolate',['linear'],['zoom'],2,1,12,2.5] as any,'line-dasharray':[3,2],'line-opacity':.95}},
       { id: 'dipul-zones', type: 'raster', source: 'dipul', layout: { visibility: zonesVisible ? 'visible' : 'none' }, paint: { 'raster-opacity': 0.78, 'raster-fade-duration': 150 } },
@@ -477,22 +481,16 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:'enaire-aero-sites',type:'raster',source:'enaire-aero-sites',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':1,'raster-fade-duration':100}},
       {id:'france-zones',type:'raster',source:'france',minzoom:6,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.82,'raster-fade-duration':100}},
       {id:'uk-zones',type:'fill',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{
-        'fill-color':['case',
-          ['!=',['get','lower'],'SFC'],'#4387f5',
-          ['match',['get','category'],'Danger','#f0ad26','Prohibited','#ff405d','Restricted','#e55270','#e55270']
-        ] as any,
+        'fill-color':semanticFillColor(['match',['get','category'],'Danger','#f0ad26','Prohibited','#ff405d','Restricted','#e55270','#e55270']),
         'fill-opacity':['interpolate',['linear'],['zoom'],4.5,.14,8,.21,12,.28]
       }},
       {id:'uk-lines',type:'line',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{
-        'line-color':['case',
-          ['!=',['get','lower'],'SFC'],'#3f91ff',
-          ['match',['get','category'],'Danger','#ffbd2f','Prohibited','#ff667d','Restricted','#ff748c','#ff748c']
-        ] as any,
+        'line-color':semanticLineColor(['match',['get','category'],'Danger','#ffbd2f','Prohibited','#ff667d','Restricted','#ff748c','#ff748c']),
         'line-width':['interpolate',['linear'],['zoom'],4.5,.75,12,2.2],
         'line-opacity':.98
       }},
-      {id:'swiss-zones',type:'fill',source:'switzerland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['coalesce',['get','fill'],'#b11313'] as any,'fill-opacity':['interpolate',['linear'],['zoom'],5,.2,10,.34,15,.42]}},
-      {id:'swiss-lines',type:'line',source:'switzerland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['coalesce',['get','stroke'],['get','fill'],'#ff6b6b'] as any,'line-width':['interpolate',['linear'],['zoom'],5,.7,12,2.1],'line-opacity':.92}},
+      {id:'swiss-zones',type:'fill',source:'switzerland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':semanticFillColor(['coalesce',['get','fill'],'#b11313']),'fill-opacity':['interpolate',['linear'],['zoom'],5,.2,10,.34,15,.42]}},
+      {id:'swiss-lines',type:'line',source:'switzerland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':semanticLineColor(['coalesce',['get','stroke'],['get','fill'],'#ff6b6b']),'line-width':['interpolate',['linear'],['zoom'],5,.7,12,2.1],'line-opacity':.92}},
       {id:'us-facility-fill',type:'fill',source:'us-facility',minzoom:7,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['step',['to-number',['get','CEILING']], '#ff4056',1,'#ff7c4d',100,'#ffb44e',300,'#ffe069'],'fill-opacity':.2}},
       {id:'us-facility-line',type:'line',source:'us-facility',minzoom:7,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['step',['to-number',['get','CEILING']], '#ff4056',1,'#ff7c4d',100,'#ffb44e',300,'#ffe069'],'line-width':['interpolate',['linear'],['zoom'],7,.45,13,1.5],'line-opacity':.9}},
       {id:'canada-national-parks',type:'fill',source:'canada-national-parks',minzoom:3,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':'#26c96f','fill-opacity':['interpolate',['linear'],['zoom'],3,.13,7,.2,12,.28]}},
@@ -500,11 +498,11 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:'canada-airport-rings',type:'fill',source:'canada-airports',minzoom:3,filter:['==',['geometry-type'],'Polygon'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':'#ffb548','fill-opacity':['interpolate',['linear'],['zoom'],3,.1,7,.2,12,.27]}},
       {id:'canada-airport-lines',type:'line',source:'canada-airports',minzoom:3,filter:['==',['geometry-type'],'Polygon'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':'#ffd37c','line-width':['interpolate',['linear'],['zoom'],3,.65,12,2],'line-opacity':.92}},
       {id:'canada-airports',type:'circle',source:'canada-airports',minzoom:4,filter:['==',['geometry-type'],'Point'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,2.5,11,7],'circle-color':'#f7f4e8','circle-stroke-color':'#ffb548','circle-stroke-width':2}},
-      { id:'luxembourg-zones', type:'fill', source:'luxembourg', layout:{visibility:zonesVisible?'visible':'none'}, paint:{'fill-color':['match',['get','restriction'],'PROHIBITED','#ff4d57','REQ_AUTHORIZATION','#ff9e43','#ffd75e'],'fill-opacity':.42,'fill-outline-color':'#fff2d0'} },
-      { id:'ireland-zones',type:'fill',source:'ireland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['match',['get','type'],'PROHIBITED','#ff455d','REQ_AUTHORIZATION','#ffb84d','CONDITIONAL','#55dff0','NO_RESTRICTION','#61df91','#9bc4ff'],'fill-opacity':['match',['get','type'],'NO_RESTRICTION',.1,.24]}},
-      { id:'ireland-lines',type:'line',source:'ireland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['match',['get','type'],'PROHIBITED','#ff6a7c','REQ_AUTHORIZATION','#ffd16a','CONDITIONAL','#76e7f3','NO_RESTRICTION','#79eea4','#a7caff'],'line-width':['interpolate',['linear'],['zoom'],5,.7,12,2.2],'line-opacity':.9}},
-      {id:'denmark-zones',type:'fill',source:'denmark',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':['match',['to-string',['get','Farve']],'1','#ff455d','4','#4f8cff','5','#ff9d43','#ffd15c'],'fill-opacity':.24}},
-      {id:'denmark-lines',type:'line',source:'denmark',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':['match',['to-string',['get','Farve']],'1','#ff7182','4','#73a5ff','5','#ffb56f','#ffe08a'],'line-width':['interpolate',['linear'],['zoom'],5,.7,12,2.2],'line-opacity':.92}},
+      { id:'luxembourg-zones', type:'fill', source:'luxembourg', layout:{visibility:zonesVisible?'visible':'none'}, paint:{'fill-color':semanticFillColor(['match',['get','restriction'],'PROHIBITED','#ff4d57','REQ_AUTHORIZATION','#ff9e43','#ffd75e']),'fill-opacity':.42,'fill-outline-color':'#fff2d0'} },
+      { id:'ireland-zones',type:'fill',source:'ireland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':semanticFillColor(['match',['get','type'],'PROHIBITED','#ff455d','REQ_AUTHORIZATION','#ffb84d','CONDITIONAL','#55dff0','NO_RESTRICTION','#61df91','#9bc4ff']),'fill-opacity':['match',['get','type'],'NO_RESTRICTION',.1,.24]}},
+      { id:'ireland-lines',type:'line',source:'ireland',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':semanticLineColor(['match',['get','type'],'PROHIBITED','#ff6a7c','REQ_AUTHORIZATION','#ffd16a','CONDITIONAL','#76e7f3','NO_RESTRICTION','#79eea4','#a7caff']),'line-width':['interpolate',['linear'],['zoom'],5,.7,12,2.2],'line-opacity':.9}},
+      {id:'denmark-zones',type:'fill',source:'denmark',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':semanticFillColor(['match',['to-string',['get','Farve']],'1','#ff455d','4','#4f8cff','5','#ff9d43','#ffd15c']),'fill-opacity':.24}},
+      {id:'denmark-lines',type:'line',source:'denmark',minzoom:5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':semanticLineColor(['match',['to-string',['get','Farve']],'1','#ff7182','4','#73a5ff','5','#ffb56f','#ffe08a']),'line-width':['interpolate',['linear'],['zoom'],5,.7,12,2.2],'line-opacity':.92}},
       {id:'denmark-nature',type:'fill',source:'denmark-nature',minzoom:7,filter:['==',['get','Aktiv'],'JA'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':'#50d982','fill-opacity':.13}},
       {id:'denmark-nature-lines',type:'line',source:'denmark-nature',minzoom:7,filter:['==',['get','Aktiv'],'JA'],layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':'#78efa0','line-width':1.1,'line-opacity':.85}},
       ...nationalGeozoneLayers,
@@ -754,7 +752,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       if(pack.generation&&pack.metadata.tileCount){mapSource.setTiles([`aeris-offline://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`]);showOfflineMap(true)}else showOfflineMap(false);
       const[west,south,east,north]=pack.metadata.bounds;
       coverageSource.setData({type:'FeatureCollection',features:[{type:'Feature',properties:{name:pack.name},geometry:{type:'Polygon',coordinates:[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}}]} as any);
-      source.setData(data as any);setOfflineNotice(`Offline · ${pack.name} · street map + ${data.features.length.toLocaleString()} nearby official items`);
+      source.setData(enrichZoneSemantics(data) as any);setOfflineNotice(`Offline · ${pack.name} · street map + ${data.features.length.toLocaleString()} nearby official items`);
     }
     else{source.setData(emptyGeoJson);coverageSource.setData(emptyGeoJson);showOfflineMap(false);setOfflineNotice('Offline · this area is not included in a downloaded package.')}
   };
