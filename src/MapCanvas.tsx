@@ -50,7 +50,12 @@ const FRANCE_WFS_LAYER='TRANSPORTS.DRONES.RESTRICTIONS:carte_restriction_drones_
 
 const dipulTiles=(layers:string)=>`https://uas-betrieb.de/geoservices/dipul/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=${encodeURIComponent(layers)}&STYLES=&FORMAT=image%2Fpng&TRANSPARENT=true&SRS=EPSG%3A3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256`;
 const ENAIRE_SERVICES='https://servais.enaire.es/insignias/rest/services';
-const arcGisMapTiles=(service:string,layers:number[])=>`${service}/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&layers=show:${layers.join(',')}&f=image`;
+const ENAIRE_DEFAULT_ALTITUDE_M=120;
+const ENAIRE_RESTRICTION_FILTER=`RESTRICCION_LOWER < ${ENAIRE_DEFAULT_ALTITUDE_M}`;
+const arcGisMapTiles=(service:string,layers:number[],layerDefs?:Record<number,string>)=>{
+ const definitions=layerDefs?`&layerDefs=${encodeURIComponent(JSON.stringify(layerDefs))}`:'';
+ return `${service}/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&layers=show:${layers.join(',')}${definitions}&f=image`;
+};
 const ENAIRE_AERO=`${ENAIRE_SERVICES}/NSF/Drones_ZG_Aero_V3/MapServer`;
 const ENAIRE_BOUNDS:[number,number,number,number]=[-18.5,27.5,4.5,44.5];
 const FAA_UAS='https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0';
@@ -409,9 +414,9 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       },
       'enaire-nature':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/ENP/ENP_APP_Local_V4/MapServer`,[0,1])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'<a href="https://drones.enaire.es/" target="_blank">Official UAS map © ENAIRE / AIS</a>'},
       'enaire-urban':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NSF/Drones_ZG_Urbano_V0/MapServer`,[11])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS urban zones © ENAIRE / AIS'},
-      'enaire-infrastructure':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NSF/Drones_ZG_Infra_V0/MapServer`,[11])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS infrastructure zones © ENAIRE / AIS'},
-      'enaire-aero-zones':{type:'raster',tiles:[arcGisMapTiles(ENAIRE_AERO,[2,3,10,1,6])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS aeronautical zones © ENAIRE / AIS'},
-      'enaire-notam':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NOTAM/NOTAM_UAS_APP_V3/MapServer`,[1])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Prototype NOTAM display © ENAIRE / AIS · verify operationally in ICARO'},
+      'enaire-infrastructure':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NSF/Drones_ZG_Infra_V0/MapServer`,[11],{11:ENAIRE_RESTRICTION_FILTER})],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS infrastructure zones © ENAIRE / AIS'},
+      'enaire-aero-zones':{type:'raster',tiles:[arcGisMapTiles(ENAIRE_AERO,[2,3,10,1,6],{1:ENAIRE_RESTRICTION_FILTER,2:ENAIRE_RESTRICTION_FILTER,10:ENAIRE_RESTRICTION_FILTER})],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'UAS aeronautical zones © ENAIRE / AIS'},
+      'enaire-notam':{type:'raster',tiles:[arcGisMapTiles(`${ENAIRE_SERVICES}/NOTAM/NOTAM_UAS_APP_V3/MapServer`,[1],{1:`LOWER_VAL_AGL is null or LOWER_VAL_AGL < ${ENAIRE_DEFAULT_ALTITUDE_M}`})],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Prototype NOTAM display © ENAIRE / AIS · verify operationally in ICARO'},
       'enaire-aero-sites':{type:'raster',tiles:[arcGisMapTiles(ENAIRE_AERO,[0,4])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Aerodromes and model-aircraft sites © ENAIRE / AIS'},
       france: {type:'raster',tiles:[franceTiles],tileSize:256,bounds:[-63.7,-50,78,51.6],minzoom:6,maxzoom:18,attribution:'<a href="https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme" target="_blank">Restrictions UAS © IGN / Géoportail</a>'},
       uk:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/" target="_blank">NATS UK AIS · effective 9 Jul 2026</a>'},
@@ -443,8 +448,8 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       { id: 'dipul-zones', type: 'raster', source: 'dipul', layout: { visibility: zonesVisible ? 'visible' : 'none' }, paint: { 'raster-opacity': 0.78, 'raster-fade-duration': 150 } },
       { id:'dipul-detail',type:'raster',source:'dipul-detail',minzoom:8.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.76,'raster-fade-duration':120}},
       // These are the exact public operational services used by drones.enaire.es.
-      // Server-side rendering preserves ENAIRE's scale rules, thin symbology and
-      // facility icons without loading tens of thousands of raw polygons.
+      // Its default 120 m flight filters are applied server-side so high-altitude
+      // airspace is not painted as an applicable low-altitude drone zone.
       {id:'enaire-nature',type:'raster',source:'enaire-nature',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.11,'raster-fade-duration':100}},
       {id:'enaire-urban',type:'raster',source:'enaire-urban',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.71,'raster-fade-duration':100}},
       {id:'enaire-infrastructure',type:'raster',source:'enaire-infrastructure',layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.9,'raster-fade-duration':100}},

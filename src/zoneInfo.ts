@@ -252,7 +252,13 @@ async function enaire(point:Location):Promise<ZoneInfo>{
  const response=await fetch(`https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer/identify?${params}`);
  if(!response.ok)throw new Error('ENAIRE query failed');
  const data=await response.json();
- result.zones=sortZones((data.results??[]).map((item:any,index:number)=>{
+ const defaultFlightAltitudeM=120;
+ const visibleResults=(data.results??[]).filter((item:any)=>{
+  const attributes=item.attributes??{},lower=Number(attributes.lower);
+  const isRestrictedAltitudeBand=/R-Restringida/i.test(String(attributes.extendedProperties??''))||/^GCR/i.test(String(attributes.identifier??''));
+  return !isRestrictedAltitudeBand||!Number.isFinite(lower)||lower<defaultFlightAltitudeM;
+ });
+ result.zones=sortZones(visibleResults.map((item:any,index:number)=>{
   const a=item.attributes??{},rawType=a.type||a.restriction||'COMMON',rawMessage=cleanHtml(a.message||a.description),message=translateEnaireMessage(rawMessage,a),rawName=cleanHtml(a.name&&a.name!=='Nulo'?a.name:item.value||item.layerName),translatedName=translateEnaireName(rawName);
   const authority=[a.name_authority,a.provider].find((value:unknown)=>typeof value==='string'&&value.trim()&&!/^nulo$/i.test(value.trim())) as string|undefined;
   return{id:`ES-${item.layerId}-${a.OBJECTID??index}`,name:translatedName,originalName:rawName,nameLocalizedLanguage:translatedName!==rawName?language():undefined,type:translate(rawType),categoryCode:rawType,severity:severityFromRestriction(rawType),message:message.slice(0,2400),originalMessage:rawMessage||undefined,messageLocalizedLanguage:rawMessage&&(language()==='es'||message!==rawMessage)?language():undefined,lower:a.lower!=null?`${a.lower} ${a.uom??''} ${a.lowerReference??''}`:undefined,upper:a.upper!=null?`${a.upper} ${a.uom??''} ${a.upperReference??''}`:undefined,legalReference:a.siteURL&&a.siteURL!=='Nulo'?a.siteURL:undefined,contact:[a.email,a.phone].filter((x:string)=>x&&x!=='Nulo').join(' · ')||undefined,authority:authority??'ENAIRE / AESA',officialLayerName:item.layerName,layerCode:rawType,source:'ENAIRE',sourceUrl:'https://drones.enaire.es/',updated:a.updateDateTime||undefined} as ZoneDetail;
