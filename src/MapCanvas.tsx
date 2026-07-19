@@ -481,11 +481,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
           ['!=',['get','lower'],'SFC'],'#4387f5',
           ['match',['get','category'],'Danger','#f0ad26','Prohibited','#ff405d','Restricted','#e55270','#e55270']
         ] as any,
-        'fill-opacity':['case',
-          ['!=',['get','lower'],'SFC'],['interpolate',['linear'],['zoom'],4.5,.12,8,.18,12,.24],
-          ['==',['get','category'],'Danger'],['interpolate',['linear'],['zoom'],4.5,.12,8,.18,12,.25],
-          ['interpolate',['linear'],['zoom'],4.5,.16,8,.23,12,.3]
-        ] as any
+        'fill-opacity':['interpolate',['linear'],['zoom'],4.5,.14,8,.21,12,.28]
       }},
       {id:'uk-lines',type:'line',source:'uk',minzoom:4.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{
         'line-color':['case',
