@@ -13,9 +13,13 @@ export type ZoneDetail = {
   id:string;
   name:string;
   originalName?:string;
+  nameLocalizedLanguage?:string;
   type:string;
+  categoryCode?:string;
   severity?:'blocked'|'authorization'|'conditional'|'warning'|'information'|'unknown';
   message?:string;
+  originalMessage?:string;
+  messageLocalizedLanguage?:string;
   pilotAction?:string;
   lower?:string;
   upper?:string;
@@ -23,6 +27,7 @@ export type ZoneDetail = {
   contact?:string;
   authority?:string;
   officialLayerName?:string;
+  layerCode?:string;
   source:string;
   sourceUrl?:string;
   updated?:string;

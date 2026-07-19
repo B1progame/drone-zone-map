@@ -59,9 +59,9 @@ export default function App(){
  const chooseRequest=useRef(0);
  const choose=(l:Location)=>{
  const request=++chooseRequest.current;setLocation(l);setPage('map');setWeather(undefined);setZoneInfo(undefined);setWeatherError('');
-  if(!navigator.onLine){void getOfflineContext(l).then(context=>{if(request!==chooseRequest.current)return;if(context){setWeather(context.weather);setZoneInfo(context.zoneInfo);setWeatherError(context.weather?'':'Weather was not downloaded for this exact point.')}else setWeatherError('This location is outside every downloaded offline package.')});return}
-  void getWeather(l).then(result=>{if(request===chooseRequest.current)setWeather(result)}).catch(async()=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l);if(context?.weather)setWeather(context.weather);else setWeatherError(navigator.onLine?'Live weather is temporarily unavailable.':'This location is outside downloaded weather context.')});
-  void getOfficialZoneInfo(l,appSettings.language).then(result=>{if(request===chooseRequest.current)setZoneInfo(result)}).catch(async()=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l);if(context?.zoneInfo)setZoneInfo(context.zoneInfo)});
+  if(!navigator.onLine){void getOfflineContext(l,appSettings.language).then(context=>{if(request!==chooseRequest.current)return;if(context){setWeather(context.weather);setZoneInfo(context.zoneInfo);setWeatherError(context.weather?'':'Weather was not downloaded for this exact point.')}else setWeatherError('This location is outside every downloaded offline package.')});return}
+  void getWeather(l).then(result=>{if(request===chooseRequest.current)setWeather(result)}).catch(async()=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l,appSettings.language);if(context?.weather)setWeather(context.weather);else setWeatherError(navigator.onLine?'Live weather is temporarily unavailable.':'This location is outside downloaded weather context.')});
+  void getOfficialZoneInfo(l,appSettings.language).then(result=>{if(request===chooseRequest.current)setZoneInfo(result)}).catch(async()=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l,appSettings.language);if(context?.zoneInfo)setZoneInfo(context.zoneInfo)});
  };
  const persistSaved=(next:SavedPlace[])=>{setSaved(next);localStorage.setItem('dzm-saved',JSON.stringify(next))};
  const save=()=>{if(!location)return;const existing=saved.find(x=>Math.abs(x.lat-location.lat)<=.00001&&Math.abs(x.lng-location.lng)<=.00001);const place:SavedPlace={...existing,...location,id:existing?.id??crypto.randomUUID(),savedAt:new Date().toISOString(),score:weather?.score,weather:weather?{score:weather.score,temperature:weather.temperature,wind:weather.wind,gusts:weather.gusts,rainProbability:weather.rainProbability}:existing?.weather,airspace:zoneInfo?{countryCode:zoneInfo.countryCode,countryName:zoneInfo.countryName,sourceName:zoneInfo.sourceName,status:zoneInfo.status,zoneCount:zoneInfo.zones.length,zoneTypes:[...new Set(zoneInfo.zones.map(zone=>zone.type))].slice(0,6),sourceUrl:zoneInfo.sourceUrl}:existing?.airspace};persistSaved([place,...saved.filter(x=>x.id!==existing?.id)].slice(0,50))};
@@ -73,6 +73,16 @@ export default function App(){
  const geo=()=>navigator.geolocation?.getCurrentPosition(p=>choose({lat:p.coords.latitude,lng:p.coords.longitude,name:'My location'}));
  const updateSettings=(next:AppSettings)=>{setAppSettings(next);localStorage.setItem('aeris-settings',JSON.stringify({...next,defaultLanguageVersion:2}))};
  useEffect(()=>{document.documentElement.lang=appSettings.language},[appSettings.language]);
+ useEffect(()=>{
+  if(!location)return;
+  const request=++chooseRequest.current;
+  const update=async()=>{
+   if(!navigator.onLine){const context=await getOfflineContext(location,appSettings.language);if(request===chooseRequest.current&&context)setZoneInfo(context.zoneInfo);return}
+   const result=await getOfficialZoneInfo(location,appSettings.language);
+   if(request===chooseRequest.current)setZoneInfo(result);
+  };
+  void update();
+ },[appSettings.language]);
  useEffect(()=>{window.scrollTo(0,0)},[page]);
  return <div className={`app page-${page} ${appSettings.reducedMotion?'reducedMotion':''}`} style={{'--glass-opacity':appSettings.glassOpacity} as React.CSSProperties}><div className="ambient a"/><div className="ambient b"/><Header setSettings={()=>setSettingsOpen(true)}/><div className="pageTransition" key={page}>{page==='home'&&<Home onChoose={choose} geo={geo} openMap={()=>setPage('map')} openWeather={()=>setPage('weather')} openAi={()=>setPage('ai')} language={appSettings.language}/>} {page==='map'&&<MapPage location={location} weather={weather} weatherError={weatherError} zoneInfo={zoneInfo} choose={choose} save={save} saveRoute={saveRoute} settings={appSettings}/>} {page==='weather'&&<WeatherPage location={location} weather={weather} error={weatherError} choose={choose} language={appSettings.language}/>} {page==='ai'&&<AiPage location={location} weather={weather} zoneInfo={zoneInfo} saved={saved.length}/>} {page==='saved'&&<SavedPage saved={saved} routes={savedRoutes} choose={choose} openRoute={openRoute} remove={remove} removeRoute={removeRoute} update={updateSaved}/>}</div>{settingsOpen&&<Settings settings={appSettings} update={updateSettings} close={()=>setSettingsOpen(false)}/>}<Nav page={page} setPage={setPage} language={appSettings.language}/><Preferences close={()=>{}}/></div>
 }

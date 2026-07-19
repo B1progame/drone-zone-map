@@ -1,5 +1,6 @@
 import type { Location, ZoneDetail, ZoneInfo } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
+import { localizeZoneInfo } from './zoneTranslations';
 
 const DIPUL_LAYERS=['bahnanlagen','behoerden','binnenwasserstrassen','bundesautobahnen','bundesstrassen','diplomatische_vertretungen','ffh-gebiete','flugbeschraenkungsgebiete','flughaefen','flugplaetze','freibaeder','haengegleiter','industrieanlagen','internationale_organisationen','justizvollzugsanstalten','kontrollzonen','kraftwerke','krankenhaeuser','labore','militaerische_anlagen','modellflugplaetze','nationalparks','naturschutzgebiete','polizei','schifffahrtsanlagen','seewasserstrassen','sicherheitsbehoerden','stromleitungen','temporaere_betriebseinschraenkungen','umspannwerke','vogelschutzgebiete','windkraftanlagen','wohngrundstuecke'];
 let selectedLanguage=(navigator.language||'en').toLowerCase().split('-')[0];
@@ -178,9 +179,11 @@ async function dipul(point:Location):Promise<ZoneInfo>{
  const text=await response.text(),blocks=text.split(/Results for FeatureType/).slice(1);
  result.zones=sortZones(blocks.map((block,index)=>{
   const attrs=Object.fromEntries(block.split('\n').map(line=>line.match(/^([^=]+) = (.*)$/)).filter(Boolean).map(match=>[match![1].trim(),match![2].trim()]));
-  const layer=(block.match(/'[^:]+:([^']+)'/)?.[1]??'zone'),rawType=attrs.type_code??layer.toUpperCase(),type=translate(rawType),officialName=attrs[`generated_name_${language().toUpperCase()}`]??attrs.generated_name_EN??attrs.name;
+  const attr=(key:string)=>Object.entries(attrs).find(([name])=>name.toLowerCase()===key.toLowerCase())?.[1];
+  const layer=(block.match(/'[^:]+:([^']+)'/)?.[1]??'zone'),rawType=attr('type_code')??layer.toUpperCase(),type=translate(rawType),localizedName=attr(`generated_name_${language()}`),englishName=attr('generated_name_en'),officialName=localizedName??englishName??attr('name');
   const severe=/FLUGBESCHRAENK|TEMPORAERE/i.test(rawType),severity:ZoneDetail['severity']=severe?'blocked':attrs.legal_ref?'authorization':'warning';
-  return{id:`DE-${index}-${attrs.external_reference??layer}`,name:officialName??`${type} · ${layer.replaceAll('_',' ')}`,originalName:attrs.name,type,severity,message:attrs.message??attrs.description??`Official DIPUL classification: ${type}.`,pilotAction:'Review the official DIPUL point result and legal reference before flying.',lower:attrs.lower_limit_altitude?`${attrs.lower_limit_altitude} ${attrs.lower_limit_unit??''} ${attrs.lower_limit_alt_ref??''}`:undefined,upper:attrs.upper_limit_altitude?`${attrs.upper_limit_altitude} ${attrs.upper_limit_unit??''} ${attrs.upper_limit_alt_ref??''}`:undefined,legalReference:attrs.legal_ref,authority:'DIPUL / DFS',officialLayerName:layer.replaceAll('_',' '),source:'DIPUL',sourceUrl:directUrl} as ZoneDetail;
+  const originalMessage=attrs.message??attrs.description;
+  return{id:`DE-${index}-${attrs.external_reference??layer}`,name:officialName??`${type} · ${layer.replaceAll('_',' ')}`,originalName:attr('name')??officialName,nameLocalizedLanguage:localizedName?language():englishName?'en':undefined,type,categoryCode:rawType,severity,message:originalMessage??`Official DIPUL classification: ${type}.`,originalMessage,messageLocalizedLanguage:originalMessage?undefined:'en',lower:attrs.lower_limit_altitude?`${attrs.lower_limit_altitude} ${attrs.lower_limit_unit??''} ${attrs.lower_limit_alt_ref??''}`:undefined,upper:attrs.upper_limit_altitude?`${attrs.upper_limit_altitude} ${attrs.upper_limit_unit??''} ${attrs.upper_limit_alt_ref??''}`:undefined,legalReference:attrs.legal_ref,authority:'DIPUL / DFS',officialLayerName:layer.replaceAll('_',' '),layerCode:layer,source:'DIPUL',sourceUrl:directUrl} as ZoneDetail;
  }));
  result.status=result.zones.length?'loaded':'none';return result;
 }
@@ -282,22 +285,24 @@ export async function getOfficialZoneInfo(point:Location,requestedLanguage=langu
  selectedLanguage=requestedLanguage.toLowerCase().split('-')[0]||'en';
  const code=await resolvedCountryAt(point);
  try{
-  if(code==='DE')return await dipul(point);
-  if(code==='ES')return await enaire(point);
-  if(code==='FR'||['GF','GP','MQ','RE','YT','PM','TF'].includes(code))return await france(point);
-  if(code==='LU')return await luxembourg(point);
-  if(code==='IE')return await ireland(point);
-  if(code==='GB')return await uk(point);
-  if(code==='NL'||code==='FI'||code==='EE')return await bundledNationalGeozones(point,code);
-  if(code==='PT')return await portugal(point);
-  if(code==='DK')return await denmark(point);
-  if(code==='CH')return await switzerland(point);
-  if(code==='US')return await unitedStates(point);
-  if(code==='CA')return await canada(point);
-  if(code in COUNTRY_SOURCES){const source=COUNTRY_SOURCES[code as keyof typeof COUNTRY_SOURCES];return{...base(code,source.name,source.source,source.url),status:'unsupported',warning:source.warning}}
-  return{...base(code,'Unknown','Official source directory','#'),status:'unsupported'};
+  let result:ZoneInfo;
+  if(code==='DE')result=await dipul(point);
+  else if(code==='ES')result=await enaire(point);
+  else if(code==='FR'||['GF','GP','MQ','RE','YT','PM','TF'].includes(code))result=await france(point);
+  else if(code==='LU')result=await luxembourg(point);
+  else if(code==='IE')result=await ireland(point);
+  else if(code==='GB')result=await uk(point);
+  else if(code==='NL'||code==='FI'||code==='EE')result=await bundledNationalGeozones(point,code);
+  else if(code==='PT')result=await portugal(point);
+  else if(code==='DK')result=await denmark(point);
+  else if(code==='CH')result=await switzerland(point);
+  else if(code==='US')result=await unitedStates(point);
+  else if(code==='CA')result=await canada(point);
+  else if(code in COUNTRY_SOURCES){const source=COUNTRY_SOURCES[code as keyof typeof COUNTRY_SOURCES];result={...base(code,source.name,source.source,source.url),status:'unsupported',warning:source.warning}}
+  else result={...base(code,'Unknown','Official source directory','#'),status:'unsupported'};
+  return localizeZoneInfo(result,selectedLanguage);
  }catch{
   const source=code in COUNTRY_SOURCES?COUNTRY_SOURCES[code as keyof typeof COUNTRY_SOURCES]:undefined;
-  return{...base(code,source?.name??code,source?.source??'Official source directory',source?.url??'#'),status:'error',warning:source?.warning??'The official source could not be reached. Check it directly before flight.'};
+  return localizeZoneInfo({...base(code,source?.name??code,source?.source??'Official source directory',source?.url??'#'),status:'error',warning:source?.warning??'The official source could not be reached. Check it directly before flight.'},selectedLanguage);
  }
 }

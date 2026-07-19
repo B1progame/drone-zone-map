@@ -1,5 +1,6 @@
 import type { Location, Weather, ZoneInfo } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
+import { localizeZoneInfo } from './zoneTranslations';
 
 export const OFFLINE_PACKAGE_VERSION=5;
 const DB_NAME='aeris-offline',PACKAGES='packages',CHUNKS='chunks',TILES='mapTiles',DB_VERSION=4;
@@ -352,15 +353,15 @@ export async function getOfflinePackageData(packOrId:OfflinePack|string,bounds?:
  }
  return{type:'FeatureCollection',features,properties:{packageId:pack.id,truncated:false}};
 }
-export async function getOfflineContext(location:Location){
+export async function getOfflineContext(location:Location,language='en'){
  const pack=await getBestOfflinePack(location);if(!pack)return;
  const d=.12,data=await getOfflinePackageData(pack,[location.lng-d,location.lat-d,location.lng+d,location.lat+d],30000);
  const insideRing=(ring:number[][])=>{let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const[xi,yi]=ring[i],[xj,yj]=ring[j];if(((yi>location.lat)!==(yj>location.lat))&&(location.lng<(xj-xi)*(location.lat-yi)/(yj-yi)+xi))inside=!inside}return inside};
  const containsGeometry=(geometry:any):boolean=>geometry?.type==='Point'?distanceKm(location,{lng:geometry.coordinates[0],lat:geometry.coordinates[1]})<=1:geometry?.type==='Polygon'?insideRing(geometry.coordinates[0])&&!geometry.coordinates.slice(1).some(insideRing):geometry?.type==='MultiPolygon'?geometry.coordinates.some((polygon:number[][][])=>insideRing(polygon[0])&&!polygon.slice(1).some(insideRing)):false;
  const countryCode=pack.config.country??'DE',country=OFFLINE_COUNTRIES[countryCode];
- const overlaps=data.features.filter(feature=>containsGeometry(feature.geometry)).slice(0,50).map((feature,index)=>{const properties=feature.properties??{},layer=String(properties._aerisOfflineLayer??'drone zone');return{id:String(feature.id??`offline-${index}`),name:String(properties.generated_name_EN??properties.generated_name_DE??properties.name??layer.replaceAll('_',' ')),type:String(properties.type_code??properties._aerisOfflineCategory??layer).replaceAll('_',' '),lower:properties.lower_limit_altitude!=null?`${properties.lower_limit_altitude} ${properties.lower_limit_unit??''} ${properties.lower_limit_alt_ref??''}`:undefined,upper:properties.upper_limit_altitude!=null?`${properties.upper_limit_altitude} ${properties.upper_limit_unit??''} ${properties.upper_limit_alt_ref??''}`:undefined,legalReference:properties.legal_ref,source:`${country.source} offline package`,updated:pack.metadata.sourceUpdatedAt}});
+ const overlaps=data.features.filter(feature=>containsGeometry(feature.geometry)).slice(0,50).map((feature,index)=>{const properties=feature.properties??{},layer=String(properties._aerisOfflineLayer??'drone zone'),rawName=String(properties.name??properties.generated_name_EN??properties.generated_name_DE??layer.replaceAll('_',' ')),category=String(properties.type_code??properties._aerisOfflineCategory??layer);return{id:String(feature.id??`offline-${index}`),name:rawName,originalName:rawName,type:category.replaceAll('_',' '),categoryCode:category,lower:properties.lower_limit_altitude!=null?`${properties.lower_limit_altitude} ${properties.lower_limit_unit??''} ${properties.lower_limit_alt_ref??''}`:undefined,upper:properties.upper_limit_altitude!=null?`${properties.upper_limit_altitude} ${properties.upper_limit_unit??''} ${properties.upper_limit_alt_ref??''}`:undefined,legalReference:properties.legal_ref,officialLayerName:layer.replaceAll('_',' '),layerCode:layer,source:`${country.source} offline package`,updated:pack.metadata.sourceUpdatedAt}});
  const zoneInfo:ZoneInfo={countryCode,countryName:country.name,sourceName:`${country.source} offline package`,sourceUrl:country.sourceUrl,status:overlaps.length?'loaded':'none',zones:overlaps,checkedAt:pack.metadata.updatedAt,warning:`Offline package “${pack.name}”, downloaded ${new Date(pack.metadata.updatedAt).toLocaleDateString()}. Reconnect before flight to check temporary changes.`};
- return{pack,weather:distanceKm(location,pack.metadata.center)<=1?pack.weather:undefined,zoneInfo};
+ return{pack,weather:distanceKm(location,pack.metadata.center)<=1?pack.weather:undefined,zoneInfo:localizeZoneInfo(zoneInfo,language)};
 }
 export async function downloadGeoJson(pack:OfflinePack){
  const data=await getOfflinePackageData(pack,pack.metadata.bounds,250000),parts:BlobPart[]=[`{"type":"FeatureCollection","properties":${JSON.stringify(data.properties)},"features":[`];
