@@ -77,6 +77,7 @@ header{height:76px;padding:0 4.5vw;background:linear-gradient(180deg,#06110fe8,t
  .weatherLegend{display:none}.mapWeatherNow>div{gap:0 8px}.mapWeatherNow span{font-size:9px}.weatherTicks button{font-size:6px}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media(max-width:680px){.mapPage .emptyCheck{left:10px!important;right:auto!important;bottom:82px!important;width:auto!important;max-width:210px!important;min-height:0!important;display:flex!important;align-items:center!important;gap:7px!important;padding:8px 11px!important;overflow:visible!important;border-radius:99px!important}.mapPage .emptyCheck svg{width:16px;height:16px;flex:none}.mapPage .emptyCheck b{font-size:10px;white-space:nowrap}.mapPage .emptyCheck span{display:none}}
 
 .canadaMapEmbed{position:absolute;z-index:8;inset:0;background:#091411}.canadaMapEmbed iframe{width:100%;height:100%;border:0;background:#e8edf1}.canadaMapEmbed>a{position:absolute;right:14px;bottom:34px;padding:9px 13px;border:1px solid #ffffff66;border-radius:13px;background:#07130fe8;color:#d9ffca;font:9px 'DM Mono';letter-spacing:.04em;box-shadow:0 8px 25px #0008}
 

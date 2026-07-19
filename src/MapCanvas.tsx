@@ -413,6 +413,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
           ? 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
           : '© OpenStreetMap contributors'
       },
+      'terrain-dem':{type:'raster-dem',url:'https://tiles.mapterhorn.com/tilejson.json',tileSize:512,attribution:'<a href="https://tiles.mapterhorn.com/" target="_blank">Elevation © Mapterhorn</a>'},
       'offline-basemap':{type:'vector',tiles:['aeris-offline://none/none/{z}/{x}/{y}'],minzoom:2,maxzoom:12,attribution:'<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>'},
       dipul: {
         type: 'raster',
@@ -458,6 +459,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
     },
     layers: [
       { id: 'basemap', type: 'raster', source: 'basemap', paint: { 'raster-fade-duration': 250 } },
+      {id:'terrain-hillshade',type:'hillshade',source:'terrain-dem',layout:{visibility:'none'},paint:{'hillshade-shadow-color':'#15241e','hillshade-highlight-color':'#d7edce','hillshade-accent-color':'#6c806f','hillshade-exaggeration':.35}},
       ...offlineBasemapLayers,
       {id:'offline-package-fill',type:'fill',source:'offline-package',filter:['match',['geometry-type'],['Polygon','MultiPolygon'],true,false] as any,paint:{'fill-color':semanticFillColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff']),'fill-opacity':.27}},
       {id:'offline-package-line',type:'line',source:'offline-package',paint:{'line-color':semanticLineColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff7182','airports','#ffd078','controlled','#e5a2ff','nature','#80efa4','warnings','#ffea94','basic','#b1cbc5','#9ee3ff']),'line-width':['interpolate',['linear'],['zoom'],4,.7,12,2.2] as any,'line-opacity':.96}},
@@ -732,9 +734,16 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useEffect(()=>{planPointsRef.current=planPoints},[planPoints]);
   useEffect(()=>{flightRadiusRef.current=flightRadiusKm},[flightRadiusKm]);
   useEffect(()=>{settingsRef.current=settings},[settings]);
+  const applyTerrain=(map:MapLibreMap,enabled:boolean,animate=true)=>{
+    if(!map.getSource('terrain-dem'))return;
+    map.setTerrain(enabled?{source:'terrain-dem',exaggeration:1}:null);
+    if(map.getLayer('terrain-hillshade'))map.setLayoutProperty('terrain-hillshade','visibility',enabled?'visible':'none');
+    if(animate)map.easeTo({pitch:enabled?58:0,bearing:enabled?-18:0,duration:settingsRef.current.reducedMotion?0:850,essential:false});
+  };
   const syncOfflinePackage=async(point?:{lat:number;lng:number})=>{
     const map=mapRef.current;
     if(!map?.isStyleLoaded())return;
+    applyTerrain(map,settingsRef.current.terrain3d&&!mapShouldUseOffline(),false);
     const source=map.getSource('offline-package') as maplibregl.GeoJSONSource|undefined;
     const coverageSource=map.getSource('offline-coverage') as maplibregl.GeoJSONSource|undefined;
     const mapSource=map.getSource('offline-basemap') as maplibregl.VectorTileSource|undefined;
@@ -793,8 +802,8 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     map.touchZoomRotate.enable();
     map.dragPan.enable();
     const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;if(!mapShouldUseOffline()){loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,state.hour,hooks);loadWeatherGrid(map,state.hour,state.visible,detail,Boolean(state.location&&state.weather),hooks)}else void syncOfflinePackage()};
-    map.on('load', () => { map.setProjection({type:'globe'});setLoaded(true); setError(''); map.resize();refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current);if(!settingsRef.current.reducedMotion&&!windAnimationRef.current)windAnimationRef.current=startWindLineAnimation(map); });
-    map.on('style.load',()=>{map.setProjection({type:'globe'});loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current)});
+    map.on('load', () => { map.setProjection({type:'globe'});applyTerrain(map,settingsRef.current.terrain3d&&!mapShouldUseOffline(),false);setLoaded(true); setError(''); map.resize();refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current);if(!settingsRef.current.reducedMotion&&!windAnimationRef.current)windAnimationRef.current=startWindLineAnimation(map); });
+    map.on('style.load',()=>{map.setProjection({type:'globe'});applyTerrain(map,settingsRef.current.terrain3d&&!mapShouldUseOffline(),false);loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current)});
     map.on('moveend',refresh);
     map.on('click', event => {
       const point={lat:event.lngLat.lat,lng:event.lngLat.lng,name:`${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`};
@@ -851,13 +860,14 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useEffect(()=>{weatherStateRef.current={location,weather,hour:weatherHour,visible:weatherVisible};const map=mapRef.current;if(!map)return;if(map.isStyleLoaded()){applyWeather(map,location,weather,weatherHour,weatherVisible);ensureRadar(map,weatherVisible,weatherHour,hooksRef.current??undefined);loadWeatherGrid(map,weatherHour,weatherVisible,settingsRef.current.renderDetail,Boolean(location&&weather),hooksRef.current??undefined)}},[location,weather,weatherHour,weatherVisible]);
 
   useEffect(()=>{const map=mapRef.current;if(!map||!map.isStyleLoaded())return;const hooks=hooksRef.current??undefined;loadDynamicCountrySources(map,settings.renderDetail,hooks);ensureRadar(map,weatherVisible,weatherHour,hooks);loadWeatherGrid(map,weatherHour,weatherVisible,settings.renderDetail,Boolean(location&&weather),hooks)},[settings.renderDetail,weatherHour,weatherVisible,loaded,baseMap,location,weather]);
+  useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded())applyTerrain(map,settings.terrain3d&&!mapShouldUseOffline())},[settings.terrain3d,loaded,baseMap]);
 
   useEffect(()=>{const map=mapRef.current;if(map?.isStyleLoaded()){applyFlightRange(map,planPoints,flightRadiusKm);applyFlightPlan(map,planPoints)}},[planPoints,flightRadiusKm,loaded,baseMap]);
 
   useEffect(()=>{if(!weatherPlaying)return;const timer=window.setInterval(()=>setWeatherHour(value=>(value+1)%12),1250);return()=>window.clearInterval(timer)},[weatherPlaying]);
   useEffect(()=>{if(settings.reducedMotion)setWeatherPlaying(false)},[settings.reducedMotion]);
 
-  return <div className="mapHost" ref={hostRef}>
+  return <div className={`mapHost${settings.terrain3d?' terrain3d':''}`} data-terrain={settings.terrain3d?'enabled':'disabled'} ref={hostRef}>
     {!loaded && !error && <div className="mapLoading"><span />Loading globe and satellite map…<i><b style={{width:'34%'}}/></i></div>}
     {loaded&&overlayProgress&&<div className="overlayProgress" role="status"><div><Layers3/><span>Loading {overlayProgress.label}…</span><b>{Math.round(overlayProgress.done/Math.max(1,overlayProgress.total)*100)}%</b></div><i><b style={{width:`${Math.max(8,overlayProgress.done/Math.max(1,overlayProgress.total)*100)}%`}}/></i></div>}
     {error && <div className="mapError">{error} Try the Streets basemap.</div>}

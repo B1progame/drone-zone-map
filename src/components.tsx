@@ -48,17 +48,17 @@ export function Nav({page,setPage,language='en'}:{page:Page;setPage:(p:Page)=>vo
 }
 export function SearchBox({onLocation,hero=false,language='en',compact=false}:{onLocation:(l:Location)=>void;hero?:boolean;language?:string;compact?:boolean}) {
   const [value,setValue]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[open,setOpen]=useState(false),[suggestions,setSuggestions]=useState<LocationSuggestion[]>([]),[suggestionsOpen,setSuggestionsOpen]=useState(false),[activeSuggestion,setActiveSuggestion]=useState(0),[suggesting,setSuggesting]=useState(false);
-  const inputRef=useRef<HTMLInputElement>(null);
+  const inputRef=useRef<HTMLInputElement>(null),chosenValueRef=useRef('');
   useEffect(()=>{if(open)window.setTimeout(()=>inputRef.current?.focus(),30)},[open]);
   useEffect(()=>{
-    const query=value.trim();if(query.length<2){setSuggestions([]);setSuggestionsOpen(false);setSuggesting(false);return}
+    const query=value.trim();if(query.length<2||query===chosenValueRef.current){setSuggestions([]);setSuggestionsOpen(false);setSuggesting(false);return}
     const controller=new AbortController(),timer=window.setTimeout(()=>{
       setSuggesting(true);
       void searchLocationSuggestions(query,language,controller.signal).then(results=>{setSuggestions(results);setActiveSuggestion(0);setSuggestionsOpen(results.length>0)}).catch(reason=>{if(reason?.name!=='AbortError')setSuggestions([])}).finally(()=>setSuggesting(false));
     },220);
     return()=>{window.clearTimeout(timer);controller.abort()};
   },[value,language]);
-  const chooseSuggestion=(location:LocationSuggestion)=>{setValue(location.name);setSuggestionsOpen(false);setError('');onLocation(location);setOpen(false)};
+  const chooseSuggestion=(location:LocationSuggestion)=>{chosenValueRef.current=location.name;setValue(location.name);setSuggestions([]);setSuggestionsOpen(false);setError('');onLocation(location);setOpen(false)};
   const submit=async()=>{
     if(!value.trim())return inputRef.current?.focus();
     setBusy(true);setError('');
@@ -72,7 +72,7 @@ export function SearchBox({onLocation,hero=false,language='en',compact=false}:{o
   const locate=()=>navigator.geolocation?.getCurrentPosition(position=>{onLocation({lat:position.coords.latitude,lng:position.coords.longitude,name:'My location'});setOpen(false)},()=>setError('Location permission was not granted.'),{enableHighAccuracy:true,timeout:10000});
   const search=<div className={'searchWrap '+(hero?'heroSearch':'')}>
     <Search size={19}/>
-    <input ref={inputRef} value={value} onChange={e=>{setValue(e.target.value);setError('');setSuggestionsOpen(true)}} onFocus={()=>suggestions.length&&setSuggestionsOpen(true)} onBlur={()=>window.setTimeout(()=>setSuggestionsOpen(false),100)} onKeyDown={e=>{
+    <input ref={inputRef} value={value} onChange={e=>{chosenValueRef.current='';setValue(e.target.value);setError('');setSuggestionsOpen(true)}} onFocus={()=>suggestions.length&&setSuggestionsOpen(true)} onBlur={()=>window.setTimeout(()=>setSuggestionsOpen(false),100)} onKeyDown={e=>{
       if(e.key==='ArrowDown'&&suggestionsOpen){e.preventDefault();setActiveSuggestion(index=>Math.min(suggestions.length-1,index+1))}
       else if(e.key==='ArrowUp'&&suggestionsOpen){e.preventDefault();setActiveSuggestion(index=>Math.max(0,index-1))}
       else if(e.key==='Enter'){e.preventDefault();if(suggestionsOpen&&suggestions[activeSuggestion])chooseSuggestion(suggestions[activeSuggestion]);else void submit()}
