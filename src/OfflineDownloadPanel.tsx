@@ -1,35 +1,43 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Check, Database, Download, Map, MapPin, Satellite, X } from 'lucide-react';
 import type { Location, Weather, ZoneInfo } from './types';
-import { createOfflineConfig, createOfflinePack, estimateOfflinePackage, estimateOfflinePackageFromSource, formatBytes, getOfflineStorageStatus, GERMAN_STATES, MAX_OFFLINE_TILES, maxOfflineBasemapZoom, offlineTileCount, OFFLINE_COUNTRIES, OFFLINE_LAYERS, type OfflineBasemapType, type OfflineCountryCode, type OfflineDownloadProgress, type OfflineLayerId, type OfflineScope, type OfflineStorageStatus } from './offline';
+import { createOfflineConfig, createOfflinePack, estimateOfflinePackage, estimateOfflinePackageFromSource, formatBytes, getOfflineStorageStatus, GERMAN_STATES, MAX_OFFLINE_TILES, maxOfflineBasemapZoom, offlineTileCount, OFFLINE_COUNTRIES, OFFLINE_LAYERS, type OfflineBasemapType, type OfflineBounds, type OfflineCountryCode, type OfflineDownloadProgress, type OfflineLayerId, type OfflinePackConfig, type OfflineScope, type OfflineStorageStatus } from './offline';
+
+function splitLargeConfig(config:OfflinePackConfig){
+ const queue:OfflineBounds[]=[config.bounds],parts:OfflineBounds[]=[];
+ while(queue.length){
+  const bounds=queue.shift()!;
+  if(offlineTileCount(bounds,config.basemapMaxZoom)<=MAX_OFFLINE_TILES){parts.push(bounds);continue}
+  const[west,south,east,north]=bounds,width=east-west,height=north-south;
+  if(width>=height){const middle=(west+east)/2;queue.push([west,south,middle,north],[middle,south,east,north])}
+  else{const middle=(south+north)/2;queue.push([west,south,east,middle],[west,middle,east,north])}
+ }
+ if(parts.length===1)return[config];
+ return parts.map((bounds,index)=>({...config,scope:'country' as const,region:`${config.region} · section ${index+1}/${parts.length}`,center:{lng:(bounds[0]+bounds[2])/2,lat:(bounds[1]+bounds[3])/2,name:config.region},radiusKm:undefined,bounds}));
+}
 
 export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}:{location:Location;weather?:Weather;zoneInfo?:ZoneInfo;onClose:()=>void;onSaved:()=>void}){
  const detected=(zoneInfo?.countryCode&&zoneInfo.countryCode in OFFLINE_COUNTRIES?zoneInfo.countryCode:'DE') as OfflineCountryCode;
  const[scope,setScope]=useState<OfflineScope>('radius'),[country,setCountry]=useState<OfflineCountryCode>(detected),[stateName,setStateName]=useState('Berlin'),[radius,setRadius]=useState(20),[layers,setLayers]=useState<OfflineLayerId[]>(OFFLINE_COUNTRIES[detected].layers),[basemapType,setBasemapType]=useState<OfflineBasemapType>('street'),[qualityOffset,setQualityOffset]=useState(0),[progress,setProgress]=useState<OfflineDownloadProgress>(),[error,setError]=useState(''),[sourceEstimate,setSourceEstimate]=useState<{bytes:number;items:number;tileCount?:number;label:string}>(),[storage,setStorage]=useState<OfflineStorageStatus>();
  const availableLayers=OFFLINE_COUNTRIES[country].layers;
  const baseConfig=useMemo(()=>createOfflineConfig(scope,location,layers,stateName,radius,country),[scope,location,layers,stateName,radius,country]);
- const qualityMax=useMemo(()=>{
-  const ceiling=maxOfflineBasemapZoom(baseConfig.bounds,basemapType);
-  let safeZoom=Math.min(5,ceiling);
-  for(let candidate=safeZoom+1;candidate<=ceiling;candidate++){
-   if(offlineTileCount(baseConfig.bounds,candidate)>MAX_OFFLINE_TILES)break;
-   safeZoom=candidate;
-  }
-  return safeZoom;
- },[baseConfig.bounds,basemapType]),qualityMin=Math.min(5,qualityMax),qualityZoom=Math.max(qualityMin,Math.min(qualityMax,baseConfig.basemapMaxZoom+qualityOffset));
+ const qualityMax=useMemo(()=>maxOfflineBasemapZoom(baseConfig.bounds,basemapType),[baseConfig.bounds,basemapType]),qualityMin=Math.min(5,qualityMax),qualityZoom=Math.max(qualityMin,Math.min(qualityMax,baseConfig.basemapMaxZoom+qualityOffset));
  const qualityLabel=qualityZoom===qualityMax?'Maximum':qualityZoom<=qualityMin?'Compact':qualityZoom<=baseConfig.basemapMaxZoom?'Balanced':'High';
  const config=useMemo(()=>({...baseConfig,basemapType,basemapMaxZoom:qualityZoom}),[baseConfig,basemapType,qualityZoom]);
+ const downloadConfigs=useMemo(()=>splitLargeConfig(config),[config]);
  const estimate=useMemo(()=>estimateOfflinePackage(config),[config]);
  const shownEstimate=sourceEstimate??estimate;
- const tooLarge=(shownEstimate.tileCount??0)>MAX_OFFLINE_TILES;
  useEffect(()=>{let active=true;setSourceEstimate(undefined);const timer=window.setTimeout(()=>void estimateOfflinePackageFromSource(config).then(value=>{if(active)setSourceEstimate(value)}).catch(()=>{}),250);return()=>{active=false;window.clearTimeout(timer)}},[config]);
  useEffect(()=>{let active=true;void getOfflineStorageStatus().then(value=>{if(active)setStorage(value)});return()=>{active=false}},[]);
  const toggle=(id:OfflineLayerId)=>setLayers(value=>value.includes(id)?value.filter(item=>item!==id):[...value,id]);
  const chooseCountry=(next:OfflineCountryCode)=>{setCountry(next);setLayers(OFFLINE_COUNTRIES[next].layers);if(next!=='DE'&&scope==='state')setScope('country')};
  const download=async()=>{
   setError('');
-  try{setStorage(await getOfflineStorageStatus(true));await createOfflinePack(config,weather,zoneInfo,setProgress);onSaved();window.setTimeout(onClose,650)}
-  catch(reason){setError(reason instanceof Error?reason.message:'The package could not be downloaded.');setProgress(undefined)}
+  try{
+   setStorage(await getOfflineStorageStatus(true));
+   for(let index=0;index<downloadConfigs.length;index++)await createOfflinePack(downloadConfigs[index],weather,zoneInfo,value=>setProgress({percent:Math.round((index+value.percent/100)/downloadConfigs.length*100),stage:downloadConfigs.length>1?`Section ${index+1}/${downloadConfigs.length} · ${value.stage}`:value.stage,items:value.items}));
+   onSaved();window.setTimeout(onClose,650);
+  }catch(reason){setError(reason instanceof Error?reason.message:'The package could not be downloaded.');setProgress(undefined)}
  };
  return <div className="modalShade offlineShade" role="dialog" aria-modal="true" aria-labelledby="offline-title">
   <section className="settings offlineBuilder liquid">
@@ -56,9 +64,9 @@ export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}
    <div className="offlineEstimate"><Database/><span><small>{sourceEstimate?'SOURCE-CHECKED ESTIMATE':'ESTIMATING PACKAGE'}</small><b>{shownEstimate.label}</b><i>about {shownEstimate.items.toLocaleString()} items · final size depends on feature geometry</i></span></div>
    {storage?.supported&&<div className="offlineStorage"><span><b>{storage.persistent?'Protected storage':'Browser-managed storage'}</b>{formatBytes(storage.usageBytes)} used of {formatBytes(storage.quotaBytes)} · {formatBytes(storage.freeBytes)} available</span><i><b style={{width:`${storage.quotaBytes?Math.min(100,storage.usageBytes/storage.quotaBytes*100):0}%`}}/></i><small>{storage.persistent?'This browser has granted persistent storage.':'A persistence request is made when you download.'}</small></div>}
    {progress&&<div className="offlineBuildProgress" role="status" aria-live="polite"><span><b>{progress.percent}%</b>{progress.stage}</span><i><b style={{width:`${progress.percent}%`}}/></i><small>{progress.items.toLocaleString()} items received</small></div>}
-   {tooLarge&&<div className="offlineError">This full-quality country would need {shownEstimate.tileCount?.toLocaleString()} tiles. Lower the selected-area quality until it is below {MAX_OFFLINE_TILES.toLocaleString()} tiles.</div>}
+   {downloadConfigs.length>1&&<div className="offlineCenter"><Database/><span><b>Large download enabled</b>This selection will be stored automatically as {downloadConfigs.length} connected offline sections so the browser does not reject it.</span></div>}
    {error&&<div className="offlineError">{error}</div>}
-   <button className="primary offlineDownload" disabled={Boolean(progress)||tooLarge} onClick={()=>void download()}><Download/>{progress?'Downloading package…':tooLarge?'Reduce selected-area quality':`Download about ${shownEstimate.label}`}</button>
+   <button className="primary offlineDownload" disabled={Boolean(progress)} onClick={()=>void download()}><Download/>{progress?'Downloading package…':`Download about ${shownEstimate.label}`}</button>
    <small>Official context: {OFFLINE_COUNTRIES[country].source}. {basemapType==='satellite'?'Satellite: Sentinel-2 cloudless by EOX IT Services GmbH (modified Copernicus Sentinel data 2016/2017), CC BY 4.0.':'Basemap: OpenFreeMap / OpenMapTiles with © OpenStreetMap contributors.'} Offline data is planning support, not legal clearance. Temporary restrictions can change after download.</small>
   </section>
  </div>;
