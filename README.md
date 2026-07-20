@@ -1,138 +1,86 @@
-# Drone Zone Map
+# Aeris · Drone Airspace
 
-A privacy-friendly, static drone planning map built for GitHub Pages. It combines map exploration, multi-point route planning, honest official-source status, live weather context, saved locations, and a local flight-context assistant with optional OpenRouter answers in a polished responsive interface.
+[![Deploy to GitHub Pages](https://github.com/B1progame/drone-zone-map/actions/workflows/deploy.yml/badge.svg)](https://github.com/B1progame/drone-zone-map/actions/workflows/deploy.yml)
+[![Open the live website](https://img.shields.io/badge/open-live%20website-b6ff94?style=flat&logo=googleearth&logoColor=102017)](https://b1progame.github.io/drone-zone-map/)
+[![License](https://img.shields.io/badge/license-free%20use%20%C2%B7%20no%20redistribution-102017?style=flat)](LICENSE)
 
-> **Planning and situational awareness only.** This project is not an official aviation authority and does not grant permission to fly. Check the official national aviation source before takeoff.
+**Aeris is a privacy-first drone planning workspace for understanding the sky before takeoff.** Search a place, inspect official airspace context, compare weather, plan a route, save it locally, and download Street and/or Satellite map packages for offline use.
 
-## What works in this MVP
+> Planning and situational awareness only. Aeris is not an aviation authority and never grants permission to fly. Check the responsible official source before every flight.
 
-- Interactive MapLibre globe/map with click, touch, pinch zoom, and 100 km+ country-scale overlays
-- Coordinate search, browser geolocation, and animated map fly-to
-- Current Open-Meteo conditions plus a cached viewport field for cloud, rain, wind lines, and optional RainViewer radar
-- Multi-point flight routes with persisted waypoints, map/search entry, and geodesic distance
-- Local-only saved places and preference notice
-- Responsive liquid-glass UI with adjustable transparency, reduced motion, and overlay-detail budgets
-- Source registry and official links; no fake zones or derived legal claims
-- Keyless on-device flight-context assistant, plus optional OpenRouter Hunyuan answers using a session-only browser key
-- Current-viewport GeoJSON export plus a clean map-and-overlay PNG capture without app controls
-- GitHub Pages deployment and a safe metadata-validation workflow
+## See it first
 
-## Official-source coverage
+[![Open Aeris](https://img.shields.io/badge/▶%20open%20Aeris-live%20website-b6ff94?style=for-the-badge&labelColor=102017)](https://b1progame.github.io/drone-zone-map/)
 
-| Country | Source | Status | Offline/vector claim |
-|---|---|---|---|
-| Germany | DIPUL | Live official WMS and point identify | No vector/offline zone claim |
-| Spain | ENAIRE servAIS / ED-318 | Live viewport vectors and point identify | Urban coverage appears only at useful local zoom |
-| France | IGN / Géoportail | Live official UAS-restriction WMTS | No vector/offline zone claim |
-| Italy | ENAC / d-flight | Authenticated official map; personal ED-269 export | Private manual import only; never redistributed |
-| United Kingdom | NATS UK AIS | AIRAC KML visualization and local point checks | Permanent restrictions; check NOTAMs |
-| United States | FAA UAS Facility Maps | Live viewport grids and point checks | Authorization ceilings, not complete clearance |
-| Canada | Government of Canada Open Data | Open airports, 5.6 km advisory rings, and national parks | Partial open-data view; NAV CANADA database is not redistributed |
-| Switzerland | FOCA / geo.admin.ch | Complete live official GeoJSON and point checks | Federal zones; cantonal rules may also apply |
-| Austria | Austro Control Dronespace | Location-aware official planner handoff | Official-link-only until a reusable feed is verified |
-| Denmark | Trafikstyrelsen Dronezoner | Live official GeoJSON and point lookup | Loaded on demand; not cached |
-| Luxembourg | DAC Geoportal | Normalized official CC0 vector zones | Offline pack supported |
-| Ireland | Irish Aviation Authority | Published official GeoJSON | Bundled reference copy |
-| Sweden | LFV Dronechart | Published official WFS | Bundled unmodified layers |
-| Netherlands | Ministry of Infrastructure and Water Management | Current ED-269 government download | Bundled normalized snapshot |
-| Finland | Traficom | Machine-readable official UAS zones, CC BY 4.0 | Bundled normalized snapshot with modification notice |
-| Estonia | Transport Administration / EANS | Live official UAS GeoJSON | No copied snapshot |
-| Bulgaria | Civil Aviation Administration | Official map/package handoff plus local audit tool | Geometry not redistributed without explicit reuse permission |
-| Portugal | ANAC | Live official ED-269 with dated-file discovery | Converted in memory; no copied snapshot |
+![Aeris homepage](public/screenshots/home.jpg)
 
-Germany loads every active layer advertised by DIPUL, separating country-scale safety layers from dense local infrastructure so the national view remains readable. France uses its bounded live raster source. Spain loads current ENAIRE vectors by viewport and colors `PROHIBITED`, `REQ_AUTHORIZATION`, `CONDITIONAL`, and `NO_RESTRICTION` distinctly; very large TMA/regional polygons are softly filled while local restrictions remain prominent, including the Canary Islands. The UK uses NATS' AIRAC visualization KML, and US FAA facility grids load only near the viewed area. Denmark and Estonia load official GeoJSON live. Portugal discovers ANAC's newest dated ED-269 file and converts it in memory. Ireland, Luxembourg, Finland, and the Netherlands use verified vector files. Sweden's raw files remain unmodified and the frontend applies LFV's ground-level display filters. ED-269 circles are converted to geodesic polygons while their exact source center and radius remain in properties. An absent zone is never permission. The source registry lives at `public/data/sources/countries.json` and records verified services, freshness, attribution, capabilities, warnings, and terms notes.
+![Aeris about and project credits](public/screenshots/home-about.jpg)
 
-Norway resolves to its official source but does not display copied geometry because Avinor prohibits presenting its service data in another application. Italy resolves to ENAC's required d-flight map. A registered operator can manually import an ED-269 JSON export into ignored `private-data/it/` storage, but Aeris does not automate d-flight login or redistribute its reserved content. Canada renders openly licensed federal airports, clearly labelled 5.6 km advisory rings, and national-park boundaries; NRC explicitly states that its NAV CANADA-derived database cannot be redistributed, so the complete official map remains a direct handoff.
+![Aeris live map](public/screenshots/map.jpg)
 
-### Expanded coverage directory
+![Aeris offline package builder](public/screenshots/offline-package.jpg)
 
-The registry links to official planners or aviation authorities for 36 countries: Germany, Spain, France, Ireland, the UK, Benelux, the Nordics, central/eastern/southern Europe, plus the United States, Canada, Australia, New Zealand, Japan, Brazil, India, Singapore, and South Africa. Every registered country resolves either to an integrated point check or a location-aware official-map handoff. Entries are marked active only after their endpoint, licence, update model, attribution, and caching behavior have been verified. The complete dated disposition report is generated at `pipeline/reports/source-coverage-audit.json`.
+The site is deployed from `main` at [b1progame.github.io/drone-zone-map](https://b1progame.github.io/drone-zone-map/). The UI keeps saved places, routes, preferences, and downloaded packages in the browser by default.
 
-## Run locally
+## Why I built it
 
-```bash
-npm install
+I built Aeris to make the moment before a flight calmer and more honest: the official source should stay visible, weather should be understandable, and offline planning should remain useful when connectivity is poor. It deliberately separates planning context from legal clearance and records source limitations instead of filling gaps with guesses.
+
+## What is included
+
+- MapLibre globe and map views with Street/Satellite display controls
+- Official-source coverage and direct authority links across Europe, North America, and additional registry entries
+- Search, browser geolocation, weather context, route planning, saved places, and a local flight-context assistant
+- Offline packages with independent Street and Satellite selection, automatic large-area splitting, browser storage checks, verification, and download ETA
+- Responsive standalone web-app metadata, service-worker shell caching, and Apple Home Screen support
+- Current-viewport GeoJSON export and clean map/overlay image capture
+
+## Local-only setup
+
+This project is designed to run locally while developing. No account or API key is required for the basic app.
+
+```powershell
+git clone https://github.com/B1progame/drone-zone-map.git
+cd drone-zone-map
+npm ci
 npm run dev
 ```
 
-Build with `npm run build`. The Vite base is `/drone-zone-map/` in GitHub Actions and `/` locally.
+Open the local URL printed by Vite. For a production check:
 
-## Worldwide data commands
-
-```bash
-npm run data:baseline
-npm run data:discover
-npm run data:update -- --country=DE
-npm run data:update -- --country=FR
-npm run data:update -- --country=IT --input=/path/to/personal-export.json
-npm run data:update-all
-npm run data:normalize
-npm run data:translate
-npm run data:validate
-npm run data:test-locations
-npm run data:report
-npm run world:continue
+```powershell
+npm run build
+npm test
 ```
 
-`world:continue` inventories all 249 ISO 3166 countries and territories, processes verified providers, leaves unknown or restricted sources pending, validates public datasets, and regenerates `reports/`. It does not invent legal zones for countries whose official data cannot be obtained or redistributed.
+The offline workflow can request large amounts of storage and network data. Choose a smaller area first, grant browser persistence when prompted, and verify the package before relying on it. Never start a multi-gigabyte download without checking available device storage.
 
-## Deploy to GitHub Pages
+## GitHub Pages deployment
 
-Push `main`, then in the repository settings choose **Pages → GitHub Actions** as the source. The included workflow builds and publishes `dist`. The site will be available at:
+The included workflow builds and publishes `dist` from `main`. In repository settings, select **Pages → GitHub Actions**. The deployment base is `/drone-zone-map/`; local Vite development uses `/`.
 
-`https://USERNAME.github.io/drone-zone-map/`
+## Data and attribution
 
-If you name the repository differently, update `base` in `vite.config.ts`.
+Aeris does not own the aviation data it displays. Each provider remains subject to its own terms, licence, rate limits, attribution, and freshness. The repository keeps source notes in [`reports/SOURCE_LICENSES.md`](reports/SOURCE_LICENSES.md), the generated registry in [`public/data/sources/countries.json`](public/data/sources/countries.json), and provider-specific documentation in [`docs/`](docs/).
 
-## Data pipeline and adding a country
+Photography is credited in the app and in [`public/media/CREDITS.md`](public/media/CREDITS.md). Map, satellite, weather, and aviation-source credits remain visible in the app. Missing data is never treated as permission to fly.
 
-`pipeline/` is intentionally conservative. Before an adapter fetches any service:
+## Documentation wiki
 
-1. Confirm the source is official and public.
-2. Check robots, licensing, rate limits, caching and attribution requirements.
-3. Prefer documented GeoJSON, OGC API, WFS, ED-318, or WMS/WMTS capabilities.
-4. Normalize verified features into the project zone schema with source URL, timestamp, warnings, and attribution.
-5. Never infer polygons from pixels, bypass access controls, or silently replace missing data.
+The repository wiki is kept in [`wiki/`](wiki/) so it can be read locally, reviewed in pull requests, or copied into the GitHub Wiki:
 
-The scheduled workflow runs adapter tests, validates every GeoJSON file, refreshes Luxembourg, and updates the redistributable Finnish and Dutch public feeds. Estonia stays live. Bulgaria's local audit export remains ignored until reuse permission is explicit. Add a verified adapter and exporter before enabling retrieval for another country.
-
-### Canadian open-data export
-
-Export the two redistributable federal layers used by Aeris:
-
-```bash
-python pipeline/main.py update-canada-open --output canada-open-data.geojson
-```
-
-The command downloads Transport Canada airports and NRCan national parks under
-the Open Government Licence. It intentionally excludes the NRC tool's protected
-NAV CANADA-derived database and records that limitation in the export.
-
-### Personal Spanish GeoJSON snapshot
-
-Download a small ENAIRE viewport as official, paged GeoJSON:
-
-```bash
-python pipeline/main.py fetch-spain-bbox --bbox=-3.75,40.38,-3.65,40.46 --output madrid.geojson
-```
-
-The downloader bounds every query, requests simplified coordinate precision, and
-paginates official features. It does not trace screenshots or bulk-copy the
-national service.
-
-## Limitations
-
-- Weather is forecast context, not a go/no-go decision; temporary restrictions can change.
-- The visible-overlay GeoJSON contains rendered vectors and metadata references for raster overlays; raster pixels are represented by the clean PNG instead of being mislabelled as vector geometry.
-- A remote tile service can still reject a canvas capture if it stops allowing cross-origin textures. Aeris reports that export failure instead of producing a corrupt file.
-- Offline packs are UI architecture only until each source’s caching terms and data format are verified.
-- The keyless assistant is deterministic and only summarizes already-loaded context. An optional OpenRouter key enables the directly selected free Hunyuan model; the key is held in `sessionStorage`, is never bundled or committed, and is removed when the tab session ends. Neither mode grants legal clearance.
-- Primary home, weather, search, planner, settings, and result flows are translated into English, German, Spanish, French, and Italian. Other listed search languages use English UI fallback while still localizing geocoding and supported official-map handoffs.
-
-## Privacy
-
-The basic app has no analytics. Route points, saved places, preferences, and the acknowledgement are stored in browser localStorage; clearing browser site data removes them. The app only calls Open-Meteo after you select a point. No account or AI-provider API key is required. If you optionally enter an OpenRouter key, it remains in the current tab's `sessionStorage` and is sent only to OpenRouter for validation and Copilot requests.
+- [`wiki/Home.md`](wiki/Home.md) — project orientation
+- [`wiki/Local-setup.md`](wiki/Local-setup.md) — setup and verification from a clean machine
+- [`wiki/Why-Aeris.md`](wiki/Why-Aeris.md) — motivation, privacy, and design choices
+- [`wiki/Offline-maps.md`](wiki/Offline-maps.md) — Street/Satellite packages and storage behavior
+- [`wiki/License-and-attribution.md`](wiki/License-and-attribution.md) — usage boundaries and third-party notices
 
 ## License
 
-MIT.
+Free use is permitted for personal, educational, research, and internal organisational purposes. Redistribution, resale, sublicensing, repackaging, and offering the project as a separate hosted/downloadable product are not permitted without written permission. Read [`LICENSE`](LICENSE) and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) before using or modifying the repository.
+
+This is a source-available custom licence, not an OSI-approved open-source licence. Third-party datasets and media are not relicensed by it.
+
+## Contact
+
+The project is maintained by [B1progame](https://github.com/B1progame). Issues and improvement ideas belong on the repository’s [Issues](https://github.com/B1progame/drone-zone-map/issues) page.

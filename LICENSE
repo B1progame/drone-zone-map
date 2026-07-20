@@ -1,15 +1,41 @@
-MIT License
+AERIS FREE USE, NO-REDISTRIBUTION LICENSE
+Version 1.0 · 2026
 
-Copyright (c) 2026 Drone Zone Map contributors
+Copyright (c) 2026 B1progame / Aeris contributors
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission is granted, free of charge, to any person obtaining access to this
+repository or an authorised copy of the Software (the "Software"), to use the
+Software for personal, educational, research, and internal organisational
+purposes, subject to the conditions below.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. No redistribution or resale
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+You may not copy, publish, mirror, distribute, sublicense, rent, lease, sell,
+resell, repackage, or offer the Software or a substantially similar derivative
+as a downloadable product, hosted service, template, paid feature, or other
+commercial offering without prior written permission from B1progame.
+
+2. No unauthorised relicensing
+
+You may not remove this licence, the attribution notices, or source/provider
+terms, and you may not present the Software as your own work. Contributions or
+modifications remain subject to this licence unless B1progame gives written
+permission for different terms.
+
+3. Third-party material
+
+The Software references or includes material owned by third parties, including
+official aviation authorities, map/tile providers, OpenStreetMap contributors,
+Open-Meteo, EOX IT Services GmbH, and photographers credited in the repository.
+Those materials remain subject to their own licences, terms, attribution, and
+access restrictions. This licence does not grant rights to redistribute them.
+
+4. Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. AERIS IS A PLANNING AND SITUATIONAL-AWARENESS TOOL, NOT AN AVIATION
+AUTHORITY AND NOT LEGAL CLEARANCE TO FLY. VERIFY CURRENT RESTRICTIONS WITH THE
+RESPONSIBLE OFFICIAL SOURCE BEFORE EVERY FLIGHT.
+
+For permission beyond this licence, contact the repository owner through
+https://github.com/B1progame.

@@ -1,0 +1,9 @@
+.homeAbout{max-width:1180px;margin:78px auto 0;padding:28px 0;border-top:1px solid #ffffff16;display:grid;grid-template-columns:1fr 1fr;gap:8vw}
+.homeAbout h2{font-size:clamp(28px,4vw,52px);line-height:.98;letter-spacing:-.055em;margin:9px 0}
+.homeAboutCopy{max-width:510px;color:var(--muted);font-size:13px;line-height:1.75}
+.homeAboutCopy p{margin:0 0 13px}
+.homeAboutCopy a{color:var(--lime);font-weight:700}
+.homeAboutLinks{display:flex;flex-wrap:wrap;gap:16px;margin-top:18px}
+.homeAboutLinks a{font-size:11px}
+@media(max-width:900px){.homeAbout{gap:4vw}}
+@media(max-width:680px){.homeAbout{display:block;margin-top:45px}.homeAboutCopy{font-size:12px;margin-top:18px}}
