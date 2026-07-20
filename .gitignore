@@ -6,6 +6,7 @@ vite.config.js
 vite.config.d.ts
 .DS_Store
 __pycache__/
+*.egg-info/
 .venv/
 output/playwright/
 .playwright/
