@@ -14,12 +14,6 @@
 
 ![Aeris homepage](public/screenshots/home.jpg)
 
-![Aeris about and project credits](public/screenshots/home-about.jpg)
-
-![Aeris live map](public/screenshots/map.jpg)
-
-![Aeris offline package builder](public/screenshots/offline-package.jpg)
-
 The site is deployed from `main` at [b1progame.github.io/drone-zone-map](https://b1progame.github.io/drone-zone-map/). The UI keeps saved places, routes, preferences, and downloaded packages in the browser by default.
 
 ## Why I built it
