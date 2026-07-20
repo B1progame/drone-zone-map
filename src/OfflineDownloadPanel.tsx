@@ -7,6 +7,12 @@ const WORLD_BOUNDS:OfflineBounds=[-180,-85.0511,180,85.0511];
 const clampWorldBounds=([west,south,east,north]:OfflineBounds):OfflineBounds=>[
  Math.max(WORLD_BOUNDS[0],west),Math.max(WORLD_BOUNDS[1],south),Math.min(WORLD_BOUNDS[2],east),Math.min(WORLD_BOUNDS[3],north)
 ];
+const formatEta=(seconds:number)=>{
+ const rounded=Math.max(1,Math.ceil(seconds));
+ if(rounded<60)return`about ${rounded}s remaining`;
+ const minutes=Math.floor(rounded/60),remaining=rounded%60;
+ return remaining?`about ${minutes}m ${remaining}s remaining`:`about ${minutes}m remaining`;
+};
 
 function withoutAreaLimit(base:OfflinePackConfig,scope:OfflineScope,location:Location,radiusKm:number){
  if(scope!=='radius'&&scope!=='city')return base;
@@ -31,27 +37,30 @@ function splitLargeConfig(config:OfflinePackConfig){
 
 export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}:{location:Location;weather?:Weather;zoneInfo?:ZoneInfo;onClose:()=>void;onSaved:()=>void}){
  const detected=(zoneInfo?.countryCode&&zoneInfo.countryCode in OFFLINE_COUNTRIES?zoneInfo.countryCode:'DE') as OfflineCountryCode;
- const[scope,setScope]=useState<OfflineScope>('radius'),[country,setCountry]=useState<OfflineCountryCode>(detected),[stateName,setStateName]=useState('Berlin'),[radius,setRadius]=useState(20),[layers,setLayers]=useState<OfflineLayerId[]>(OFFLINE_COUNTRIES[detected].layers),[qualityOffset,setQualityOffset]=useState(0),[progress,setProgress]=useState<OfflineDownloadProgress>(),[error,setError]=useState(''),[sourceEstimate,setSourceEstimate]=useState<{bytes:number;items:number;tileCount?:number;label:string}>(),[storage,setStorage]=useState<OfflineStorageStatus>();
+ const[scope,setScope]=useState<OfflineScope>('radius'),[country,setCountry]=useState<OfflineCountryCode>(detected),[stateName,setStateName]=useState('Berlin'),[radius,setRadius]=useState(20),[layers,setLayers]=useState<OfflineLayerId[]>(OFFLINE_COUNTRIES[detected].layers),[basemapTypes,setBasemapTypes]=useState<OfflineBasemapType[]>(['street','satellite']),[qualityOffset,setQualityOffset]=useState(0),[progress,setProgress]=useState<OfflineDownloadProgress>(),[downloadStartedAt,setDownloadStartedAt]=useState<number>(),[clock,setClock]=useState(Date.now()),[error,setError]=useState(''),[sourceEstimate,setSourceEstimate]=useState<{bytes:number;items:number;tileCount?:number;label:string}>(),[storage,setStorage]=useState<OfflineStorageStatus>();
  const availableLayers=OFFLINE_COUNTRIES[country].layers;
  const limitedBaseConfig=useMemo(()=>createOfflineConfig(scope,location,layers,stateName,radius,country),[scope,location,layers,stateName,radius,country]);
  const baseConfig=useMemo(()=>withoutAreaLimit(limitedBaseConfig,scope,location,radius),[limitedBaseConfig,scope,location,radius]);
- const streetMax=useMemo(()=>maxOfflineBasemapZoom(baseConfig.bounds,'street'),[baseConfig.bounds]),satelliteMax=useMemo(()=>maxOfflineBasemapZoom(baseConfig.bounds,'satellite'),[baseConfig.bounds]),qualityMax=streetMax,qualityMin=Math.min(5,qualityMax),streetZoom=Math.max(qualityMin,Math.min(streetMax,baseConfig.basemapMaxZoom+qualityOffset)),satelliteZoom=Math.max(qualityMin,Math.min(satelliteMax,baseConfig.basemapMaxZoom+qualityOffset));
- const qualityLabel=streetZoom===streetMax&&satelliteZoom===satelliteMax?'Maximum':streetZoom<=qualityMin?'Compact':streetZoom<=baseConfig.basemapMaxZoom?'Balanced':'High';
- const config=useMemo(()=>({...baseConfig,basemapTypes:['street','satellite'] as OfflineBasemapType[],basemapType:'street' as const,basemapMaxZoom:Math.max(streetZoom,satelliteZoom),basemapMaxZooms:{street:streetZoom,satellite:satelliteZoom}}),[baseConfig,streetZoom,satelliteZoom]);
+ const streetMax=useMemo(()=>maxOfflineBasemapZoom(baseConfig.bounds,'street'),[baseConfig.bounds]),satelliteMax=useMemo(()=>maxOfflineBasemapZoom(baseConfig.bounds,'satellite'),[baseConfig.bounds]),qualityMax=basemapTypes.includes('street')?streetMax:satelliteMax,qualityMin=Math.min(5,qualityMax),streetZoom=Math.max(qualityMin,Math.min(streetMax,baseConfig.basemapMaxZoom+qualityOffset)),satelliteZoom=Math.max(qualityMin,Math.min(satelliteMax,baseConfig.basemapMaxZoom+qualityOffset));
+ const qualityLabel=basemapTypes.every(type=>(type==='street'?streetZoom===streetMax:satelliteZoom===satelliteMax))?'Maximum':Math.max(...basemapTypes.map(type=>type==='street'?streetZoom:satelliteZoom))<=qualityMin?'Compact':Math.max(...basemapTypes.map(type=>type==='street'?streetZoom:satelliteZoom))<=baseConfig.basemapMaxZoom?'Balanced':'High';
+ const config=useMemo(()=>({...baseConfig,basemapTypes,basemapType:basemapTypes[0],basemapMaxZoom:Math.max(...basemapTypes.map(type=>type==='street'?streetZoom:satelliteZoom)),basemapMaxZooms:{street:streetZoom,satellite:satelliteZoom}}),[baseConfig,basemapTypes,streetZoom,satelliteZoom]);
  const downloadConfigs=useMemo(()=>splitLargeConfig(config),[config]);
  const estimate=useMemo(()=>estimateOfflinePackage(config),[config]);
  const shownEstimate=sourceEstimate??estimate;
  useEffect(()=>{let active=true;setSourceEstimate(undefined);const timer=window.setTimeout(()=>void estimateOfflinePackageFromSource(config).then(value=>{if(active)setSourceEstimate(value)}).catch(()=>{}),250);return()=>{active=false;window.clearTimeout(timer)}},[config]);
  useEffect(()=>{let active=true;void getOfflineStorageStatus().then(value=>{if(active)setStorage(value)});return()=>{active=false}},[]);
+ useEffect(()=>{if(!progress)return;const timer=window.setInterval(()=>setClock(Date.now()),1000);return()=>window.clearInterval(timer)},[progress]);
  const toggle=(id:OfflineLayerId)=>setLayers(value=>value.includes(id)?value.filter(item=>item!==id):[...value,id]);
+ const toggleBasemap=(type:OfflineBasemapType)=>setBasemapTypes(value=>value.includes(type)?(value.length===1?value:value.filter(item=>item!==type)):[...value,type]);
  const chooseCountry=(next:OfflineCountryCode)=>{setCountry(next);setLayers(OFFLINE_COUNTRIES[next].layers);if(next!=='DE'&&scope==='state')setScope('country')};
+ const etaSeconds=progress&&downloadStartedAt&&progress.percent>1?(clock-downloadStartedAt)/1000*(100-progress.percent)/progress.percent:undefined;
  const download=async()=>{
-  setError('');
+  setError('');setDownloadStartedAt(Date.now());
   try{
    setStorage(await getOfflineStorageStatus(true));
    for(let index=0;index<downloadConfigs.length;index++)await createOfflinePack(downloadConfigs[index],weather,zoneInfo,value=>setProgress({percent:Math.round((index+value.percent/100)/downloadConfigs.length*100),stage:downloadConfigs.length>1?`Section ${index+1}/${downloadConfigs.length} · ${value.stage}`:value.stage,items:value.items}));
    onSaved();window.setTimeout(onClose,650);
-  }catch(reason){setError(reason instanceof Error?reason.message:'The package could not be downloaded.');setProgress(undefined)}
+  }catch(reason){setError(reason instanceof Error?reason.message:'The package could not be downloaded.');setProgress(undefined);setDownloadStartedAt(undefined)}
  };
  return <div className="modalShade offlineShade" role="dialog" aria-modal="true" aria-labelledby="offline-title">
   <section className="settings offlineBuilder liquid">
@@ -69,15 +78,15 @@ export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}
    <div className="offlineCenter"><MapPin/><span><b>{config.region}</b>{config.bounds.map(value=>value.toFixed(2)).join(' · ')}</span></div>
    {availableLayers.length?<fieldset className="offlineLayerList" disabled={Boolean(progress)}><legend>Official layers</legend>{availableLayers.map(id=><label key={id}><input type="checkbox" checked={layers.includes(id)} onChange={()=>toggle(id)}/><span><Check/><b>{OFFLINE_LAYERS[id].label}</b></span></label>)}</fieldset>:<div className="offlineError">{OFFLINE_COUNTRIES[country].offlineNote}</div>}
    <fieldset className="offlineMapChoice" disabled={Boolean(progress)}>
-    <legend>Offline maps included</legend>
-    <button type="button" className="active" aria-pressed="true"><Map/><span><b>Street</b><small>Roads and places</small></span></button>
-    <button type="button" className="active" aria-pressed="true"><Satellite/><span><b>Satellite</b><small>Cloudless imagery</small></span></button>
-   </fieldset>
+    <legend>Offline maps to download</legend>
+    <button type="button" className={basemapTypes.includes('street')?'active':''} aria-pressed={basemapTypes.includes('street')} disabled={basemapTypes.length===1&&basemapTypes.includes('street')} onClick={()=>toggleBasemap('street')}><Map/><span><b>Street</b><small>Roads and places</small></span></button>
+    <button type="button" className={basemapTypes.includes('satellite')?'active':''} aria-pressed={basemapTypes.includes('satellite')} disabled={basemapTypes.length===1&&basemapTypes.includes('satellite')} onClick={()=>toggleBasemap('satellite')}><Satellite/><span><b>Satellite</b><small>Cloudless imagery</small></span></button>
+    </fieldset>
    <label className="offlineQuality"><span>Map quality <b>{qualityLabel} · street {streetZoom} / satellite {satelliteZoom}</b></span><input aria-label="Offline map quality" type="range" min={qualityMin} max={qualityMax} value={streetZoom} disabled={Boolean(progress)} onChange={event=>setQualityOffset(Number(event.target.value)-baseConfig.basemapMaxZoom)}/><small><i>Smaller download</i><i>Satellite native detail ends at zoom 13</i></small></label>
-   <div className="offlineCenter"><Satellite/><span><b>Unlimited street and satellite package</b>Whole-world overview at zoom 0–2 · selected area through street {streetZoom} and satellite {satelliteZoom} · {shownEstimate.tileCount?.toLocaleString()??'…'} tiles</span></div>
+   <div className="offlineCenter"><Satellite/><span><b>{basemapTypes.length===2?'Street and satellite package':`${basemapTypes[0]==='street'?'Street':'Satellite'} package`}</b>Whole-world overview at zoom 0–2 · selected area through {basemapTypes.map(type=>`${type} ${type==='street'?streetZoom:satelliteZoom}`).join(' and ')} · {shownEstimate.tileCount?.toLocaleString()??'…'} tiles</span></div>
    <div className="offlineEstimate"><Database/><span><small>{sourceEstimate?'SOURCE-CHECKED ESTIMATE':'ESTIMATING PACKAGE'}</small><b>{shownEstimate.label}</b><i>about {shownEstimate.items.toLocaleString()} items · final size depends on feature geometry</i></span></div>
    {storage?.supported&&<div className="offlineStorage"><span><b>{storage.persistent?'Protected storage':'Browser-managed storage'}</b>{formatBytes(storage.usageBytes)} used of {formatBytes(storage.quotaBytes)} · {formatBytes(storage.freeBytes)} currently available</span><i><b style={{width:`${storage.quotaBytes?Math.min(100,storage.usageBytes/storage.quotaBytes*100):0}%`}}/></i><small>The app does not impose a total cap; the browser and device still control physical storage.</small></div>}
-   {progress&&<div className="offlineBuildProgress" role="status" aria-live="polite"><span><b>{progress.percent}%</b>{progress.stage}</span><i><b style={{width:`${progress.percent}%`}}/></i><small>{progress.items.toLocaleString()} items received</small></div>}
+   {progress&&<div className="offlineBuildProgress" role="status" aria-live="polite"><span><b>{progress.percent}%</b>{progress.stage}</span><i><b style={{width:`${progress.percent}%`}}/></i><small>{progress.items.toLocaleString()} items received · {etaSeconds==null?'Calculating ETA…':formatEta(etaSeconds)}</small></div>}
    {downloadConfigs.length>1&&<div className="offlineCenter"><Database/><span><b>Automatic unlimited splitting</b>This selection will be stored as {downloadConfigs.length.toLocaleString()} connected offline sections. There is no total section-count limit.</span></div>}
    {error&&<div className="offlineError">{error}</div>}
    <button className="primary offlineDownload" disabled={Boolean(progress)} onClick={()=>void download()}><Download/>{progress?'Downloading package…':`Download about ${shownEstimate.label}`}</button>
