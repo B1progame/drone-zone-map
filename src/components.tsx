@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Bot, CloudSun, Heart, Home, Layers3, LocateFixed, Map, MapPin, Search, Settings, ShieldAlert, Sparkles, X } from 'lucide-react';
+import { Bot, CloudSun, Heart, Home, Layers3, LocateFixed, Map, MapPin, Search, Settings, Share, ShieldAlert, Sparkles, X } from 'lucide-react';
 import type { Page, Location, Weather, ZoneInfo } from './types';
 import { sources, sourceFor, type Source } from './data/sources';
 import { searchLocation, searchLocationSuggestions, type LocationSuggestion } from './services';
@@ -108,4 +108,16 @@ export function ResultCard({location,weather,zoneInfo,onSave,onClose,language='e
 
 export function SourcePanel(){const [registry,setRegistry]=useState<Source[]>(sources),[query,setQuery]=useState(''),[expanded,setExpanded]=useState(false);useEffect(()=>{fetch(`${import.meta.env.BASE_URL}data/sources/countries.json`).then(r=>r.ok?r.json():[]).then((rows:unknown[])=>setRegistry(rows.map((row:any)=>({code:row.countryCode,country:row.countryName,name:row.sourceName,status:String(row.status).replaceAll('_',' '),url:row.officialMapUrl,detail:row.warnings?.[0]})))).catch(()=>{})},[]);const shown=useMemo(()=>registry.filter(s=>(s.country+s.name).toLowerCase().includes(query.toLowerCase())),[registry,query]);const visible=expanded?shown:shown.slice(0,6);return <section className="sources liquid"><div className="sourceHead"><div><div className="eyebrow">OFFICIAL DIRECTORY · {registry.length} COUNTRIES</div><h2>Know what is actually loaded.</h2></div><Layers3/></div><div className="sourceSearch"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Find a country or authority"/></div><div className="sourceGrid">{visible.map(s=><article key={s.code}><div className="countryCode">{s.code}</div><div><b>{s.country}</b><span className="sourceStatus">{s.status}</span><p>{s.name}</p><a href={s.url} target="_blank" rel="noreferrer">Open official source ↗</a></div></article>)}</div>{shown.length>6&&<button className="wideButton" onClick={()=>setExpanded(!expanded)}>{expanded?'Show fewer sources':`Explore all ${shown.length} sources`}</button>}</section>}
 export function Preferences({close}:{close:()=>void}){const [open,setOpen]=useState(true);useEffect(()=>{if(localStorage.getItem('dzm-consent'))setOpen(false)},[]); if(!open)return null;const dismiss=()=>{localStorage.setItem('dzm-consent','yes');setOpen(false);close()};return <div className="consent liquid"><button className="icon" onClick={dismiss} aria-label="Close privacy notice"><X size={16}/></button><Sparkles size={20}/><b>Private by default.</b><p>Preferences and saved places stay on this device. No tracking cookies.</p><button onClick={dismiss}>Continue</button></div>}
+export function IosInstallPrompt(){
+ const [open,setOpen]=useState(false);
+ useEffect(()=>{
+  const nav=navigator as Navigator&{standalone?:boolean};
+  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const standalone=Boolean(nav.standalone)||window.matchMedia('(display-mode: standalone)').matches;
+  setOpen(ios&&!standalone&&!localStorage.getItem('aeris-ios-install-dismissed'));
+ },[]);
+ if(!open)return null;
+ const dismiss=()=>{localStorage.setItem('aeris-ios-install-dismissed','1');setOpen(false)};
+ return <aside className="iosInstall liquid" role="status" aria-label="Add Aeris to your Home Screen"><button className="icon" onClick={dismiss} aria-label="Close Add to Home Screen instructions"><X size={16}/></button><Share size={20}/><div><b>Add Aeris to Home Screen</b><p>In Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. Aeris will use its own icon and open like an app.</p></div></aside>
+}
 export function Header({setSettings}:{setSettings:()=>void}) {return <header><Logo/><button className="icon liquid" onClick={setSettings} aria-label="Settings"><Settings size={19}/></button></header>}

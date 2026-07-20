@@ -1,6 +1,6 @@
-const VERSION='aeris-shell-v9';
+const VERSION='aeris-shell-v10';
 const RUNTIME='aeris-runtime-v6';
-const SHELL=['./','./index.html','./manifest.webmanifest','./data/sources/countries.json'];
+const SHELL=['./','./index.html','./manifest.webmanifest','./icons/apple-touch-icon.png','./icons/aeris-192.png','./icons/aeris-512.png','./data/sources/countries.json'];
 
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(VERSION).then(cache=>Promise.allSettled(SHELL.map(url=>cache.add(url)))).then(()=>self.skipWaiting()));
