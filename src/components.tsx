@@ -10,13 +10,14 @@ export function Logo({compact=false}:{compact?:boolean}) { return <div className
 
 export const Disclaimer=({language='en'}:{language?:string})=> <div className="disclaimer"><ShieldAlert size={15}/><span>{zoneDisclaimer(language)}</span></div>;
 const pageMeta: {id:Page; icon:typeof Home}[]=[{id:'home',icon:Home},{id:'map',icon:Map},{id:'weather',icon:CloudSun},{id:'ai',icon:Bot},{id:'saved',icon:Heart}];
-export function Nav({page,setPage,language='en'}:{page:Page;setPage:(p:Page)=>void;language?:string}) {
+export function Nav({page,setPage,language='en',showAi=false}:{page:Page;setPage:(p:Page)=>void;language?:string;showAi?:boolean}) {
+  const visiblePageMeta=showAi?pageMeta:pageMeta.filter(item=>item.id!=='ai');
   const dockRef=useRef<HTMLElement>(null),sliderRef=useRef<HTMLElement>(null),buttonRefs=useRef<(HTMLButtonElement|null)[]>([]);
-  const previousIndex=useRef(pageMeta.findIndex(item=>item.id===page)),selectorAnimation=useRef<Animation|null>(null);
+  const previousIndex=useRef(visiblePageMeta.findIndex(item=>item.id===page)),selectorAnimation=useRef<Animation|null>(null);
   useLayoutEffect(()=>{
     const dock=dockRef.current;
     if(!dock)return;
-    const index=pageMeta.findIndex(item=>item.id===page),button=buttonRefs.current[index],slider=sliderRef.current;
+    const index=visiblePageMeta.findIndex(item=>item.id===page),button=buttonRefs.current[index],slider=sliderRef.current;
     const position=()=>{
       if(!button)return;
       dock.style.setProperty('--slider-x',`${button.offsetLeft}px`);
@@ -43,8 +44,8 @@ export function Nav({page,setPage,language='en'}:{page:Page;setPage:(p:Page)=>vo
     observer.observe(dock);
     buttonRefs.current.forEach(button=>button&&observer.observe(button));
     return()=>observer.disconnect();
-  },[page]);
-  return <nav ref={dockRef} className="dock" aria-label="Main navigation"><i ref={sliderRef} className="dockSlider" aria-hidden="true"/>{pageMeta.map((x,index)=>{const I=x.icon,label=t(language,x.id);return <button ref={node=>{buttonRefs.current[index]=node}} className={page===x.id?'active':''} onClick={()=>setPage(x.id)} aria-label={label} aria-current={page===x.id?'page':undefined} key={x.id}><span className="navIcon"><I size={19}/></span><span className="navLabel">{label}</span></button>})}</nav>
+  },[page,showAi]);
+  return <nav ref={dockRef} className="dock" aria-label="Main navigation"><i ref={sliderRef} className="dockSlider" aria-hidden="true"/>{visiblePageMeta.map((x,index)=>{const I=x.icon,label=t(language,x.id);return <button ref={node=>{buttonRefs.current[index]=node}} className={page===x.id?'active':''} onClick={()=>setPage(x.id)} aria-label={label} aria-current={page===x.id?'page':undefined} key={x.id}><span className="navIcon"><I size={19}/></span><span className="navLabel">{label}</span></button>})}</nav>
 }
 export function SearchBox({onLocation,hero=false,language='en',compact=false}:{onLocation:(l:Location)=>void;hero?:boolean;language?:string;compact?:boolean}) {
   const [value,setValue]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[open,setOpen]=useState(false),[suggestions,setSuggestions]=useState<LocationSuggestion[]>([]),[suggestionsOpen,setSuggestionsOpen]=useState(false),[activeSuggestion,setActiveSuggestion]=useState(0),[suggesting,setSuggesting]=useState(false);

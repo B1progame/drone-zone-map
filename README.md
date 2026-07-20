@@ -20,6 +20,8 @@ The site is deployed from `main` at [b1progame.github.io/drone-zone-map](https:/
 
 I built Aeris to make the moment before a flight calmer and more honest: the official source should stay visible, weather should be understandable, and offline planning should remain useful when connectivity is poor. It deliberately separates planning context from legal clearance and records source limitations instead of filling gaps with guesses.
 
+Coverage is still growing. I am actively working on adding every other place and making each country’s official source, attribution, and offline support as reliable as the existing coverage.
+
 ## What is included
 
 - MapLibre globe and map views with Street/Satellite display controls

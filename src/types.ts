@@ -5,6 +5,7 @@ export type AppSettings = {
   glassOpacity: number;
   reducedMotion: boolean;
   terrain3d: boolean;
+  showAi: boolean;
   language: string;
 };
 export type Location = { lat: number; lng: number; name: string };
