@@ -61,15 +61,17 @@ Aeris does not own the aviation data it displays. Each provider remains subject 
 
 Photography is credited in the app and in [`public/media/CREDITS.md`](public/media/CREDITS.md). Map, satellite, weather, and aviation-source credits remain visible in the app. Missing data is never treated as permission to fly.
 
-## Documentation wiki
+## Documentation
 
-The repository wiki is kept in [`wiki/`](wiki/) so it can be read locally, reviewed in pull requests, or copied into the GitHub Wiki:
+The documentation is kept in [`wiki/`](wiki/) so it works immediately from the repository, can be reviewed in pull requests, and can be copied into the native GitHub Wiki after its first page is initialized:
 
 - [`wiki/Home.md`](wiki/Home.md) — project orientation
 - [`wiki/Local-setup.md`](wiki/Local-setup.md) — setup and verification from a clean machine
 - [`wiki/Why-Aeris.md`](wiki/Why-Aeris.md) — motivation, privacy, and design choices
 - [`wiki/Offline-maps.md`](wiki/Offline-maps.md) — Street/Satellite packages and storage behavior
 - [`wiki/License-and-attribution.md`](wiki/License-and-attribution.md) — usage boundaries and third-party notices
+
+GitHub’s native Wiki is enabled, but its first page must be created once in the [Wiki editor](https://github.com/B1progame/drone-zone-map/wiki/_new). GitHub only provisions the separate wiki repository after that first save.
 
 ## License
 
