@@ -1,14 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Check, Database, Download, Map, MapPin, Satellite, X } from 'lucide-react';
 import type { Location, Weather, ZoneInfo } from './types';
-import { createOfflineConfig, createOfflinePack, estimateOfflinePackage, estimateOfflinePackageFromSource, formatBytes, getOfflineStorageStatus, GERMAN_STATES, MAX_OFFLINE_TILES, maxOfflineBasemapZoom, OFFLINE_COUNTRIES, OFFLINE_LAYERS, type OfflineBasemapType, type OfflineCountryCode, type OfflineDownloadProgress, type OfflineLayerId, type OfflineScope, type OfflineStorageStatus } from './offline';
+import { createOfflineConfig, createOfflinePack, estimateOfflinePackage, estimateOfflinePackageFromSource, formatBytes, getOfflineStorageStatus, GERMAN_STATES, MAX_OFFLINE_TILES, maxOfflineBasemapZoom, offlineTileCount, OFFLINE_COUNTRIES, OFFLINE_LAYERS, type OfflineBasemapType, type OfflineCountryCode, type OfflineDownloadProgress, type OfflineLayerId, type OfflineScope, type OfflineStorageStatus } from './offline';
 
 export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}:{location:Location;weather?:Weather;zoneInfo?:ZoneInfo;onClose:()=>void;onSaved:()=>void}){
  const detected=(zoneInfo?.countryCode&&zoneInfo.countryCode in OFFLINE_COUNTRIES?zoneInfo.countryCode:'DE') as OfflineCountryCode;
  const[scope,setScope]=useState<OfflineScope>('radius'),[country,setCountry]=useState<OfflineCountryCode>(detected),[stateName,setStateName]=useState('Berlin'),[radius,setRadius]=useState(20),[layers,setLayers]=useState<OfflineLayerId[]>(OFFLINE_COUNTRIES[detected].layers),[basemapType,setBasemapType]=useState<OfflineBasemapType>('street'),[qualityOffset,setQualityOffset]=useState(0),[progress,setProgress]=useState<OfflineDownloadProgress>(),[error,setError]=useState(''),[sourceEstimate,setSourceEstimate]=useState<{bytes:number;items:number;tileCount?:number;label:string}>(),[storage,setStorage]=useState<OfflineStorageStatus>();
  const availableLayers=OFFLINE_COUNTRIES[country].layers;
  const baseConfig=useMemo(()=>createOfflineConfig(scope,location,layers,stateName,radius,country),[scope,location,layers,stateName,radius,country]);
- const qualityMax=useMemo(()=>maxOfflineBasemapZoom(baseConfig.bounds,basemapType),[baseConfig.bounds,basemapType]),qualityMin=Math.min(5,qualityMax),qualityZoom=Math.max(qualityMin,Math.min(qualityMax,baseConfig.basemapMaxZoom+qualityOffset));
+ const qualityMax=useMemo(()=>{
+  const ceiling=maxOfflineBasemapZoom(baseConfig.bounds,basemapType);
+  let safeZoom=Math.min(5,ceiling);
+  for(let candidate=safeZoom+1;candidate<=ceiling;candidate++){
+   if(offlineTileCount(baseConfig.bounds,candidate)>MAX_OFFLINE_TILES)break;
+   safeZoom=candidate;
+  }
+  return safeZoom;
+ },[baseConfig.bounds,basemapType]),qualityMin=Math.min(5,qualityMax),qualityZoom=Math.max(qualityMin,Math.min(qualityMax,baseConfig.basemapMaxZoom+qualityOffset));
  const qualityLabel=qualityZoom===qualityMax?'Maximum':qualityZoom<=qualityMin?'Compact':qualityZoom<=baseConfig.basemapMaxZoom?'Balanced':'High';
  const config=useMemo(()=>({...baseConfig,basemapType,basemapMaxZoom:qualityZoom}),[baseConfig,basemapType,qualityZoom]);
  const estimate=useMemo(()=>estimateOfflinePackage(config),[config]);
