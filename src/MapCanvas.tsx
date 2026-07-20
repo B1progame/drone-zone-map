@@ -100,9 +100,9 @@ const mapShouldUseOffline=()=>!navigator.onLine||isOfflineTestMode()||(import.me
 let offlineProtocolRegistered=false;
 if(!offlineProtocolRegistered){
   const readOfflineTile=async(url:string)=>{
-    const match=url.match(/^aeris-offline(?:-raster)?:\/\/([^/]+)\/([^/]+)\/(\d+)\/(\d+)\/(\d+)$/);
+    const match=url.match(/^aeris-offline(?:-raster)?:\/\/([^/]+)\/([^/]+)\/([^/]+)\/(\d+)\/(\d+)\/(\d+)$/);
     if(!match)throw new Error('Invalid offline tile URL.');
-    return getOfflineMapTile(decodeURIComponent(match[1]),decodeURIComponent(match[2]),Number(match[3]),Number(match[4]),Number(match[5]));
+    return getOfflineMapTile(decodeURIComponent(match[1]),decodeURIComponent(match[2]),decodeURIComponent(match[3]) as OfflineBasemapType,Number(match[4]),Number(match[5]),Number(match[6]));
   };
   maplibregl.addProtocol('aeris-offline',async params=>{
     const data=await readOfflineTile(params.url);
@@ -845,10 +845,10 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     if(!pack&&map.getZoom()<=2.5){pack=await getOfflineWorldPack(downloadedPacks);worldOverview=Boolean(pack)}
     if(request!==offlineRequestRef.current)return;
     if(pack){
-      const basemapType=pack.config.basemapType??pack.metadata.basemapType??'street',protocol=basemapType==='satellite'?'aeris-offline-raster':'aeris-offline';
+      const availableBasemaps=pack.metadata.basemapTypes??pack.config.basemapTypes??[pack.config.basemapType??pack.metadata.basemapType??'street'],preferredBasemap:OfflineBasemapType=baseMap==='satellite'?'satellite':'street',basemapType=(availableBasemaps.includes(preferredBasemap)?preferredBasemap:availableBasemaps[0]??'street') as OfflineBasemapType,protocol=basemapType==='satellite'?'aeris-offline-raster':'aeris-offline',tileUrl=`${protocol}://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation??'')}/${basemapType}/{z}/{x}/{y}`,maxZoom=pack.config.basemapMaxZooms?.[basemapType]??pack.metadata.basemapMaxZooms?.[basemapType]??pack.config.basemapMaxZoom??pack.metadata.basemapMaxZoom??12;
       if(worldOverview){
         source.setData(emptyGeoJson);
-        if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[`${protocol}://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`],basemapType,2);else showOfflineMap(false);
+        if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[tileUrl],basemapType,2);else showOfflineMap(false);
         setOfflineNotice(`Offline · worldwide overview · ${basemapType} map through zoom 2`);
         return;
       }
@@ -856,7 +856,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
       const bounds=point?[center.lng-span,center.lat-span,center.lng+span,center.lat+span] as [number,number,number,number]:[visible.getWest(),visible.getSouth(),visible.getEast(),visible.getNorth()] as [number,number,number,number];
       const data=await getOfflinePackageData(pack,bounds);
       if(request!==offlineRequestRef.current)return;
-      if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[`${protocol}://${encodeURIComponent(pack.id)}/${encodeURIComponent(pack.generation)}/{z}/{x}/{y}`],basemapType,pack.config.basemapMaxZoom??pack.metadata.basemapMaxZoom??12);else showOfflineMap(false);
+      if(pack.generation&&pack.metadata.tileCount)showOfflineMap(true,[tileUrl],basemapType,maxZoom);else showOfflineMap(false);
       const visibleData=pack.metadata.countryCode==='GB'?filterUkDroneRelevant(data):data;
       source.setData(enrichZoneSemantics(visibleData) as any);setOfflineNotice(`Offline · ${pack.name} · ${basemapType} map + ${visibleData.features.length.toLocaleString()} nearby official items`);
     }
@@ -938,6 +938,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     if (!mapRef.current) return;
     if(initialStyleRef.current){initialStyleRef.current=false;return}
     mapRef.current.setStyle(mapStyle(baseMap, zonesVisible));
+    if(mapShouldUseOffline())window.setTimeout(()=>void syncOfflinePackage(location),0);
   }, [baseMap]);
 
   useEffect(()=>{
