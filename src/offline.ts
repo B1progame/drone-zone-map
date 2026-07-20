@@ -148,7 +148,7 @@ export function createOfflineConfig(scope:OfflineScope,center:Location,layers:Of
  const definition=OFFLINE_COUNTRIES[country],allowed=layers.filter(layer=>definition.layers.includes(layer));
  if(scope==='country')return{scope,country,region:definition.scopeLabel??`All ${definition.name}`,center:definition.center,bounds:definition.bounds,layers:allowed,basemapMaxZoom:basemapZoomFor(scope,radiusKm)};
  if(scope==='state'&&country==='DE'){const state=GERMAN_STATES.find(item=>item.name===stateName)??GERMAN_STATES[2];return{scope,country,region:state.name,center:{lng:(state.bounds[0]+state.bounds[2])/2,lat:(state.bounds[1]+state.bounds[3])/2,name:state.name},layers:allowed,bounds:state.bounds,basemapMaxZoom:basemapZoomFor(scope,radiusKm)}}
- const effectiveRadius=scope==='city'?Math.min(25,Math.max(5,radiusKm||15)):Math.min(100,Math.max(1,radiusKm));
+ const effectiveRadius=scope==='city'?Math.min(25,Math.max(5,radiusKm||15)):Math.min(200,Math.max(1,radiusKm));
  return{scope,country,region:scope==='city'?center.name:`${effectiveRadius} km around ${center.name}`,center,radiusKm:effectiveRadius,bounds:radiusBounds(center,effectiveRadius),layers:allowed,basemapMaxZoom:basemapZoomFor(scope,effectiveRadius)};
 }
 const areaKm2=([west,south,east,north]:OfflineBounds)=>Math.max(1,(east-west)*111.32*Math.cos(rad((south+north)/2))*(north-south)*110.574);
