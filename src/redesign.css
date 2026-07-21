@@ -86,6 +86,9 @@ header{height:76px;padding:0 4.5vw;background:linear-gradient(180deg,#06110fe8,t
 
 .plannerAddSelected{width:100%;margin:4px 0 8px;background:#b7ff9c;color:#102017;font-size:10px;font-weight:800}
 
+.brand img{width:54px;height:54px;filter:drop-shadow(0 0 10px #8cff9c55)}
+@media(max-width:680px){.brand img{width:46px;height:46px}}
+
 /* Keyless local copilot */
 .localAssistantCard{padding:18px;border-radius:22px;display:grid;gap:9px}.localAssistantCard small{font:9px 'DM Mono';color:var(--lime)}.localAssistantCard p{margin:0;color:#9fb1a7;font-size:10px;line-height:1.55}
 .openRouterCard{padding:18px;border-radius:22px;display:grid;gap:9px;border-color:#a8ff8c22}.openRouterCard>small:first-child{font:9px 'DM Mono';color:var(--lime)}.openRouterCard p{margin:0;color:#9fb1a7;font-size:10px;line-height:1.55}.keyRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}.keyRow input{min-width:0;background:#06110faa;border:1px solid #ffffff18;border-radius:12px;color:#fff;padding:9px 10px;font:10px 'DM Mono';outline:0}.keyRow input:focus{border-color:#b7ff9c88}.keyRow button{padding:8px 10px;font-size:9px;background:var(--lime);color:#102017;font-weight:800}.keyStatus{font-size:9px;line-height:1.4;color:#c0d0c7}.openRouterCard.connected .keyStatus{color:var(--lime)}.openRouterCard.error .keyStatus,.assistantMessage.error p{color:#ffafa5}.modelName{font:8px 'DM Mono';color:#71867b;overflow-wrap:anywhere}.disconnectKey{justify-self:start;padding:5px 8px;font-size:8px;color:#b7c6be;background:transparent}.assistantMessage>small{display:block;margin-top:8px;color:#71867b;font:8px 'DM Mono'}

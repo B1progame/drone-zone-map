@@ -6,7 +6,7 @@ import { searchLocation, searchLocationSuggestions, type LocationSuggestion } fr
 import { t } from './languages';
 import { zoneDisclaimer, zoneText, zoneWeatherMetrics, zoneWeatherQuality } from './zoneTranslations';
 
-export function Logo({compact=false}:{compact?:boolean}) { return <div className="brand" aria-label="Aeris Airspace"><svg viewBox="0 0 64 64" role="img" aria-hidden="true"><path d="M12 22.5 32 12l20 10.5v20L32 53 12 42.5Z" fill="#10231d" stroke="#b7ff9c" strokeWidth="2.8" strokeLinejoin="round"/><path d="M18 28.5c5.5-4.5 10.5-4.5 14 0 3.5-4.5 8.5-4.5 14 0M18 36c5.5-4.5 10.5-4.5 14 0 3.5-4.5 8.5-4.5 14 0" fill="none" stroke="#74f2a1" strokeWidth="2.4" strokeLinecap="round"/><path d="M32 10v11.5M32 22c-4.8-3.5-10.1-2.2-11.5 1.8M32 22c4.8-3.5 10.1-2.2 11.5 1.8" fill="none" stroke="#b7ff9c" strokeWidth="2.7" strokeLinecap="round"/><circle cx="20.5" cy="24.7" r="3" fill="#b7ff9c"/><circle cx="43.5" cy="24.7" r="3" fill="#b7ff9c"/><path d="M32 31c-3.7 0-6.7 2.8-6.7 6.3 0 4.6 6.7 10.7 6.7 10.7s6.7-6.1 6.7-10.7C38.7 33.8 35.7 31 32 31Z" fill="#b7ff9c"/><circle cx="32" cy="37.1" r="2.5" fill="#07120f"/></svg>{!compact&&<span><b>AERIS</b><small>DRONE AIRSPACE</small></span>}</div> }
+export function Logo({compact=false}:{compact?:boolean}) { return <div className="brand" aria-label="Aeris Airspace"><img src="/aeris-logo.svg" alt=""/>{!compact&&<span><b>AERIS</b><small>DRONE AIRSPACE</small></span>}</div> }
 
 export const Disclaimer=({language='en'}:{language?:string})=> <div className="disclaimer"><ShieldAlert size={15}/><span>{zoneDisclaimer(language)}</span></div>;
 const pageMeta: {id:Page; icon:typeof Home}[]=[{id:'home',icon:Home},{id:'map',icon:Map},{id:'weather',icon:CloudSun},{id:'ai',icon:Bot},{id:'saved',icon:Heart}];
