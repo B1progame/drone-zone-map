@@ -6,7 +6,7 @@ import { searchLocation, searchLocationSuggestions, type LocationSuggestion } fr
 import { t } from './languages';
 import { zoneDisclaimer, zoneText, zoneWeatherMetrics, zoneWeatherQuality } from './zoneTranslations';
 
-export function Logo({compact=false}:{compact?:boolean}) { return <div className="brand" aria-label="Aeris Airspace"><img src="/aeris-logo.svg" alt=""/>{!compact&&<span><b>AERIS</b><small>DRONE AIRSPACE</small></span>}</div> }
+export function Logo({compact=false}:{compact?:boolean}) { return <div className="brand" aria-label="Aeris Airspace"><img src={`${import.meta.env.BASE_URL}aeris-logo.svg`} alt=""/>{!compact&&<span><b>AERIS</b><small>DRONE AIRSPACE</small></span>}</div> }
 
 export const Disclaimer=({language='en'}:{language?:string})=> <div className="disclaimer"><ShieldAlert size={15}/><span>{zoneDisclaimer(language)}</span></div>;
 const pageMeta: {id:Page; icon:typeof Home}[]=[{id:'home',icon:Home},{id:'map',icon:Map},{id:'weather',icon:CloudSun},{id:'ai',icon:Bot},{id:'saved',icon:Heart}];
