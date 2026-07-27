@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-19T10:27:55.140520+00:00",
+  "generatedAt": "2026-07-27T06:44:22.302446+00:00",
   "standard": "ISO 3166 via pycountry",
   "entryCount": 249,
   "countriesAndTerritories": [
@@ -1262,7 +1262,7 @@
       "lastCheck": "2026-07-19",
       "lastUpdate": null,
       "completenessStatus": "partial-missing-layers",
-      "featureCount": 722
+      "featureCount": 720
     },
     {
       "countryCode": "FJ",

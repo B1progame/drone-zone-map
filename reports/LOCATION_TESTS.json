@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-19T10:27:56.533666+00:00",
+  "generatedAt": "2026-07-27T06:44:22.922438+00:00",
   "passed": true,
   "tests": [
     {
@@ -13,7 +13,7 @@
         {
           "id": "A1ELLX0-0",
           "name": "EL-UAS-A1-ELLX0",
-          "sourceFile": "public\\data\\zones\\LU.geojson"
+          "sourceFile": "public/data/zones/LU.geojson"
         }
       ]
     },
@@ -28,17 +28,17 @@
         {
           "id": "U27",
           "name": "Dublin Control Zone (CTR)- Red Zone",
-          "sourceFile": "public\\data\\zones\\IE.geojson"
+          "sourceFile": "public/data/zones/IE.geojson"
         },
         {
           "id": "T32",
           "name": "Baldonnel TRA 1",
-          "sourceFile": "public\\data\\zones\\IE.geojson"
+          "sourceFile": "public/data/zones/IE.geojson"
         },
         {
           "id": "T35",
           "name": "Baldonnel TRA 3",
-          "sourceFile": "public\\data\\zones\\IE.geojson"
+          "sourceFile": "public/data/zones/IE.geojson"
         }
       ]
     },
@@ -53,7 +53,7 @@
         {
           "id": "EGR1U028A",
           "name": "EGR1U028A LONDON HEATHROW",
-          "sourceFile": "public\\data\\zones\\GB.geojson"
+          "sourceFile": "public/data/zones/GB.geojson"
         }
       ]
     },
@@ -68,7 +68,7 @@
         {
           "id": "7.2-0",
           "name": "Nabijheid van vliegveld voor bemand luchtverkeer EHAM SCHIPHOL CTR 1",
-          "sourceFile": "public\\data\\zones\\NL.geojson"
+          "sourceFile": "public/data/zones/NL.geojson"
         }
       ]
     },
@@ -83,22 +83,22 @@
         {
           "id": "EFHKUASA-0",
           "name": "UAS-ilmatilavyöhyke A Helsinki-Vantaa",
-          "sourceFile": "public\\data\\zones\\FI.geojson"
+          "sourceFile": "public/data/zones/FI.geojson"
         },
         {
           "id": "EFHKUASB-0",
           "name": "UAS-ilmatilavyöhyke B Helsinki-Vantaa",
-          "sourceFile": "public\\data\\zones\\FI.geojson"
+          "sourceFile": "public/data/zones/FI.geojson"
         },
         {
           "id": "EFHKUASC-0",
           "name": "UAS-ilmatilavyöhyke C Helsinki-Vantaa",
-          "sourceFile": "public\\data\\zones\\FI.geojson"
+          "sourceFile": "public/data/zones/FI.geojson"
         },
         {
           "id": "EFHKUASD-0",
           "name": "UAS-ilmatilavyöhyke D Helsinki-Vantaa",
-          "sourceFile": "public\\data\\zones\\FI.geojson"
+          "sourceFile": "public/data/zones/FI.geojson"
         }
       ]
     },
@@ -113,62 +113,62 @@
         {
           "id": "RWY5K.22",
           "name": "DAIM_TOPO-RWY5K",
-          "sourceFile": "public\\data\\zones\\sweden\\DAIM_TOPO-RWY5K.geojson"
+          "sourceFile": "public/data/zones/sweden/DAIM_TOPO-RWY5K.geojson"
         },
         {
           "id": "NOTAM.15332",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.15181",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.15279",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.14785",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.15105",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.15104",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.15106",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.15107",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.15108",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.15109",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.15110",
           "name": "dynais-NOTAM",
-          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
         }
       ]
     },
