@@ -1,6 +1,6 @@
 # Global data status
 
-Generated: 2026-09-14T09:00:15.898403+00:00
+Generated: 2026-09-21T09:01:36.924187+00:00
 
 - ISO countries and territories inventoried: 249
 - Verified provider records: 37
