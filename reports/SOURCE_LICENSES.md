@@ -2,6 +2,22 @@
 
 Generated from the verified provider registry. An absent licence is not permission to redistribute.
 
+## BS — Civil Aviation Authority Bahamas (CAA-B)
+
+- Source: https://caabahamas.com/drone-faqs/
+- Licence: No reusable licence recorded
+- Cache: no/public live use only
+- Redistribution: not established or prohibited
+- Authentication: none
+
+## BB — Barbados Civil Aviation Authority (BCAA)
+
+- Source: https://www.bcaa.gov.bb/remotely-piloted-aircraft-systems/
+- Licence: No reusable licence recorded
+- Cache: no/public live use only
+- Redistribution: not established or prohibited
+- Authentication: none
+
 ## AF — Afghanistan Civil Aviation Authority / AIS
 
 - Source: https://www.afgais.com/

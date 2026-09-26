@@ -1,16 +1,34 @@
 {
-  "generatedAt": "2026-09-26T10:06:12.208441+00:00",
+  "generatedAt": "2026-09-26T10:27:46.237794+00:00",
   "isoEntryCount": 249,
-  "providerCount": 66,
+  "providerCount": 68,
   "completenessCounts": {
     "authenticated-personal-data": 1,
     "complete-except-live-data": 2,
-    "not-yet-processed": 183,
+    "not-yet-processed": 181,
     "official-live-only": 1,
-    "official-reference-only": 47,
+    "official-reference-only": 49,
     "partial-missing-layers": 15
   },
   "providers": [
+    {
+      "countryCode": "BS",
+      "countryName": "The Bahamas",
+      "status": "official-reference-only",
+      "source": "Civil Aviation Authority Bahamas (CAA-B)",
+      "officialMap": "https://caabahamas.com/drone-faqs/",
+      "offline": false,
+      "featureCount": 0
+    },
+    {
+      "countryCode": "BB",
+      "countryName": "Barbados",
+      "status": "official-reference-only",
+      "source": "Barbados Civil Aviation Authority (BCAA)",
+      "officialMap": "https://www.bcaa.gov.bb/remotely-piloted-aircraft-systems/",
+      "offline": false,
+      "featureCount": 0
+    },
     {
       "countryCode": "AF",
       "countryName": "Afghanistan",

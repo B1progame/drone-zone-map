@@ -1,6 +1,60 @@
 {
-  "generatedAt": "2026-09-26T10:06:11.670831+00:00",
+  "generatedAt": "2026-09-26T10:27:45.585203+00:00",
   "providers": [
+    {
+      "providerId": "bs-civil-aviation-authority-bahamas-caa-b",
+      "countryCodes": [
+        "BS"
+      ],
+      "authorityName": "Civil Aviation Authority Bahamas (CAA-B)",
+      "authorityUrl": "https://caabahamas.com/drone-faqs/",
+      "officialMapUrls": [
+        "https://caabahamas.com/drone-faqs/"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [
+        "https://caabahamas.com/drone-faqs/"
+      ],
+      "license": null,
+      "attribution": "Civil Aviation Authority Bahamas (CAA-B)",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-09-26",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "CAA-B guidance requires drone registration and enabled geofencing; commercial operations need prior written authorization. No reusable public geozone geometry was verified; check aerodrome separation, current AIP and NOTAMs."
+      ]
+    },
+    {
+      "providerId": "bb-barbados-civil-aviation-authority-bcaa",
+      "countryCodes": [
+        "BB"
+      ],
+      "authorityName": "Barbados Civil Aviation Authority (BCAA)",
+      "authorityUrl": "https://www.bcaa.gov.bb/remotely-piloted-aircraft-systems/",
+      "officialMapUrls": [
+        "https://www.bcaa.gov.bb/remotely-piloted-aircraft-systems/"
+      ],
+      "sourceType": "reference-only",
+      "sourceUrls": [
+        "https://www.bcaa.gov.bb/remotely-piloted-aircraft-systems/"
+      ],
+      "license": null,
+      "attribution": "Barbados Civil Aviation Authority (BCAA)",
+      "authentication": "none",
+      "canCache": false,
+      "canRedistribute": false,
+      "canRunInAutomation": false,
+      "updateFrequency": "authority-defined",
+      "lastCheckedAt": "2026-09-26",
+      "lastSuccessfulUpdateAt": null,
+      "warnings": [
+        "BCAA names five recreational free-to-fly locations subject to approval, licensing and insurance, but provides no georeferenced boundaries. Operators must apply in advance; check current restrictions, AIP and NOTAMs."
+      ]
+    },
     {
       "providerId": "af-afghanistan-civil-aviation-authority-ais",
       "countryCodes": [

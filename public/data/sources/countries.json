@@ -1,5 +1,22 @@
 [
   {
+    "countryCode": "BS",
+    "countryName": "The Bahamas",
+    "sourceName": "Civil Aviation Authority Bahamas (CAA-B)",
+    "officialMapUrl": "https://caabahamas.com/drone-faqs/",
+    "endpointUrl": "https://caabahamas.com/drone-faqs/",
+    "sourceType": "official RPAS guidance, registration and authorization portal",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "CAA-B guidance requires drone registration and enabled geofencing; commercial operations need prior written authorization. No reusable public geozone geometry was verified; check aerodrome separation, current AIP and NOTAMs."
+    ]
+  },
+  {
     "countryCode": "BB",
     "countryName": "Barbados",
     "sourceName": "Barbados Civil Aviation Authority (BCAA)",

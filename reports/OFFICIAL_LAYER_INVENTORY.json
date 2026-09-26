@@ -1,6 +1,28 @@
 {
-  "generatedAt": "2026-09-26T10:06:12.212951+00:00",
+  "generatedAt": "2026-09-26T10:27:46.242298+00:00",
   "providers": [
+    {
+      "countryCode": "BS",
+      "providerId": "bs-civil-aviation-authority-bahamas-caa-b",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "CAA-B guidance requires drone registration and enabled geofencing; commercial operations need prior written authorization. No reusable public geozone geometry was verified; check aerodrome separation, current AIP and NOTAMs."
+      ]
+    },
+    {
+      "countryCode": "BB",
+      "providerId": "bb-barbados-civil-aviation-authority-bcaa",
+      "sourceType": "reference-only",
+      "discoveredLayers": 0,
+      "importedLayers": 0,
+      "liveOnly": false,
+      "warnings": [
+        "BCAA names five recreational free-to-fly locations subject to approval, licensing and insurance, but provides no georeferenced boundaries. Operators must apply in advance; check current restrictions, AIP and NOTAMs."
+      ]
+    },
     {
       "countryCode": "AF",
       "providerId": "af-afghanistan-civil-aviation-authority-ais",
