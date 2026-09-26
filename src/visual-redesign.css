@@ -289,6 +289,14 @@ header .brand.logoGlass > img {
 .mapPage .resultDataNote, .mapPage .resultDataState { margin: 9px 0 0; color: #d4e4da; font-size: 11px; line-height: 1.45; }
 .mapPage .resultGeneralDetails { display: grid; grid-template-columns: minmax(85px, .42fr) minmax(0, 1fr); gap: 7px 12px; margin: 0; }
 .mapPage .resultGeneralDetails dd { margin: 0; }
+.mapPage .countryRulesScope { display: block; margin: -3px 0 10px; color: #a9c2b3; font-size: 10px; }
+.mapPage .countryRulesList { display: grid; grid-template-columns: minmax(85px, .42fr) minmax(0, 1fr); gap: 9px 12px; margin: 0; }
+.mapPage .countryRulesList dt { color: #a9c2b3; font-size: 10px; }
+.mapPage .countryRulesList dd { display: grid; gap: 3px; margin: 0; color: #f0f7f2; font-size: 11px; line-height: 1.4; }
+.mapPage .countryRulesList dd b { font-size: 11px; font-weight: 650; }
+.mapPage .countryRulesList dd small { color: #b9cbbf; font-size: 10px; }
+.mapPage .countryRulesCaveat { margin: 12px 0 8px; color: #c2d5ca; font-size: 10px; line-height: 1.5; }
+.mapPage .countryRulesLinks { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 10px; }
 @media (max-width: 680px) {
   .mapPage .resultCard { max-height: min(68dvh, 760px) !important; padding: 18px 16px 15px; border-radius: 26px; }
   .mapPage .resultCard .zoneBody dl { grid-template-columns: minmax(75px, .34fr) minmax(0, 1fr); }

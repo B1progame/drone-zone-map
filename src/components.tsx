@@ -1,10 +1,11 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Bot, ChevronDown, CloudSun, Heart, Home, Layers3, LocateFixed, Map, MapPin, Search, Settings, Share, ShieldAlert, Sparkles, X } from 'lucide-react';
 import type { Page, Location, Weather, ZoneInfo } from './types';
 import { sources, sourceFor, type Source } from './data/sources';
 import { formatForecastTime, searchLocation, searchLocationSuggestions, type LocationSuggestion } from './services';
 import { t } from './languages';
 import { zoneDisclaimer, zoneText, zoneWeatherDetailCopy, zoneWeatherMetrics, zoneWeatherQuality } from './zoneTranslations';
+import { countryRuleSet } from './countryRules';
 
 export function Logo({compact=false}:{compact?:boolean}) { return <div className="brand logoGlass" aria-label="Aeris Airspace"><img src={`${import.meta.env.BASE_URL}aeris-logo.svg`} alt=""/>{!compact&&<span><b>AERIS</b><small>DRONE AIRSPACE</small></span>}</div> }
 
@@ -49,8 +50,16 @@ export function Nav({page,setPage,language='en',showAi=false}:{page:Page;setPage
   return <nav ref={dockRef} className="dock" aria-label="Main navigation"><i ref={sliderRef} className="dockSlider" aria-hidden="true"/>{visiblePageMeta.map((x,index)=>{const I=x.icon,label=t(language,x.id);return <button ref={node=>{buttonRefs.current[index]=node}} className={page===x.id?'active':''} onClick={()=>setPage(x.id)} aria-label={label} aria-current={page===x.id?'page':undefined} key={x.id}><span className="navIcon"><I size={19}/></span><span className="navLabel">{label}</span></button>})}</nav>
 }
 export function SearchBox({onLocation,hero=false,language='en',compact=false}:{onLocation:(l:Location)=>void;hero?:boolean;language?:string;compact?:boolean}) {
-  const [value,setValue]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[open,setOpen]=useState(false),[suggestions,setSuggestions]=useState<LocationSuggestion[]>([]),[suggestionsOpen,setSuggestionsOpen]=useState(false),[activeSuggestion,setActiveSuggestion]=useState(0),[suggesting,setSuggesting]=useState(false);
-  const inputRef=useRef<HTMLInputElement>(null),chosenValueRef=useRef('');
+  const [value,setValue]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[open,setOpen]=useState(false),[closing,setClosing]=useState(false),[suggestions,setSuggestions]=useState<LocationSuggestion[]>([]),[suggestionsOpen,setSuggestionsOpen]=useState(false),[activeSuggestion,setActiveSuggestion]=useState(0),[suggesting,setSuggesting]=useState(false);
+  const inputRef=useRef<HTMLInputElement>(null),chosenValueRef=useRef(''),closeTimerRef=useRef<number|undefined>(undefined);
+  const closeSearch=()=>{
+    if(!open||closing)return;
+    if(closeTimerRef.current!==undefined)window.clearTimeout(closeTimerRef.current);
+    setClosing(true);
+    const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches||document.querySelector('.app.reducedMotion')!==null;
+    closeTimerRef.current=window.setTimeout(()=>{setOpen(false);setClosing(false);closeTimerRef.current=undefined},reducedMotion?1:180);
+  };
+  useEffect(()=>()=>{if(closeTimerRef.current!==undefined)window.clearTimeout(closeTimerRef.current)},[]);
   useEffect(()=>{if(open)window.setTimeout(()=>inputRef.current?.focus(),30)},[open]);
   useEffect(()=>{
     const query=value.trim();if(query.length<2||query===chosenValueRef.current){setSuggestions([]);setSuggestionsOpen(false);setSuggesting(false);return}
@@ -60,36 +69,36 @@ export function SearchBox({onLocation,hero=false,language='en',compact=false}:{o
     },220);
     return()=>{window.clearTimeout(timer);controller.abort()};
   },[value,language]);
-  const chooseSuggestion=(location:LocationSuggestion)=>{chosenValueRef.current=location.name;setValue(location.name);setSuggestions([]);setSuggestionsOpen(false);setError('');onLocation(location);setOpen(false)};
+  const chooseSuggestion=(location:LocationSuggestion)=>{chosenValueRef.current=location.name;setValue(location.name);setSuggestions([]);setSuggestionsOpen(false);setError('');onLocation(location);closeSearch()};
   const submit=async()=>{
     if(!value.trim())return inputRef.current?.focus();
     setBusy(true);setError('');
     try{
       const location=await searchLocation(value,language);
-      if(location){onLocation(location);setSuggestionsOpen(false);setOpen(false)}
+      if(location){onLocation(location);setSuggestionsOpen(false);closeSearch()}
       else setError(t(language,'noPlace'));
     }catch{setError(t(language,'searchError'))}
     finally{setBusy(false)}
   };
-  const locate=()=>navigator.geolocation?.getCurrentPosition(position=>{onLocation({lat:position.coords.latitude,lng:position.coords.longitude,name:'My location'});setOpen(false)},()=>setError('Location permission was not granted.'),{enableHighAccuracy:true,timeout:10000});
+  const locate=()=>navigator.geolocation?.getCurrentPosition(position=>{onLocation({lat:position.coords.latitude,lng:position.coords.longitude,name:'My location'});closeSearch()},()=>setError('Location permission was not granted.'),{enableHighAccuracy:true,timeout:10000});
   const search=<div className={`searchWrap${hero?' heroSearch':''}${suggestionsOpen?' suggestionsOpen':''}`}>
     <Search size={19}/>
     <input ref={inputRef} value={value} onChange={e=>{chosenValueRef.current='';setValue(e.target.value);setError('');setSuggestionsOpen(true)}} onFocus={()=>suggestions.length&&setSuggestionsOpen(true)} onBlur={()=>window.setTimeout(()=>setSuggestionsOpen(false),100)} onKeyDown={e=>{
       if(e.key==='ArrowDown'&&suggestionsOpen){e.preventDefault();setActiveSuggestion(index=>Math.min(suggestions.length-1,index+1))}
       else if(e.key==='ArrowUp'&&suggestionsOpen){e.preventDefault();setActiveSuggestion(index=>Math.max(0,index-1))}
       else if(e.key==='Enter'){e.preventDefault();if(suggestionsOpen&&suggestions[activeSuggestion])chooseSuggestion(suggestions[activeSuggestion]);else void submit()}
-      else if(e.key==='Escape'){setSuggestionsOpen(false);if(compact)setOpen(false)}
-    }} placeholder={t(language,'search')} aria-label="Place or coordinates" role="combobox" aria-autocomplete="list" aria-expanded={suggestionsOpen} aria-controls="location-suggestions" aria-activedescendant={suggestionsOpen?`location-suggestion-${activeSuggestion}`:undefined}/>
+      else if(e.key==='Escape'){setSuggestionsOpen(false);if(compact)closeSearch()}
+    }} placeholder={t(language,'search')} aria-label={t(language,'search')} role="combobox" aria-autocomplete="list" aria-expanded={suggestionsOpen} aria-controls="location-suggestions" aria-activedescendant={suggestionsOpen?`location-suggestion-${activeSuggestion}`:undefined}/>
     <button className="searchSubmit" onClick={()=>void submit()} disabled={busy} aria-label={busy?t(language,'finding'):t(language,'check')}><Search className="searchSubmitIcon"/><span>{busy?t(language,'finding'):t(language,'check')}</span></button>
     <button className="searchLocate" onClick={locate} aria-label={t(language,'locate')} title={t(language,'locate')}><LocateFixed/></button>
-    {compact&&<button className="compactSearchClose" onClick={()=>setOpen(false)} aria-label="Close location search"><X/></button>}
+    {compact&&<button className="compactSearchClose" onClick={closeSearch} aria-label={t(language,'close')}><X/></button>}
     {suggestionsOpen&&<div className="searchSuggestions" id="location-suggestions" role="listbox" aria-label="Place suggestions">{suggestions.map((suggestion,index)=><button id={`location-suggestion-${index}`} role="option" aria-selected={index===activeSuggestion} className={index===activeSuggestion?'active':''} key={`${suggestion.lat},${suggestion.lng}`} onMouseDown={event=>event.preventDefault()} onMouseEnter={()=>setActiveSuggestion(index)} onClick={()=>chooseSuggestion(suggestion)}><MapPin/><span><b>{suggestion.primary}</b><small>{suggestion.secondary}</small></span><i>{suggestion.lat.toFixed(2)}, {suggestion.lng.toFixed(2)}</i></button>)}</div>}
     {suggesting&&value.trim().length>=2&&!suggestionsOpen&&<div className="searchSuggesting" role="status">Finding places…</div>}
     {error&&<small>{error}</small>}
   </div>;
   if(!compact)return search;
-  return <div className={`responsiveSearch${open?' open':''}`}>
-    <button className="compactSearchTrigger liquid" onClick={()=>setOpen(value=>!value)} aria-label="Open location search" aria-expanded={open}><Search/></button>
+  return <div className={`responsiveSearch${open?' open':''}${closing?' closing':''}`}>
+    <button className="compactSearchTrigger liquid" onClick={()=>{if(open)closeSearch();else{if(closeTimerRef.current!==undefined)window.clearTimeout(closeTimerRef.current);setClosing(false);setOpen(true)}}} aria-label={t(language,'search')} aria-expanded={open&&!closing}><Search/></button>
     <div className="compactSearchPopover">{search}</div>
   </div>;
 }
@@ -97,7 +106,7 @@ export function ResultCard({location,weather,weatherError='',zoneInfo,onSave,onC
  const [mobileExpanded,setMobileExpanded]=useState(false);
  useEffect(()=>setMobileExpanded(false),[location.lat,location.lng]);
  const loaded=zoneInfo?.status==='loaded';
- const weatherLabels=zoneWeatherDetailCopy(language),currentHour=weather?.hourly[0];
+ const weatherLabels=zoneWeatherDetailCopy(language),currentHour=weather?.hourly[0],countryRules=countryRuleSet(zoneInfo?.countryCode,language);
  const number=(value:number,digits=0)=>new Intl.NumberFormat(language,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(value);
  const direction=(degrees?:number|null)=>typeof degrees==='number'&&Number.isFinite(degrees)?['N','NE','E','SE','S','SW','W','NW'][Math.round(((degrees%360)+360)%360/45)%8]:null;
  const forecastTime=currentHour?formatForecastTime(currentHour.time,weather!.timezone,language):'';
@@ -132,6 +141,13 @@ export function ResultCard({location,weather,weatherError='',zoneInfo,onSave,onC
    <div className="resultSectionHeading"><MapPin size={15}/><span>{weatherLabels.location}</span></div>
    <dl className="resultGeneralDetails"><dt>{weatherLabels.coordinates}</dt><dd>{location.lat.toFixed(5)}, {location.lng.toFixed(5)}</dd>{zoneInfo?.countryName&&<><dt>{weatherLabels.country}</dt><dd>{zoneInfo.countryName}</dd></>}{checkedTime&&<><dt>{weatherLabels.checked}</dt><dd>{checkedTime}</dd></>}</dl>
   </section>
+  {countryRules&&<section className="resultDataSection countryRulesSection" aria-label={countryRules.heading}>
+   <div className="resultSectionHeading"><ShieldAlert size={15}/><span>{countryRules.heading}</span></div>
+   <small className="countryRulesScope">{countryRules.scope}</small>
+   <dl className="countryRulesList">{countryRules.rules.map(rule=><Fragment key={rule.label}><dt>{rule.label}</dt><dd><b>{rule.value}</b>{rule.detail&&<small>{rule.detail}</small>}</dd></Fragment>)}</dl>
+   <p className="countryRulesCaveat">{countryRules.caveat}</p>
+   <div className="countryRulesLinks">{countryRules.links.map(link=><a key={link.url} href={link.url} target="_blank" rel="noreferrer">{link.label} ↗</a>)}</div>
+  </section>}
   <div className="cardActions"><button onClick={onSave}><Heart size={16}/> {zoneText(language,'save')}</button>{zoneInfo?.sourceUrl&&zoneInfo.sourceUrl!=='#'&&<a href={zoneInfo.sourceUrl} target="_blank" rel="noreferrer">{t(language,'official')} ↗</a>}</div><Disclaimer language={language}/>
  </aside>;
 }
