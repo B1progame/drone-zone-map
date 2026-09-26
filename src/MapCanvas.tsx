@@ -832,6 +832,14 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   const styleReadyRef=useRef(false);
   const [baseMap, setBaseMap] = useState<BaseMap>('satellite');
   const baseMapRef=useRef<BaseMap>(baseMap);
+  const [revealedMapControl,setRevealedMapControl]=useState<string|null>(null);
+  const mapControlTimerRef=useRef<number|undefined>(undefined);
+  const revealMapControl=(control:string)=>{
+    setRevealedMapControl(control);
+    if(mapControlTimerRef.current!==undefined)window.clearTimeout(mapControlTimerRef.current);
+    mapControlTimerRef.current=window.setTimeout(()=>{setRevealedMapControl(null);mapControlTimerRef.current=undefined},4000);
+  };
+  useEffect(()=>()=>{if(mapControlTimerRef.current!==undefined)window.clearTimeout(mapControlTimerRef.current)},[]);
   const [zonesVisible, setZonesVisible] = useState(true);
   const zonesVisibleRef=useRef(zonesVisible);
   const [weatherLayers,setWeatherLayers]=useState<WeatherLayer[]>(['weather','wind']);
@@ -1118,10 +1126,10 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     {weatherVisible&&radarNotice&&<div className="mapWeatherStatus warning"><CloudRain/> {radarNotice}</div>}
     {offlineNotice&&<div className="mapOfflineStatus"><WifiOff/> {offlineNotice}{navigator.onLine&&isOfflineTestMode()&&<button onClick={()=>setOfflineTestMode(false)}>Exit test</button>}</div>}
     <div className="mapStyleControl" aria-label="Map display controls">
-      <button className={baseMap === 'satellite' ? 'active' : ''} onClick={() => setBaseMap('satellite')} aria-label="Satellite map"><Satellite size={16}/><span>Satellite</span></button>
-      <button className={baseMap === 'streets' ? 'active' : ''} onClick={() => setBaseMap('streets')} aria-label="Street map"><MapIcon size={16}/><span>Streets</span></button>
-      <button className={zonesVisible ? 'active zones' : ''} onClick={() => setZonesVisible(value => !value)} aria-pressed={zonesVisible} aria-label="Toggle verified official drone zones"><Layers3 size={16}/><span>Zones</span></button>
-      <button className={weatherVisible?'active weather':''} onClick={cycleWeatherMode} aria-pressed={weatherVisible} aria-label={`${activeWeatherMode.label}. Click to switch to ${weatherModes[(weatherModes.findIndex(mode=>mode.id===activeWeatherMode.id)+1)%weatherModes.length].label}`} title={`Weather mode: ${activeWeatherMode.label} · click to cycle`}><activeWeatherMode.icon size={16}/><span>{activeWeatherMode.label}</span></button>
+      <button className={`${baseMap === 'satellite' ? 'active ' : ''}${revealedMapControl==='satellite'?'revealed':''}`} onClick={() => {setBaseMap('satellite');revealMapControl('satellite')}} aria-label="Satellite map"><Satellite size={16}/><span>Satellite</span></button>
+      <button className={`${baseMap === 'streets' ? 'active ' : ''}${revealedMapControl==='streets'?'revealed':''}`} onClick={() => {setBaseMap('streets');revealMapControl('streets')}} aria-label="Street map"><MapIcon size={16}/><span>Streets</span></button>
+      <button className={`${zonesVisible ? 'active zones ' : ''}${revealedMapControl==='zones'?'revealed':''}`} onClick={() => {setZonesVisible(value => !value);revealMapControl('zones')}} aria-pressed={zonesVisible} aria-label="Toggle verified official drone zones"><Layers3 size={16}/><span>Zones</span></button>
+      <button className={`${weatherVisible?'active weather ':''}${revealedMapControl==='weather'?'revealed':''}`} onClick={() => {cycleWeatherMode();revealMapControl('weather')}} aria-pressed={weatherVisible} aria-label={`${activeWeatherMode.label}. Click to switch to ${weatherModes[(weatherModes.findIndex(mode=>mode.id===activeWeatherMode.id)+1)%weatherModes.length].label}`} title={`Weather mode: ${activeWeatherMode.label} · click to cycle`}><activeWeatherMode.icon size={16}/><span>{activeWeatherMode.label}</span></button>
     </div>
     {weather&&location&&<div className={`mapWeatherControl liquid${weatherVisible?'':' weatherModeOff'}`}>
       {!weatherVisible&&<div className="weatherOffNote"><Ban/> Weather overlays are off</div>}

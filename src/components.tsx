@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Bot, CloudSun, Heart, Home, Layers3, LocateFixed, Map, MapPin, Search, Settings, Share, ShieldAlert, Sparkles, X } from 'lucide-react';
+import { Bot, ChevronDown, CloudSun, Heart, Home, Layers3, LocateFixed, Map, MapPin, Search, Settings, Share, ShieldAlert, Sparkles, X } from 'lucide-react';
 import type { Page, Location, Weather, ZoneInfo } from './types';
 import { sources, sourceFor, type Source } from './data/sources';
 import { formatForecastTime, searchLocation, searchLocationSuggestions, type LocationSuggestion } from './services';
@@ -94,6 +94,8 @@ export function SearchBox({onLocation,hero=false,language='en',compact=false}:{o
   </div>;
 }
 export function ResultCard({location,weather,weatherError='',zoneInfo,onSave,onClose,language='en'}:{location:Location;weather?:Weather;weatherError?:string;zoneInfo?:ZoneInfo;onSave:()=>void;onClose:()=>void;language?:string}) {
+ const [mobileExpanded,setMobileExpanded]=useState(false);
+ useEffect(()=>setMobileExpanded(false),[location.lat,location.lng]);
  const loaded=zoneInfo?.status==='loaded';
  const weatherLabels=zoneWeatherDetailCopy(language),currentHour=weather?.hourly[0];
  const number=(value:number,digits=0)=>new Intl.NumberFormat(language,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(value);
@@ -101,9 +103,11 @@ export function ResultCard({location,weather,weatherError='',zoneInfo,onSave,onC
  const forecastTime=currentHour?formatForecastTime(currentHour.time,weather!.timezone,language):'';
  const checkedTime=zoneInfo?.checkedAt?new Intl.DateTimeFormat(language,{dateStyle:'medium',timeStyle:'short'}).format(new Date(zoneInfo.checkedAt)):'';
  const status=!zoneInfo?t(language,'checking'):loaded&&zoneInfo.countryCode==='CA'?`${zoneInfo.zones.length} airport / park records · ${zoneInfo.sourceName}`:loaded?zoneText(language,'intersects',{count:zoneInfo.zones.length,zones:zoneText(language,zoneInfo.zones.length===1?'zone':'zones'),source:zoneInfo.sourceName}):zoneInfo.status==='none'?zoneText(language,'none',{source:zoneInfo.sourceName}):zoneInfo.status==='unsupported'?zoneText(language,'handoff',{country:zoneInfo.countryName}):zoneText(language,'unavailable',{country:zoneInfo.countryName});
- return <aside className="resultCard liquid">
-  <div className="sheetHandle"/>
-  <button className="resultClose" onClick={onClose} aria-label={t(language,'close')} title={t(language,'close')}><X/></button>
+ return <aside className={`resultCard liquid${mobileExpanded?' mobileExpanded':''}`}>
+  <div className="resultCardHeader">
+   <button className="sheetHandle" type="button" onClick={()=>setMobileExpanded(value=>!value)} aria-expanded={mobileExpanded} aria-label={mobileExpanded?'Collapse location details':'Expand location details'}><span/>{mobileExpanded?'Hide details':'Location details'}<ChevronDown size={15}/></button>
+   <button className="resultClose" onClick={onClose} aria-label={t(language,'close')} title={t(language,'close')}><X/></button>
+  </div>
   <div className="eyebrow">{t(language,'result')}</div><h2>{location.name}</h2>
   <div className={'status '+(loaded?'caution':'unknown')}><span/>{status}</div>
   {zoneInfo?.zones.length?<div className="zoneResults">{zoneInfo.zones.map((zone,index)=><details key={zone.id} open={index===0}><summary><div><b>{zone.name}</b><span>{zone.type}</span></div><i aria-hidden="true">⌄</i></summary><div className="zoneBody">{zone.message&&<p>{zone.message}</p>}{zone.pilotAction&&<p><b>{zoneText(language,'pilot')}:</b> {zone.pilotAction}</p>}<dl>{zone.originalName&&zone.originalName!==zone.name&&<><dt>{zoneText(language,'originalName')}</dt><dd>{zone.originalName}</dd></>}{zone.originalMessage&&zone.originalMessage!==zone.message&&<><dt>{zoneText(language,'originalText')}</dt><dd>{zone.originalMessage}</dd></>}{zone.officialLayerName&&<><dt>{zoneText(language,'layer')}</dt><dd>{zone.officialLayerName}</dd></>}{zone.lower&&<><dt>{zoneText(language,'lower')}</dt><dd>{zone.lower}</dd></>}{zone.upper&&<><dt>{zoneText(language,'upper')}</dt><dd>{zone.upper}</dd></>}{zone.legalReference&&<><dt>{zoneText(language,'legal')}</dt><dd>{zone.legalReference}</dd></>}{zone.authority&&<><dt>{zoneText(language,'authority')}</dt><dd>{zone.authority}</dd></>}{zone.contact&&<><dt>{zoneText(language,'contact')}</dt><dd>{zone.contact}</dd></>}{zone.updated&&<><dt>{zoneText(language,'updated')}</dt><dd>{zone.updated}</dd></>}{zone.sourceUrl&&<><dt>{zoneText(language,'source')}</dt><dd><a href={zone.sourceUrl} target="_blank" rel="noreferrer">{zone.source} ↗</a></dd></>}</dl></div></details>)}</div>:zoneInfo&&<p>{zoneInfo.status==='none'?`${zoneText(language,'none',{source:zoneInfo.sourceName})} ${zoneText(language,'caveat')}`:zoneInfo.warning}</p>}
