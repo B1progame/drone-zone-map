@@ -143,7 +143,8 @@ function Home({onChoose,geo,openMap,openWeather,openAi,showAi,language,reducedMo
   },root);
   const heroTargets=root.querySelectorAll<HTMLElement>('.cinematicHero .hero > *');
   const entrance=animate(heroTargets,{opacity:[0,1],y:[18,0],delay:stagger(90),duration:760,ease:'out(3)'});
-  return()=>{entrance.revert();context.revert()};
+  const refreshFrame=window.requestAnimationFrame(()=>ScrollTrigger.refresh());
+  return()=>{window.cancelAnimationFrame(refreshFrame);entrance.revert();context.revert()};
  },[reducedMotion]);
  return <main ref={homeRef} className="home homeCinematic">
   <section className="cinematicHero">
@@ -180,7 +181,7 @@ function Home({onChoose,geo,openMap,openWeather,openAi,showAi,language,reducedMo
         <button className="primary" onClick={openMap}><MapIcon/> Explore the live map <ArrowRight/></button>
       </div>
       <figure className="missionPhoto missionWide" data-reveal-item><img src="https://images.pexels.com/photos/11602798/pexels-photo-11602798.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1800" alt="Drone flying over a forest in Ilmenau, Germany" loading="lazy"/><figcaption><small>01 · AIRSPACE</small><b>Know what surrounds the launch point.</b><span>Live map layers · route radius · official-source handoff</span></figcaption></figure>
-      <figure className="missionPhoto missionTall" data-reveal-item><img src="/media/drone-mountain-alternative.jpg" alt="A drone hovering close to a rugged mountain cliff" loading="lazy"/><figcaption><small>02 · CONDITIONS</small><b>Find the quieter hour.</b><span>Wind · rain · visibility · daylight</span></figcaption></figure>
+      <figure className="missionPhoto missionTall" data-reveal-item><img src="/media/drone-mountain-alternative.jpg" alt="A drone hovering close to a rugged mountain cliff" loading="eager" decoding="async"/><figcaption><small>02 · CONDITIONS</small><b>Find the quieter hour.</b><span>Wind · rain · visibility · daylight</span></figcaption></figure>
       <div className="missionQuote liquid" data-reveal-item><Sparkles/><p>“The best flight tool is the one that makes the next responsible action obvious.”</p><span>AERIS DESIGN PRINCIPLE</span></div>
     </section>
     <section className="flightPromise" data-reveal>
