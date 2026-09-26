@@ -1,5 +1,6 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import maplibregl, { Map as MapLibreMap, Marker, type FilterSpecification, type StyleSpecification } from 'maplibre-gl';
+import { gsap } from 'gsap';
 import { Ban, Cloud, CloudLightning, CloudRain, CloudSun, Layers3, Map as MapIcon, Navigation as DirectionArrow, Pause, Play, Satellite, Snowflake, Thermometer, WifiOff, Wind } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { AppSettings, Location, RenderDetail, Weather } from './types';
@@ -833,12 +834,31 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   const [baseMap, setBaseMap] = useState<BaseMap>('satellite');
   const baseMapRef=useRef<BaseMap>(baseMap);
   const [revealedMapControl,setRevealedMapControl]=useState<string|null>(null);
+  const [mapControlRevealVersion,setMapControlRevealVersion]=useState(0);
   const mapControlTimerRef=useRef<number|undefined>(undefined);
+  const lastAnimatedMapControlRef=useRef<string|null>(null);
   const revealMapControl=(control:string)=>{
     setRevealedMapControl(control);
+    setMapControlRevealVersion(version=>version+1);
     if(mapControlTimerRef.current!==undefined)window.clearTimeout(mapControlTimerRef.current);
     mapControlTimerRef.current=window.setTimeout(()=>{setRevealedMapControl(null);mapControlTimerRef.current=undefined},4000);
   };
+  useLayoutEffect(()=>{
+    if(!revealedMapControl||window.innerWidth>680||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const button=document.querySelector<HTMLButtonElement>(`.mapStyleControl [data-map-control="${revealedMapControl}"]`);
+    const label=button?.querySelector<HTMLElement>('span');
+    if(!button||!label)return;
+    const targetWidth=button.getBoundingClientRect().width;
+    const targetLabelWidth=Math.max(48,targetWidth-52);
+    const collapsedWidth=window.matchMedia('(max-width: 380px)').matches?42:44;
+    const alreadyExpanded=lastAnimatedMapControlRef.current===revealedMapControl;
+    lastAnimatedMapControlRef.current=revealedMapControl;
+    button.classList.add('gsapOpening');
+    const opening=gsap.timeline({onComplete:()=>button.classList.remove('gsapOpening')});
+    opening.fromTo(button,{width:alreadyExpanded?targetWidth:collapsedWidth,x:alreadyExpanded?0:9,scale:alreadyExpanded?.98:.96},{width:targetWidth,x:0,scale:1,duration:.46,ease:'back.out(1.55)',clearProps:'width,x,scale'});
+    opening.fromTo(label,{maxWidth:alreadyExpanded?targetLabelWidth:0,opacity:alreadyExpanded?1:0,x:alreadyExpanded?0:-5},{maxWidth:targetLabelWidth,opacity:1,x:0,duration:.27,ease:'power2.out',clearProps:'maxWidth,x'},'<0.1');
+    return()=>{opening.kill();button.classList.remove('gsapOpening')};
+  },[revealedMapControl,mapControlRevealVersion]);
   useEffect(()=>()=>{if(mapControlTimerRef.current!==undefined)window.clearTimeout(mapControlTimerRef.current)},[]);
   const [zonesVisible, setZonesVisible] = useState(true);
   const zonesVisibleRef=useRef(zonesVisible);
@@ -1126,10 +1146,10 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     {weatherVisible&&radarNotice&&<div className="mapWeatherStatus warning"><CloudRain/> {radarNotice}</div>}
     {offlineNotice&&<div className="mapOfflineStatus"><WifiOff/> {offlineNotice}{navigator.onLine&&isOfflineTestMode()&&<button onClick={()=>setOfflineTestMode(false)}>Exit test</button>}</div>}
     <div className="mapStyleControl" aria-label="Map display controls">
-      <button className={`${baseMap === 'satellite' ? 'active ' : ''}${revealedMapControl==='satellite'?'revealed':''}`} onClick={() => {setBaseMap('satellite');revealMapControl('satellite')}} aria-label="Satellite map"><Satellite size={16}/><span>Satellite</span></button>
-      <button className={`${baseMap === 'streets' ? 'active ' : ''}${revealedMapControl==='streets'?'revealed':''}`} onClick={() => {setBaseMap('streets');revealMapControl('streets')}} aria-label="Street map"><MapIcon size={16}/><span>Streets</span></button>
-      <button className={`${zonesVisible ? 'active zones ' : ''}${revealedMapControl==='zones'?'revealed':''}`} onClick={() => {setZonesVisible(value => !value);revealMapControl('zones')}} aria-pressed={zonesVisible} aria-label="Toggle verified official drone zones"><Layers3 size={16}/><span>Zones</span></button>
-      <button className={`${weatherVisible?'active weather ':''}${revealedMapControl==='weather'?'revealed':''}`} onClick={() => {cycleWeatherMode();revealMapControl('weather')}} aria-pressed={weatherVisible} aria-label={`${activeWeatherMode.label}. Click to switch to ${weatherModes[(weatherModes.findIndex(mode=>mode.id===activeWeatherMode.id)+1)%weatherModes.length].label}`} title={`Weather mode: ${activeWeatherMode.label} · click to cycle`}><activeWeatherMode.icon size={16}/><span>{activeWeatherMode.label}</span></button>
+      <button data-map-control="satellite" className={`${baseMap === 'satellite' ? 'active ' : ''}${revealedMapControl==='satellite'?'revealed':''}`} onClick={() => {setBaseMap('satellite');revealMapControl('satellite')}} aria-label="Satellite map"><Satellite size={16}/><span>Satellite</span></button>
+      <button data-map-control="streets" className={`${baseMap === 'streets' ? 'active ' : ''}${revealedMapControl==='streets'?'revealed':''}`} onClick={() => {setBaseMap('streets');revealMapControl('streets')}} aria-label="Street map"><MapIcon size={16}/><span>Streets</span></button>
+      <button data-map-control="zones" className={`${zonesVisible ? 'active zones ' : ''}${revealedMapControl==='zones'?'revealed':''}`} onClick={() => {setZonesVisible(value => !value);revealMapControl('zones')}} aria-pressed={zonesVisible} aria-label="Toggle verified official drone zones"><Layers3 size={16}/><span>Zones</span></button>
+      <button data-map-control="weather" className={`${weatherVisible?'active weather ':''}${revealedMapControl==='weather'?'revealed':''}`} onClick={() => {cycleWeatherMode();revealMapControl('weather')}} aria-pressed={weatherVisible} aria-label={`${activeWeatherMode.label}. Click to switch to ${weatherModes[(weatherModes.findIndex(mode=>mode.id===activeWeatherMode.id)+1)%weatherModes.length].label}`} title={`Weather mode: ${activeWeatherMode.label} · click to cycle`}><activeWeatherMode.icon size={16}/><span>{activeWeatherMode.label}</span></button>
     </div>
     {weather&&location&&<div className={`mapWeatherControl liquid${weatherVisible?'':' weatherModeOff'}`}>
       {!weatherVisible&&<div className="weatherOffNote"><Ban/> Weather overlays are off</div>}
