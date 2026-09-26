@@ -9,8 +9,8 @@ export type AppSettings = {
   language: string;
 };
 export type Location = { lat: number; lng: number; name: string };
-export type WeatherHour = { time:string; temperature:number; wind:number; gusts:number; rain:number; rainProbability:number; cloud:number; visibility:number; score:number; isDay:boolean };
-export type Weather = { temperature: number; wind: number; gusts: number; rain: number; rainProbability:number; cloud: number; visibility:number; score: number; hourly:WeatherHour[]; timezone:string };
+export type WeatherHour = { time:number|string; temperature:number; wind:number; windDirection?:number|null; wind80?:number|null; gusts:number; rain:number; rainProbability:number; cloud:number; visibility:number; weatherCode?:number; score:number; isDay:boolean };
+export type Weather = { temperature: number; wind: number; gusts: number; rain: number; rainProbability:number; cloud: number; visibility:number; score: number; hourly:WeatherHour[]; timezone:string; retrievedAt?:number; stale?:boolean; offlineSnapshot?:boolean };
 export type ZoneDetail = {
   id:string;
   name:string;

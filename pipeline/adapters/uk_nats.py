@@ -4,6 +4,9 @@ from __future__ import annotations
 from html import unescape
 from io import BytesIO
 import re
+from datetime import date
+from html import unescape
+from urllib.parse import urljoin
 from zipfile import ZipFile
 import xml.etree.ElementTree as ET
 
@@ -15,12 +18,23 @@ from .base import FetchResult
 class UkNatsAdapter:
     country_code = "GB"
     source_page = "https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/"
-    endpoint = (
-        "https://nats-uk.ead-it.com/cms-nats/export/sites/default/en/Publications/"
-        "digital-datasets/UAS_AREA_1/EG_UAS_FR_DS_AREA1_FULL_20260709_KML.zip"
-    )
-    effective_date = "2026-07-09"
+    dataset_page = "https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/digital-datasets/index.html"
+    effective_date = ""
     namespace = {"kml": "http://www.opengis.net/kml/2.2"}
+
+    def _current_endpoint(self) -> tuple[str, str]:
+        response = httpx.get(self.dataset_page, follow_redirects=True, timeout=60)
+        response.raise_for_status()
+        pattern = re.compile(r"href=[\"']([^\"']*EG_UAS_FR_DS_AREA1_FULL_(\d{8})_KML\.zip)[\"']", re.I)
+        candidates = []
+        for href, compact_date in pattern.findall(response.text):
+            effective = date(int(compact_date[:4]), int(compact_date[4:6]), int(compact_date[6:8]))
+            if effective <= date.today():
+                candidates.append((effective, urljoin(self.dataset_page, unescape(href))))
+        if not candidates:
+            raise ValueError("NATS digital dataset page has no currently effective UAS KML download")
+        effective, endpoint = max(candidates)
+        return endpoint, effective.isoformat()
 
     @staticmethod
     def _plain_text(value: str) -> str:
@@ -106,8 +120,9 @@ class UkNatsAdapter:
         return features
 
     def fetch(self) -> FetchResult:
+        endpoint, self.effective_date = self._current_endpoint()
         response = httpx.get(
-            self.endpoint,
+            endpoint,
             headers={"User-Agent": "Aeris source updater", "Referer": self.source_page},
             follow_redirects=True,
             timeout=60,

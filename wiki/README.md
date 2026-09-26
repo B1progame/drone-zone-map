@@ -5,6 +5,7 @@ The GitHub Wiki is enabled for this repository, but GitHub does not create its s
 - [Home](Home.md)
 - [Local setup](Local-setup.md)
 - [Offline maps](Offline-maps.md)
+- [Map coverage](Map-coverage.md)
 - [Why Aeris](Why-Aeris.md)
 - [License and attribution](License-and-attribution.md)
 

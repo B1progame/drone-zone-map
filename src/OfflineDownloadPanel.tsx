@@ -38,7 +38,7 @@ function splitLargeConfig(config:OfflinePackConfig){
 }
 
 export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}:{location:Location;weather?:Weather;zoneInfo?:ZoneInfo;onClose:()=>void;onSaved:()=>void}){
- const detected=(zoneInfo?.countryCode&&zoneInfo.countryCode in OFFLINE_COUNTRIES?zoneInfo.countryCode:'DE') as OfflineCountryCode;
+ const detected=(zoneInfo?.countryCode&&zoneInfo.countryCode in OFFLINE_COUNTRIES?zoneInfo.countryCode:'XX') as OfflineCountryCode;
  const[scope,setScope]=useState<OfflineScope>('radius'),[country,setCountry]=useState<OfflineCountryCode>(detected),[stateName,setStateName]=useState('Berlin'),[radius,setRadius]=useState(20),[layers,setLayers]=useState<OfflineLayerId[]>(OFFLINE_COUNTRIES[detected].layers),[basemapTypes,setBasemapTypes]=useState<OfflineBasemapType[]>(['street','satellite']),[qualityOffset,setQualityOffset]=useState(3),[progress,setProgress]=useState<OfflineDownloadProgress>(),[etaSample,setEtaSample]=useState<{startedAt:number;percent:number}>(),[clock,setClock]=useState(Date.now()),[error,setError]=useState(''),[sourceEstimate,setSourceEstimate]=useState<{bytes:number;items:number;tileCount?:number;label:string}>(),[storage,setStorage]=useState<OfflineStorageStatus>();
  const availableLayers=OFFLINE_COUNTRIES[country].layers;
  const limitedBaseConfig=useMemo(()=>createOfflineConfig(scope,location,layers,stateName,radius,country),[scope,location,layers,stateName,radius,country]);
@@ -54,7 +54,7 @@ export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}
  useEffect(()=>{if(!progress||!etaSample)return;const timer=window.setInterval(()=>setClock(Date.now()),1000);return()=>window.clearInterval(timer)},[progress,etaSample]);
  const toggle=(id:OfflineLayerId)=>setLayers(value=>value.includes(id)?value.filter(item=>item!==id):[...value,id]);
  const toggleBasemap=(type:OfflineBasemapType)=>setBasemapTypes(value=>value.includes(type)?(value.length===1?value:value.filter(item=>item!==type)):[...value,type]);
- const chooseCountry=(next:OfflineCountryCode)=>{setCountry(next);setLayers(OFFLINE_COUNTRIES[next].layers);if(next!=='DE'&&scope==='state')setScope('country')};
+ const chooseCountry=(next:OfflineCountryCode)=>{setCountry(next);setLayers(OFFLINE_COUNTRIES[next].layers);if(next==='XX')setScope('radius');else if(next!=='DE'&&scope==='state')setScope('country')};
  const reportProgress=(value:OfflineDownloadProgress)=>{setProgress(value);if(value.percent>=15)setEtaSample(sample=>sample??{startedAt:Date.now(),percent:value.percent})};
  const etaSeconds=progress&&etaSample&&progress.percent>etaSample.percent&&clock-etaSample.startedAt>=1500?(clock-etaSample.startedAt)/1000*(100-progress.percent)/(progress.percent-etaSample.percent):undefined;
  const download=async()=>{
@@ -73,7 +73,7 @@ export function OfflineDownloadPanel({location,weather,zoneInfo,onClose,onSaved}
    <p>There is no app-imposed total download limit. Very large selections are split into as many connected offline sections as needed and continue until the browser storage or network itself stops the download.</p>
    <label>Country<select value={country} onChange={event=>chooseCountry(event.target.value as OfflineCountryCode)} disabled={Boolean(progress)}>{(Object.keys(OFFLINE_COUNTRIES) as OfflineCountryCode[]).map(code=><option value={code} key={code}>{OFFLINE_COUNTRIES[code].name}</option>)}</select></label>
    <label>Area<select value={scope} onChange={event=>setScope(event.target.value as OfflineScope)} disabled={Boolean(progress)}>
-    <option value="radius">Custom radius around selected location</option><option value="city">Place / regional coverage</option>{country==='DE'&&<option value="state">Federal state</option>}<option value="country">{OFFLINE_COUNTRIES[country].scopeLabel??`All ${OFFLINE_COUNTRIES[country].name}`}</option>
+    <option value="radius">Custom radius around selected location</option><option value="city">Place / regional coverage</option>{country==='DE'&&<option value="state">Federal state</option>}{country!=='XX'&&<option value="country">{OFFLINE_COUNTRIES[country].scopeLabel??`All ${OFFLINE_COUNTRIES[country].name}`}</option>}
    </select></label>
    {scope==='state'&&<label>Federal state<select value={stateName} onChange={event=>setStateName(event.target.value)}>{GERMAN_STATES.map(state=><option key={state.name}>{state.name}</option>)}</select></label>}
    {(scope==='radius'||scope==='city')&&<div className="offlinePresets" aria-label="Offline area presets">{[{label:'Local',km:10},{label:'Regional',km:50},{label:'Large',km:100},{label:'Full quality',km:200}].map(preset=><button key={preset.km} className={radius===preset.km?'active':''} disabled={Boolean(progress)} onClick={()=>setRadius(preset.km)}><b>{preset.label}</b><span>{preset.km.toLocaleString()} km</span></button>)}</div>}

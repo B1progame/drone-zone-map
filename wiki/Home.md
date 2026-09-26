@@ -9,6 +9,7 @@ Aeris is a privacy-first drone airspace and weather planning workspace. It is bu
 - [Local setup](Local-setup.md)
 - [Why Aeris exists](Why-Aeris.md)
 - [Offline maps](Offline-maps.md)
+- [Map coverage](Map-coverage.md)
 - [License and attribution](License-and-attribution.md)
 - [Repository README](../README.md)
 

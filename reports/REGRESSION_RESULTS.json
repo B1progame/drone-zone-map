@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-21T09:01:36.923713+00:00",
+  "generatedAt": "2026-09-26T10:06:12.235972+00:00",
   "germany": {
     "passed": true,
     "configuredLayerCount": 33,
-    "nationalWfsFeatureCount": 88589,
-    "representativeGeometryChecksum": "09922baa75298e945923b681cd2c4e49bc5e366d32c4cdbcc0a0300208dafb17",
+    "nationalWfsFeatureCount": 87879,
+    "representativeGeometryChecksum": "892584185f8e5f088525539795e01b02c6ce7f73ec1998617e0b9dfdbdc9bd2d",
     "validFeatureOrBehaviorLost": false,
     "basis": "Provider source URLs, layer configuration, frontend query path, and representative baseline are unchanged."
   },

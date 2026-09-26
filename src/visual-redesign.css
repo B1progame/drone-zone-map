@@ -1,0 +1,362 @@
+/* Product-first home hierarchy, intentional reveals, and replacement photography. */
+.cinematicHero .heroPhoto {
+  background-image: url('/media/drone-sunset-silhouette.jpg') !important;
+  background-position: center 48%;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  filter: saturate(.78) contrast(1.04) brightness(.66) !important;
+}
+.homeCinematic .cinematicHero {
+  min-height: 100svh;
+  align-items: center;
+  padding: 94px 5vw 106px;
+}
+.homeCinematic .heroShade {
+  background: linear-gradient(105deg, rgb(3 12 10 / 72%) 0%, rgb(3 12 10 / 45%) 45%, rgb(3 12 10 / 12%) 100%),
+    linear-gradient(0deg, rgb(3 12 10 / 37%), transparent 38%) !important;
+}
+.homeCinematic .hero {
+  width: min(780px, 58vw);
+  max-width: none;
+  margin-left: 2vw;
+  padding: clamp(28px, 3.1vw, 46px);
+  border: 1px solid rgb(238 255 246 / 29%);
+  border-radius: 34px 52px 34px 52px;
+  background: linear-gradient(145deg, rgb(225 255 240 / 18%), rgb(16 37 30 / 62%) 42%, rgb(5 18 14 / 57%));
+  box-shadow: inset 0 1px rgb(255 255 255 / 34%), inset 0 -1px rgb(0 0 0 / 20%), 0 28px 100px rgb(0 0 0 / 48%);
+  -webkit-backdrop-filter: blur(30px) saturate(155%);
+  backdrop-filter: blur(30px) saturate(155%);
+}
+header .brand.logoGlass {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  gap: 10px;
+  padding: 4px 14px 4px 6px;
+  border: 1px solid rgb(238 255 246 / 27%);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgb(222 255 240 / 17%), rgb(12 30 24 / 55%));
+  box-shadow: inset 0 1px rgb(255 255 255 / 28%), 0 10px 28px rgb(0 0 0 / 25%);
+  -webkit-backdrop-filter: blur(22px) saturate(165%);
+  backdrop-filter: blur(22px) saturate(165%);
+}
+header .brand.logoGlass::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 1px;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 15% 0%, rgb(255 255 255 / 23%), transparent 60%);
+  pointer-events: none;
+}
+header .brand.logoGlass::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -35%;
+  bottom: -35%;
+  left: -48%;
+  width: 38%;
+  border-radius: 999px;
+  background: linear-gradient(105deg, transparent 0%, rgb(231 255 241 / 3%) 24%, rgb(231 255 241 / 23%) 50%, rgb(231 255 241 / 5%) 76%, transparent 100%);
+  filter: blur(2px);
+  transform: translateX(-150%) skewX(-14deg);
+  animation: logoGlassSweep 5.2s cubic-bezier(.42, 0, .24, 1) infinite;
+  pointer-events: none;
+}
+header .brand.logoGlass > img,
+header .brand.logoGlass > span {
+  position: relative;
+  z-index: 1;
+}
+header .brand.logoGlass > img {
+  transform-origin: 50% 50%;
+  animation: logoEmblemGlow 3.8s ease-in-out infinite;
+}
+@keyframes logoGlassSweep {
+  0%, 12% { transform: translateX(-150%) skewX(-14deg); opacity: 0; }
+  20% { opacity: .72; }
+  60% { opacity: .64; }
+  78%, 100% { transform: translateX(560%) skewX(-14deg); opacity: 0; }
+}
+@keyframes logoEmblemGlow {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 1px rgb(190 255 155 / 12%)); }
+  50% { transform: scale(1.045); filter: drop-shadow(0 0 5px rgb(190 255 155 / 52%)); }
+}
+.reducedMotion header .brand.logoGlass::after,
+.reducedMotion header .brand.logoGlass > img { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  header .brand.logoGlass::after,
+  header .brand.logoGlass > img { animation: none !important; }
+}
+.finalCtaPhoto {
+  background-image: url('https://images.pexels.com/photos/12883671/pexels-photo-12883671.jpeg?auto=compress&cs=tinysrgb&w=2200') !important;
+}
+.weatherPage:before {
+  background-image: linear-gradient(180deg, #07110ec9, #07110ff2 64%, #07110f), url('https://images.pexels.com/photos/16731805/pexels-photo-16731805.jpeg?auto=compress&cs=tinysrgb&w=2200') !important;
+}
+
+/* Wind arrows follow local forecast samples in the current viewport. */
+.windFieldOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  overflow: hidden;
+  pointer-events: none;
+}
+.windFieldArrow {
+  position: absolute;
+  display: block;
+  width: 27px;
+  height: 15px;
+  color: var(--wind-color);
+  opacity: .88;
+  transform: translate(-50%, -50%) rotate(var(--wind-angle));
+  animation: windSampleFlow var(--wind-duration) ease-in-out var(--wind-delay) infinite;
+}
+.windFieldArrow::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  right: 4px;
+  top: 6px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, currentColor 52%);
+  box-shadow: 0 0 0 1px rgb(4 14 11 / 60%), 0 0 8px color-mix(in srgb, currentColor 66%, transparent);
+}
+.windFieldArrow::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  top: 4px;
+  width: 6px;
+  height: 6px;
+  border-top: 1.8px solid currentColor;
+  border-right: 1.8px solid currentColor;
+  filter: drop-shadow(0 0 2px rgb(4 14 11 / 90%));
+  transform: rotate(45deg);
+}
+@keyframes windSampleFlow {
+  0%, 100% { opacity: .58; transform: translate(-50%, -50%) rotate(var(--wind-angle)) translateX(-4px); }
+  52% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--wind-angle)) translateX(5px); }
+}
+.windFieldOverlay.reduced .windFieldArrow { animation: none; opacity: .9; }
+.windDirectionIcon {
+  width: 11px;
+  height: 11px;
+  margin-left: 4px;
+  color: #b9f4e9;
+}
+
+/* Keep the search field itself visually quiet; focus feedback belongs to its glass shell. */
+.searchWrap > input[role="combobox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  display: block;
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  margin: 0;
+  padding: 0 2px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #f5f8f6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.searchWrap > input[role="combobox"]:focus,
+.searchWrap > input[role="combobox"]:focus-visible {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+.searchWrap:focus-within {
+  border-color: rgb(194 234 212 / 75%);
+  box-shadow: 0 0 0 3px rgb(194 234 212 / 17%), 0 18px 54px rgb(1 8 7 / 38%);
+}
+
+/* Search results are a dark glass menu, never primary-action buttons. */
+.searchWrap .searchSuggestions button {
+  min-height: 52px;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #edf5f0 !important;
+  text-align: left;
+  transform: none !important;
+}
+.searchWrap .searchSuggestions button b { color: #f2f7f4 !important; }
+.searchWrap .searchSuggestions button small { color: #b1c2b9 !important; }
+.searchWrap .searchSuggestions button i { color: #9eb3a8 !important; }
+.searchWrap .searchSuggestions button:hover,
+.searchWrap .searchSuggestions button.active,
+.searchWrap .searchSuggestions button[aria-selected="true"] {
+  border-color: rgb(170 227 191 / 38%) !important;
+  background: linear-gradient(100deg, rgb(105 173 133 / 27%), rgb(107 164 130 / 15%)) !important;
+  box-shadow: inset 3px 0 #a9e3be !important;
+  color: #fff !important;
+}
+.searchWrap .searchSuggestions button:hover b,
+.searchWrap .searchSuggestions button.active b,
+.searchWrap .searchSuggestions button[aria-selected="true"] b { color: #fff !important; }
+.searchWrap .searchSuggestions button:hover small,
+.searchWrap .searchSuggestions button.active small,
+.searchWrap .searchSuggestions button[aria-selected="true"] small { color: #d2e4d9 !important; }
+
+/* GSAP owns this transition so its spring runs on every route change. */
+.pageTransition { animation: none !important; }
+
+/* Keep the home dropdown attached to its field and temporarily clear the actions below it. */
+.homeCinematic .heroSearch { position: relative; z-index: 20; }
+.homeCinematic .heroSearch .searchSuggestions {
+  position: absolute !important;
+  z-index: 80;
+  top: calc(100% + 9px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100%;
+  max-height: min(340px, 44vh) !important;
+}
+.homeCinematic .heroSearch.suggestionsOpen + .heroButtons {
+  visibility: hidden;
+  pointer-events: none;
+}
+@media (max-width: 680px) {
+  .app.page-home:has(.heroSearch.suggestionsOpen) .dock {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+/* Selected-location details: one translucent sheet, with a naturally scrolling full report. */
+.mapPage .resultCard {
+  box-sizing: border-box;
+  max-height: calc(100dvh - 150px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(206 244 225 / 38%) transparent;
+  border: 1px solid rgb(222 255 238 / 34%);
+  border-radius: 28px 28px 22px 22px;
+  background: linear-gradient(148deg, rgb(219 250 231 / 22%), rgb(28 52 43 / 76%) 42%, rgb(6 22 19 / 84%));
+  -webkit-backdrop-filter: blur(34px) saturate(165%);
+  backdrop-filter: blur(34px) saturate(165%);
+  box-shadow: 0 28px 80px rgb(0 0 0 / 42%), inset 0 1px 0 rgb(255 255 255 / 28%), inset 0 -1px 0 rgb(228 255 240 / 8%);
+}
+.mapPage .resultCard::-webkit-scrollbar { width: 7px; }
+.mapPage .resultCard::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 99px; background: rgb(206 244 225 / 30%); background-clip: padding-box; }
+.mapPage .resultCard .zoneResults { max-height: none; overflow: visible; margin: 14px 0; }
+.mapPage .resultCard .zoneResults details { border-color: rgb(227 255 240 / 15%); background: linear-gradient(125deg, rgb(230 255 241 / 10%), rgb(4 17 14 / 56%)); }
+.mapPage .resultCard .zoneResults details[open] { border-color: rgb(198 242 215 / 28%); }
+.mapPage .resultCard .zoneResults summary { align-items: center; gap: 10px; padding: 12px 13px; }
+.mapPage .resultCard .zoneResults summary > div { min-width: 0; gap: 4px; }
+.mapPage .resultCard .zoneResults summary b { color: #f0f8f3; font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+.mapPage .resultCard .zoneResults summary span { color: #c3e7d0; font-size: 10px; line-height: 1.35; }
+.mapPage .resultCard .zoneResults summary i { display: grid; place-items: center; flex: 0 0 26px; width: 26px; height: 26px; border: 1px solid rgb(233 255 243 / 18%); border-radius: 50%; color: #d9f8e5; font-size: 15px; transition: transform 180ms ease, background 180ms ease; }
+.mapPage .resultCard .zoneResults details[open] summary i { transform: rotate(180deg); background: rgb(220 255 235 / 9%); }
+.mapPage .resultCard .zoneBody { padding: 3px 13px 13px; background: transparent; }
+.mapPage .resultCard .zoneBody p { color: #d8e9df; font-size: 12px !important; line-height: 1.55 !important; overflow-wrap: anywhere; }
+.mapPage .resultCard .zoneBody dl { grid-template-columns: minmax(82px, .38fr) minmax(0, 1fr); gap: 7px 12px; margin: 12px 0 0; font-size: 11px; line-height: 1.45; }
+.mapPage .resultCard .zoneBody dt { color: #a9c2b3; }
+.mapPage .resultCard .zoneBody dd { color: #f0f7f2; overflow-wrap: anywhere; }
+.mapPage .resultCard .zoneBody a { color: #c7f2d5; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.mapPage .resultCard .status { display: inline-flex; align-items: center; gap: 7px; border: 1px solid rgb(255 222 159 / 18%); border-radius: 999px; padding: 7px 11px; line-height: 1.35; }
+.mapPage .resultCard .status > span { flex: 0 0 7px; width: 7px; height: 7px; border-radius: 50%; background: #ffd182; box-shadow: 0 0 12px rgb(255 209 130 / 65%); }
+.mapPage .resultCard .cardActions { position: sticky; bottom: -1px; padding: 12px 0 2px; background: linear-gradient(180deg, transparent, rgb(15 34 28 / 94%) 35%); }
+.mapPage .resultDataSection { margin: 13px 0; padding: 12px; border: 1px solid rgb(227 255 240 / 13%); border-radius: 16px; background: rgb(4 18 15 / 28%); }
+.mapPage .resultSectionHeading { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; color: #c9f3d9; font: 700 9px/1.3 'DM Mono', monospace; letter-spacing: .12em; }
+.mapPage .resultSectionHeading svg { color: #a8efa0; }
+.mapPage .resultDataSection .weatherline { justify-content: space-between; gap: 12px; padding: 9px 10px; }
+.mapPage .weatherline > div { display: grid; gap: 3px; }
+.mapPage .weatherline > div span { color: #c0d6c9; }
+.mapPage .weatherSourceBadge { flex: none; padding: 4px 7px; border: 1px solid rgb(213 255 230 / 15%); border-radius: 999px; color: #b9ddc7; font: 700 8px/1 'DM Mono', monospace; letter-spacing: .08em; }
+.mapPage .resultMetricGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-top: 8px; }
+.mapPage .resultMetricGrid > div { display: grid; gap: 4px; min-width: 0; padding: 9px 10px; border: 1px solid rgb(227 255 240 / 9%); border-radius: 11px; background: rgb(235 255 243 / 4%); }
+.mapPage .resultMetricGrid span, .mapPage .resultGeneralDetails dt { color: #a9c2b3; font-size: 10px; }
+.mapPage .resultMetricGrid b, .mapPage .resultGeneralDetails dd { color: #f0f7f2; font-size: 11px; font-weight: 700; overflow-wrap: anywhere; }
+.mapPage .resultDataFoot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 7px 12px; margin-top: 9px; color: #a9c2b3; font-size: 9px; }
+.mapPage .resultDataFoot a { font-size: 9px; }
+.mapPage .resultDataNote, .mapPage .resultDataState { margin: 9px 0 0; color: #d4e4da; font-size: 11px; line-height: 1.45; }
+.mapPage .resultGeneralDetails { display: grid; grid-template-columns: minmax(85px, .42fr) minmax(0, 1fr); gap: 7px 12px; margin: 0; }
+.mapPage .resultGeneralDetails dd { margin: 0; }
+@media (max-width: 680px) {
+  .mapPage .resultCard { max-height: min(68dvh, 760px) !important; padding: 18px 16px 15px; border-radius: 26px; }
+  .mapPage .resultCard .zoneBody dl { grid-template-columns: minmax(75px, .34fr) minmax(0, 1fr); }
+}
+
+/* Broaden weather heat to blend forecast samples instead of showing isolated grid blobs. */
+.maplibregl-map .maplibregl-canvas-container { isolation: isolate; }
+
+/* Bring the primary destinations up before the supporting product story. */
+.homeCinematic .homeBelow > .featureGrid {
+  width: min(1180px, calc(100% - 12vw));
+  margin: 38px auto 0;
+}
+.homeCinematic .decisionStory { margin-top: 82px; }
+.homeCinematic .missionGallery { margin-top: 96px; }
+.homeCinematic .featureGrid article {
+  animation: none;
+  transition: transform 240ms ease, border-color 240ms ease, background-color 240ms ease;
+}
+.homeCinematic .featureGrid article:hover { transform: translateY(-4px); }
+
+/* Let scroll-linked image motion stay exact, with darkness reserved for the caption itself. */
+.homeCinematic.motion-ready .missionPhoto img { transition: none !important; }
+.homeCinematic .missionPhoto::after {
+  background: linear-gradient(0deg, rgb(3 16 13 / 94%) 0%, rgb(3 16 13 / 70%) 10%, rgb(3 16 13 / 18%) 25%, transparent 34%),
+    linear-gradient(120deg, rgb(9 36 25 / 30%), transparent 54%);
+}
+.homeCinematic .homeFinalCta::after {
+  background: linear-gradient(90deg, rgb(4 15 13 / 94%) 3%, rgb(4 15 13 / 72%) 50%, rgb(4 15 13 / 16%) 100%);
+}
+
+/* Keep the app dock mounted over every view and give its liquid lens a slow light sweep. */
+.app > .dock { position: fixed; z-index: 60; }
+.dockSlider::after {
+  background-size: auto, 220% 100%;
+  animation: dockGlassSweep 7.5s ease-in-out infinite;
+}
+@keyframes dockGlassSweep {
+  0%, 20% { background-position: center, -115% 0; opacity: .28; }
+  66%, 100% { background-position: center, 115% 0; opacity: .72; }
+}
+@media (prefers-reduced-motion: reduce) { .dockSlider::after { animation: none; } }
+.reducedMotion .dockSlider::after { animation: none !important; }
+
+/* GSAP owns scroll-triggered reveal state; avoid a competing CSS transform. */
+
+@media (max-width: 680px) {
+  .homeCinematic .cinematicHero {
+    min-height: max(840px, 100svh);
+    align-items: center;
+    padding: 100px 15px 120px;
+  }
+  .homeCinematic .hero {
+    width: 100%;
+    margin: 0;
+    padding: 25px 20px;
+    border-radius: 25px 36px 25px 36px;
+  }
+  .homeCinematic .hero h1 { font-size: clamp(47px, 12vw, 62px); }
+  .homeCinematic .heroShade {
+    background: linear-gradient(180deg, rgb(3 12 10 / 46%), rgb(3 12 10 / 32%) 45%, rgb(3 12 10 / 65%)) !important;
+  }
+  header .brand.logoGlass { padding-right: 11px; }
+  .homeCinematic .homeBelow > .featureGrid {
+    width: 100%;
+    margin: 26px 0 0;
+  }
+  .homeCinematic .decisionStory { margin-top: 54px; }
+  .homeCinematic .missionGallery { margin-top: 70px; }
+  .searchWrap > input[role="combobox"] { height: 40px; }
+}

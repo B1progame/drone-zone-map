@@ -2,11 +2,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Bot, CloudSun, Heart, Home, Layers3, LocateFixed, Map, MapPin, Search, Settings, Share, ShieldAlert, Sparkles, X } from 'lucide-react';
 import type { Page, Location, Weather, ZoneInfo } from './types';
 import { sources, sourceFor, type Source } from './data/sources';
-import { searchLocation, searchLocationSuggestions, type LocationSuggestion } from './services';
+import { formatForecastTime, searchLocation, searchLocationSuggestions, type LocationSuggestion } from './services';
 import { t } from './languages';
-import { zoneDisclaimer, zoneText, zoneWeatherMetrics, zoneWeatherQuality } from './zoneTranslations';
+import { zoneDisclaimer, zoneText, zoneWeatherDetailCopy, zoneWeatherMetrics, zoneWeatherQuality } from './zoneTranslations';
 
-export function Logo({compact=false}:{compact?:boolean}) { return <div className="brand" aria-label="Aeris Airspace"><img src={`${import.meta.env.BASE_URL}aeris-logo.svg`} alt=""/>{!compact&&<span><b>AERIS</b><small>DRONE AIRSPACE</small></span>}</div> }
+export function Logo({compact=false}:{compact?:boolean}) { return <div className="brand logoGlass" aria-label="Aeris Airspace"><img src={`${import.meta.env.BASE_URL}aeris-logo.svg`} alt=""/>{!compact&&<span><b>AERIS</b><small>DRONE AIRSPACE</small></span>}</div> }
 
 export const Disclaimer=({language='en'}:{language?:string})=> <div className="disclaimer"><ShieldAlert size={15}/><span>{zoneDisclaimer(language)}</span></div>;
 const pageMeta: {id:Page; icon:typeof Home}[]=[{id:'home',icon:Home},{id:'map',icon:Map},{id:'weather',icon:CloudSun},{id:'ai',icon:Bot},{id:'saved',icon:Heart}];
@@ -25,19 +25,20 @@ export function Nav({page,setPage,language='en',showAi=false}:{page:Page;setPage
     };
     position();
     const distance=Math.abs(index-previousIndex.current);
-    if(slider&&distance>0&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+     const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches||dock.closest('.app')?.classList.contains('reducedMotion');
+     if(slider&&distance>0&&!reducedMotion){
       const direction=index>previousIndex.current?1:-1;
       const horizontalStretch=1+Math.min(distance,4)*.13;
-      const duration=440+Math.min(distance,4)*75;
+       const duration=320+Math.min(distance,4)*32;
       dock.style.setProperty('--selector-duration',`${duration}ms`);
       dock.style.setProperty('--liquid-dir',String(direction));
       selectorAnimation.current?.cancel();
       selectorAnimation.current=slider.animate([
-        {scale:'1 1',borderRadius:'19px',filter:'blur(0)',offset:0},
-        {scale:`${horizontalStretch} .82`,borderRadius:direction>0?'14px 25px 25px 14px':'25px 14px 14px 25px',filter:'blur(.25px)',offset:.34},
-        {scale:'.96 1.12',borderRadius:direction>0?'24px 16px 16px 24px':'16px 24px 24px 16px',filter:'blur(0)',offset:.7},
-        {scale:'1 1',borderRadius:'18px',offset:1}
-      ],{duration,easing:'cubic-bezier(.22,.8,.28,1)',fill:'none'});
+         {scale:'1 1',borderRadius:'19px',filter:'blur(0)',offset:0},
+         {scale:`${horizontalStretch} .88`,borderRadius:direction>0?'15px 27px 27px 15px':'27px 15px 15px 27px',filter:'blur(.35px)',offset:.3},
+         {scale:'1.04 1.06',borderRadius:direction>0?'25px 17px 17px 25px':'17px 25px 25px 17px',filter:'blur(0)',offset:.68},
+         {scale:'1 1',borderRadius:'18px',offset:1}
+       ],{duration,easing:'cubic-bezier(.2,.82,.22,1)',fill:'none'});
     }
     previousIndex.current=index;
     const observer=new ResizeObserver(position);
@@ -71,7 +72,7 @@ export function SearchBox({onLocation,hero=false,language='en',compact=false}:{o
     finally{setBusy(false)}
   };
   const locate=()=>navigator.geolocation?.getCurrentPosition(position=>{onLocation({lat:position.coords.latitude,lng:position.coords.longitude,name:'My location'});setOpen(false)},()=>setError('Location permission was not granted.'),{enableHighAccuracy:true,timeout:10000});
-  const search=<div className={'searchWrap '+(hero?'heroSearch':'')}>
+  const search=<div className={`searchWrap${hero?' heroSearch':''}${suggestionsOpen?' suggestionsOpen':''}`}>
     <Search size={19}/>
     <input ref={inputRef} value={value} onChange={e=>{chosenValueRef.current='';setValue(e.target.value);setError('');setSuggestionsOpen(true)}} onFocus={()=>suggestions.length&&setSuggestionsOpen(true)} onBlur={()=>window.setTimeout(()=>setSuggestionsOpen(false),100)} onKeyDown={e=>{
       if(e.key==='ArrowDown'&&suggestionsOpen){e.preventDefault();setActiveSuggestion(index=>Math.min(suggestions.length-1,index+1))}
@@ -92,17 +93,41 @@ export function SearchBox({onLocation,hero=false,language='en',compact=false}:{o
     <div className="compactSearchPopover">{search}</div>
   </div>;
 }
-export function ResultCard({location,weather,zoneInfo,onSave,onClose,language='en'}:{location:Location;weather?:Weather;zoneInfo?:ZoneInfo;onSave:()=>void;onClose:()=>void;language?:string}) {
+export function ResultCard({location,weather,weatherError='',zoneInfo,onSave,onClose,language='en'}:{location:Location;weather?:Weather;weatherError?:string;zoneInfo?:ZoneInfo;onSave:()=>void;onClose:()=>void;language?:string}) {
  const loaded=zoneInfo?.status==='loaded';
- const status=!zoneInfo?t(language,'checking'):loaded?zoneText(language,'intersects',{count:zoneInfo.zones.length,zones:zoneText(language,zoneInfo.zones.length===1?'zone':'zones'),source:zoneInfo.sourceName}):zoneInfo.status==='none'?zoneText(language,'none',{source:zoneInfo.sourceName}):zoneInfo.status==='unsupported'?zoneText(language,'handoff',{country:zoneInfo.countryName}):zoneText(language,'unavailable',{country:zoneInfo.countryName});
+ const weatherLabels=zoneWeatherDetailCopy(language),currentHour=weather?.hourly[0];
+ const number=(value:number,digits=0)=>new Intl.NumberFormat(language,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(value);
+ const direction=(degrees?:number|null)=>typeof degrees==='number'&&Number.isFinite(degrees)?['N','NE','E','SE','S','SW','W','NW'][Math.round(((degrees%360)+360)%360/45)%8]:null;
+ const forecastTime=currentHour?formatForecastTime(currentHour.time,weather!.timezone,language):'';
+ const checkedTime=zoneInfo?.checkedAt?new Intl.DateTimeFormat(language,{dateStyle:'medium',timeStyle:'short'}).format(new Date(zoneInfo.checkedAt)):'';
+ const status=!zoneInfo?t(language,'checking'):loaded&&zoneInfo.countryCode==='CA'?`${zoneInfo.zones.length} airport / park records · ${zoneInfo.sourceName}`:loaded?zoneText(language,'intersects',{count:zoneInfo.zones.length,zones:zoneText(language,zoneInfo.zones.length===1?'zone':'zones'),source:zoneInfo.sourceName}):zoneInfo.status==='none'?zoneText(language,'none',{source:zoneInfo.sourceName}):zoneInfo.status==='unsupported'?zoneText(language,'handoff',{country:zoneInfo.countryName}):zoneText(language,'unavailable',{country:zoneInfo.countryName});
  return <aside className="resultCard liquid">
   <div className="sheetHandle"/>
   <button className="resultClose" onClick={onClose} aria-label={t(language,'close')} title={t(language,'close')}><X/></button>
   <div className="eyebrow">{t(language,'result')}</div><h2>{location.name}</h2>
   <div className={'status '+(loaded?'caution':'unknown')}><span/>{status}</div>
-  {zoneInfo?.zones.length?<div className="zoneResults">{zoneInfo.zones.slice(0,12).map(zone=><details key={zone.id} open={zoneInfo.zones.length===1}><summary><div><b>{zone.name}</b><span>{zone.type}</span></div><i>+</i></summary><div className="zoneBody">{zone.message&&<p>{zone.message}</p>}{zone.pilotAction&&<p><b>{zoneText(language,'pilot')}:</b> {zone.pilotAction}</p>}<dl>{zone.originalName&&zone.originalName!==zone.name&&<><dt>{zoneText(language,'originalName')}</dt><dd>{zone.originalName}</dd></>}{zone.originalMessage&&zone.originalMessage!==zone.message&&<><dt>{zoneText(language,'originalText')}</dt><dd>{zone.originalMessage}</dd></>}{zone.officialLayerName&&<><dt>{zoneText(language,'layer')}</dt><dd>{zone.officialLayerName}</dd></>}{zone.lower&&<><dt>{zoneText(language,'lower')}</dt><dd>{zone.lower}</dd></>}{zone.upper&&<><dt>{zoneText(language,'upper')}</dt><dd>{zone.upper}</dd></>}{zone.legalReference&&<><dt>{zoneText(language,'legal')}</dt><dd>{zone.legalReference}</dd></>}{zone.authority&&<><dt>{zoneText(language,'authority')}</dt><dd>{zone.authority}</dd></>}{zone.contact&&<><dt>{zoneText(language,'contact')}</dt><dd>{zone.contact}</dd></>}{zone.updated&&<><dt>{zoneText(language,'updated')}</dt><dd>{zone.updated}</dd></>}{zone.sourceUrl&&<><dt>{zoneText(language,'source')}</dt><dd><a href={zone.sourceUrl} target="_blank" rel="noreferrer">{zone.source} ↗</a></dd></>}</dl></div></details>)}</div>:zoneInfo&&<p>{zoneInfo.status==='none'?`${zoneText(language,'none',{source:zoneInfo.sourceName})} ${zoneText(language,'caveat')}`:zoneInfo.warning}</p>}
+  {zoneInfo?.zones.length?<div className="zoneResults">{zoneInfo.zones.map((zone,index)=><details key={zone.id} open={index===0}><summary><div><b>{zone.name}</b><span>{zone.type}</span></div><i aria-hidden="true">⌄</i></summary><div className="zoneBody">{zone.message&&<p>{zone.message}</p>}{zone.pilotAction&&<p><b>{zoneText(language,'pilot')}:</b> {zone.pilotAction}</p>}<dl>{zone.originalName&&zone.originalName!==zone.name&&<><dt>{zoneText(language,'originalName')}</dt><dd>{zone.originalName}</dd></>}{zone.originalMessage&&zone.originalMessage!==zone.message&&<><dt>{zoneText(language,'originalText')}</dt><dd>{zone.originalMessage}</dd></>}{zone.officialLayerName&&<><dt>{zoneText(language,'layer')}</dt><dd>{zone.officialLayerName}</dd></>}{zone.lower&&<><dt>{zoneText(language,'lower')}</dt><dd>{zone.lower}</dd></>}{zone.upper&&<><dt>{zoneText(language,'upper')}</dt><dd>{zone.upper}</dd></>}{zone.legalReference&&<><dt>{zoneText(language,'legal')}</dt><dd>{zone.legalReference}</dd></>}{zone.authority&&<><dt>{zoneText(language,'authority')}</dt><dd>{zone.authority}</dd></>}{zone.contact&&<><dt>{zoneText(language,'contact')}</dt><dd>{zone.contact}</dd></>}{zone.updated&&<><dt>{zoneText(language,'updated')}</dt><dd>{zone.updated}</dd></>}{zone.sourceUrl&&<><dt>{zoneText(language,'source')}</dt><dd><a href={zone.sourceUrl} target="_blank" rel="noreferrer">{zone.source} ↗</a></dd></>}</dl></div></details>)}</div>:zoneInfo&&<p>{zoneInfo.status==='none'?`${zoneText(language,'none',{source:zoneInfo.sourceName})} ${zoneText(language,'caveat')}`:zoneInfo.warning}</p>}
   {zoneInfo?.zones.length?<p className="zoneCaveat">{zoneText(language,'caveat')}</p>:null}
-  {weather&&<div className="weatherline"><CloudSun size={19}/><div><b>{weather.score}/100 · {zoneWeatherQuality(language,weather.score)}</b><span>{zoneWeatherMetrics(language,weather.wind,weather.rainProbability)}</span></div></div>}
+  <section className="resultDataSection" aria-label={weatherLabels.weather}>
+   <div className="resultSectionHeading"><CloudSun size={16}/><span>{weatherLabels.weather}</span></div>
+   {weather?<>
+    <div className="weatherline"><div><b>{weather.score}/100 · {zoneWeatherQuality(language,weather.score)}</b><span>{zoneWeatherMetrics(language,weather.wind,weather.rainProbability)}</span></div><span className="weatherSourceBadge">{weather.stale||weather.offlineSnapshot?'SAVED':'LIVE'}</span></div>
+    <div className="resultMetricGrid">
+     <div><span>{weatherLabels.temperature}</span><b>{number(weather.temperature)}°C</b></div>
+     <div><span>{weatherLabels.wind}</span><b>{number(weather.wind)} km/h{direction(currentHour?.windDirection)?` · ${direction(currentHour?.windDirection)}`:''}</b></div>
+     <div><span>{weatherLabels.gusts}</span><b>{number(weather.gusts)} km/h</b></div>
+     <div><span>{weatherLabels.rain}</span><b>{number(weather.rain,1)} mm · {number(weather.rainProbability)}%</b></div>
+     <div><span>{weatherLabels.clouds}</span><b>{number(weather.cloud)}%</b></div>
+     <div><span>{weatherLabels.visibility}</span><b>{number(weather.visibility/1000,1)} km</b></div>
+    </div>
+    <div className="resultDataFoot"><span>{weatherLabels.forecast}: {forecastTime}</span><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">{weatherLabels.source} ↗</a></div>
+    {(weather.stale||weather.offlineSnapshot)&&<p className="resultDataNote">{weather.offlineSnapshot?'Showing the forecast saved with this offline area.':'Showing a saved forecast because the live service is unavailable.'}</p>}
+   </>:<div className="resultDataState" role="status">{weatherError||weatherLabels.loading}</div>}
+  </section>
+  <section className="resultDataSection locationDataSection" aria-label={weatherLabels.location}>
+   <div className="resultSectionHeading"><MapPin size={15}/><span>{weatherLabels.location}</span></div>
+   <dl className="resultGeneralDetails"><dt>{weatherLabels.coordinates}</dt><dd>{location.lat.toFixed(5)}, {location.lng.toFixed(5)}</dd>{zoneInfo?.countryName&&<><dt>{weatherLabels.country}</dt><dd>{zoneInfo.countryName}</dd></>}{checkedTime&&<><dt>{weatherLabels.checked}</dt><dd>{checkedTime}</dd></>}</dl>
+  </section>
   <div className="cardActions"><button onClick={onSave}><Heart size={16}/> {zoneText(language,'save')}</button>{zoneInfo?.sourceUrl&&zoneInfo.sourceUrl!=='#'&&<a href={zoneInfo.sourceUrl} target="_blank" rel="noreferrer">{t(language,'official')} ↗</a>}</div><Disclaimer language={language}/>
  </aside>;
 }

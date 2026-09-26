@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-21T09:01:36.922254+00:00",
+  "generatedAt": "2026-09-26T10:06:12.220455+00:00",
   "providers": [
     {
       "countryCode": "IT",
@@ -17,7 +17,7 @@
     },
     {
       "countryCode": "HR",
-      "authority": "Croatia Control AMC Portal",
+      "authority": "Croatia Control AMC Map",
       "authentication": "required-user-login",
       "publicRedistributionPermitted": false,
       "workflow": "official authenticated service handoff; no automated login"

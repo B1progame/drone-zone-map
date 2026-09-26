@@ -4,19 +4,37 @@ import { isUkDroneRelevant } from './zoneSemantics';
 import { localizeZoneInfo } from './zoneTranslations';
 
 const DIPUL_LAYERS=['bahnanlagen','behoerden','binnenwasserstrassen','bundesautobahnen','bundesstrassen','diplomatische_vertretungen','ffh-gebiete','flugbeschraenkungsgebiete','flughaefen','flugplaetze','freibaeder','haengegleiter','industrieanlagen','internationale_organisationen','justizvollzugsanstalten','kontrollzonen','kraftwerke','krankenhaeuser','labore','militaerische_anlagen','modellflugplaetze','nationalparks','naturschutzgebiete','polizei','schifffahrtsanlagen','seewasserstrassen','sicherheitsbehoerden','stromleitungen','temporaere_betriebseinschraenkungen','umspannwerke','vogelschutzgebiete','windkraftanlagen','wohngrundstuecke'];
+const FAA_US_FACILITIES='https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0/query';
+const FAA_US_CLASS_AIRSPACE='https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Class_Airspace/FeatureServer/0/query';
+const FAA_US_SPECIAL_USE='https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Special_Use_Airspace/FeatureServer/0/query';
 let selectedLanguage=(navigator.language||'en').toLowerCase().split('-')[0];
 const language=()=>selectedLanguage;
 const COUNTRY_SOURCES={
+ BB:{name:'Barbados',source:'Barbados Civil Aviation Authority (BCAA)',url:'https://www.bcaa.gov.bb/remotely-piloted-aircraft-systems/',warning:'BCAA says operators must apply in advance to the Prime Minister’s Office. Its page names five recreational free-to-fly locations (Sterling, Lynches, Dash Valley, College Savannah and Vaucluse) subject to approval, licensing and insurance; it does not publish georeferenced boundaries. Restrictions include 400 ft altitude, 50 m separation and 5 km from controlled aerodromes. Check BCAA and current AIP/NOTAMs.'},
+ AZ:{name:'Azerbaijan',source:'State Civil Aviation Agency / Ministry of Digital Development and Transport',url:'https://mincom.gov.az/en/media-en/news/applications-for-special-permits-and-state-registration-of-civil-uavs-can-now-be-submitted-digitally-via-mygov',warning:'The Ministry says civil UAV circulation requires a special permit and state registration, with remote ID and geofencing. No public reusable drone-zone map was verified. Applications are handled through MyGov; check current AIP, NOTAMs and legal requirements before flight.'},
+ AX:{name:'Åland Islands',source:'Traficom (Finland UAS geographical zones)',url:'https://www.traficom.fi/en/unmanned-aviation/where-flying-prohibited',warning:'Åland is covered by Traficom’s daily machine-readable Finnish UAS-zone dataset. The bundled data includes Mariehamn EFMA airport authorization zones; check temporary restrictions and NOTAMs before flight.'},
+ AW:{name:'Aruba',source:'Department of Civil Aviation Aruba (DCA)',url:'https://www.dca.gov.aw/',warning:'DCA publishes official regulatory information; no public drone geofence or reusable zone geometry was verified. Check current DCA requirements, AIP and NOTAMs before flight.'},
+ AS:{name:'American Samoa',source:'FAA UAS Facility Maps / FAA AIS',url:'https://www.faa.gov/uas/getting_started/b4ufly',warning:'FAA UAS facility, controlled-airspace and restricted-airspace layers cover American Samoa. Facility ceilings are not permission; check B4UFLY, current NOTAMs and local land-access rules.'},
+ AQ:{name:'Antarctica',source:'Antarctic Treaty Secretariat APA Database',url:'https://www.ats.aq/devph/en/apa-database',warning:'The public ATS map shows indexed ASPA/ASMA locations, not precise geofences. No precise reusable boundary layer was verified; check the individual management plan, environmental approval and expedition requirements before operating.'},
+ AO:{name:'Angola',source:'ANAC / SIAD',url:'https://inavic.gov.ao/sia/introducao_sia',warning:'ANAC SIAD publishes aeronautical charts and NTA 36 RPAS rules. No current reusable drone-zone feed was verified; check the current AIP, NOTAMs and ANAC permissions before flight.'},
+ AF:{name:'Afghanistan',source:'Afghanistan Civil Aviation Authority / AIS',url:'https://www.afgais.com/',warning:'Afghanistan AIS publishes the current AIP, airspace NOTAMs and flight permission workflow. No reusable drone-zone geometry was verified; check current official publications and permissions before flight.'},
+ AG:{name:'Antigua and Barbuda',source:'V.C. Bird Air Traffic Services (ANU)',url:'https://www.vcbirdats.com/nofly-zones',warning:'V.C. Bird ATS links an official no-fly-zones page and RPAS guidance. The page provided no readable reusable geometry during review; guidance is dated 2019, so verify current rules, AIP/NOTAMs and ATC permissions directly.'},
+ AI:{name:'Anguilla',source:'Government of Anguilla / Air Safety Support International',url:'https://www.gov.ai/laws/TCLU/Air%20Navigation%20%28OT%29%20Order%202013/docs/Air%20Navigation%20%28OT%29%20Order%202013_61.pdf',warning:'The official Air Navigation (Overseas Territories) Order contains Anguilla UAS rules and requires ATC permission in specified controlled airspace and aerodrome traffic zones. No reusable current drone-zone geometry was verified; check AIP/NOTAMs and permissions directly.'},
+ BA:{name:'Bosnia and Herzegovina',source:'BHANSA AMC / BHDCA',url:'https://amc.bhansa.gov.ba/amc/maps',warning:'The official BHANSA AMC map provides an RPAS/UAS layer. BHDCA rules include border-protection limits and airport/CTR coordination requirements. No reusable zone geometry was verified; the AMC preview does not replace current NAUP/NUUP, NOTAM and authority checks.'},
+ AL:{name:'Albania',source:'Albanian Civil Aviation Authority (ACAA) / Albcontrol AIP',url:'https://www.aac.gov.al/avione-pa-pilote-drone/',warning:'ACAA directs operators to AIP-defined prohibited or restricted areas; Albcontrol publishes official airspace charts. No reusable public drone-zone geometry was verified; check the current AIP, amendments and NOTAMs before flight.'},
+ AM:{name:'Armenia',source:'Civil Aviation Committee / Armats AIS',url:'https://armats.am/',warning:'The current Armenian eAIP requires advance Civil Aviation Committee applications for RPAS training and special flights. No reusable drone-zone geometry was verified; check current AIP charts, NOTAMs and permissions before flight.'},
+ AD:{name:'Andorra',source:'Andorran Civil Aviation Authority / Government of Andorra',url:'https://www.govern.ad/ca/tematiques/accio-climatica/transports/transport-aeri',warning:'The Government of Andorra publishes drone FAQs and the 2025 UAS regulation, which defines free, limited and prohibited flight zones. No current public zone map or reusable geometry download was verified; confirm the planned area and permissions with the authority.'},
  GB:{name:'United Kingdom',source:'NATS UK AIS',url:'https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/',warning:'Official permanent NATS UAS restrictions render from the current AIRAC visualization dataset. Check the UK AIP and current NOTAMs before flight.'},
  FR:{name:'France',source:'IGN / Géoportail',url:'https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme',warning:'The official IGN restrictions render and are queried from the published WFS for metropolitan and covered overseas territories. The dataset does not include temporary restrictions; check SIA before flight.'},
  SE:{name:'Sweden',source:'LFV Dronechart',url:'https://dronechart.lfv.se/',warning:'Official LFV vectors render on the map with the published ground-level filters. Check LFV and current NOTAMs before flight.'},
  DK:{name:'Denmark',source:'Trafikstyrelsen Dronezoner',url:'https://www.droneregler.dk/dronezoner',warning:'Official static drone-zone data is loaded from Trafikstyrelsen. Check Dronezoner for temporary changes before flight.'},
- NO:{name:'Norway',source:'Avinor drone map',url:'https://www.avinor.no/en/practical-info/drone/dronekart/',warning:'Avinor prohibits presenting its service data in another application, so Aeris links to the official map instead of copying its zones.'},
+ NO:{name:'Norway',source:'Avinor drone map',url:'https://experience.arcgis.com/experience/9d098dbc738e436f9525fdb4ef443f61',warning:'Avinor prohibits presenting its service data in another application, so Aeris links to the official map instead of copying its zones.'},
  CH:{name:'Switzerland',source:'FOCA / geo.admin.ch',url:'https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen',warning:'Complete public FOCA geographical UAS zones render live. Cantonal rules and temporary restrictions can still apply.'},
- AT:{name:'Austria',source:'Austro Control Dronespace',url:'https://map.dronespace.at/',warning:'Austro Control does not expose a verified reusable zone feed here. Open the official Dronespace map for the selected area.'},
+ LI:{name:'Liechtenstein',source:'FOCA / geo.admin.ch',url:'https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen',warning:'FOCA publishes this UAS dataset for Switzerland and Liechtenstein. Check local rules and temporary restrictions before flight.'},
+ AT:{name:'Austria',source:'Austro Control Dronespace',url:'https://utm.dronespace.at/avm/',warning:'Austro Control does not expose a verified reusable zone feed here. Open the official Dronespace map for the selected area.'},
  IT:{name:'Italy',source:'ENAC / d-flight',url:'https://www.d-flight.it/web-app/',warning:'ENAC requires a current d-flight map check before every operation. Registered operators may download ED-269 JSON for personal use, but d-flight terms do not permit Aeris to redistribute it without prior written consent.'},
  US:{name:'United States',source:'FAA UAS Facility Maps',url:'https://www.faa.gov/uas/getting_started/b4ufly',warning:'FAA UAS Facility Map grids render live and show pre-coordinated authorization altitudes, not permission or every restriction. Check B4UFLY and current TFRs.'},
- CA:{name:'Canada',source:'Government of Canada Open Data',url:'https://nrc.canada.ca/en/drone-tool-2/map.html',warning:'Aeris renders reusable federal airport and national-park data. The NRC confirms its NAV CANADA-derived database cannot be redistributed; use the official Drone Site Selection Tool for the complete check.'},
+ CA:{name:'Canada',source:'Transport Canada open data + NRC Drone Site Selection Tool',url:'https://cnrc.canada.ca/en/drone-tool-2/',warning:'Aeris renders Transport Canada airport-with-air-navigation-services points, 5.6 km orientation rings and national-park boundaries. This airport dataset is not a complete certified aerodrome/heliport list, and rings do not represent all legal zones. NRC confirms its NAV CANADA-derived airspace geometry cannot be redistributed; use the official Drone Site Selection Tool for complete airspace and current restrictions.'},
  NL:{name:'Netherlands',source:'Ministry of Infrastructure and Water Management',url:'https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone',warning:'Official CC0 ED-269 zones render from the latest bundled government dataset. Check Aeret and current NOTAMs before flight.'},
  FI:{name:'Finland',source:'Traficom',url:'https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa',warning:'Official machine-readable Traficom zones render from a dated CC BY 4.0 snapshot. Check the official map, temporary restrictions and NOTAMs before flight.'},
  EE:{name:'Estonia',source:'Transport Administration / EANS',url:'https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones',warning:'Official EANS GeoJSON renders live. Check the EANS map and current temporary restrictions before flight.'},
@@ -29,7 +47,7 @@ const COUNTRY_SOURCES={
  HU:{name:'Hungary',source:'HungaroControl MyDroneSpace',url:'https://mydronespace.hu/',warning:'MyDroneSpace is Hungary’s official pre-flight and operational service. No anonymous reusable geozone feed was verified.'},
  RO:{name:'Romania',source:'Romanian CAA',url:'https://www.caa.ro/ro/pages/drone',warning:'The Romanian CAA publishes prohibited and restricted UAS areas, contacts, and an official interactive map. No reusable feed was verified.'},
  GR:{name:'Greece',source:'HCAA / Drone Aware Greece',url:'https://dagr.hasp.gov.gr/#map_page',warning:'HCAA requires a current DAGR check. Yellow and magenta areas can require approval or prohibit flight.'},
- HR:{name:'Croatia',source:'Croatia Control AMC Portal',url:'https://amc.crocontrol.hr/',warning:'Croatian UAS zones and current airspace use are managed through the registered AMC Portal workflow.'},
+ HR:{name:'Croatia',source:'Croatia Control AMC Map',url:'https://amc.crocontrol.hr/amc/maps/',warning:'The public AMC map displays UAG, ULG and URG drone zones and current airspace. Registration is needed for operational reservations or approvals; no reusable public geometry feed was verified. Check current AMC notices.'},
  SI:{name:'Slovenia',source:'Civil Aviation Agency',url:'https://www.caa.si/geografske-omejitve-za-uas.html',warning:'The public CAA ArcGIS map is inventoried, but its geometry is not copied because no reuse licence was stated.'},
  LV:{name:'Latvia',source:'LGS / Civil Aviation Agency',url:'https://www.airspace.lv/drones/en',warning:'The official Latvian map updates every five minutes. No stable reusable download was verified, so use it directly.'},
  LT:{name:'Lithuania',source:'Oro Navigacija / Lithuania Drone Map',url:'https://utm.ans.lt/',warning:'All approved Lithuanian geozones and temporary restrictions are published in the registered UTM platform.'},
@@ -39,7 +57,22 @@ const COUNTRY_SOURCES={
  BR:{name:'Brazil',source:'DECEA SARPAS',url:'https://servicos.decea.gov.br/sarpas/',warning:'SARPAS requires operator and aircraft registration. Aeris does not automate or bypass the operational service.'},
  IN:{name:'India',source:'DGCA Digital Sky',url:'https://digitalsky.dgca.gov.in/',warning:'Digital Sky is the government real-time repository for red, yellow, and green zones. No anonymous reusable feed was verified.'},
  SG:{name:'Singapore',source:'CAAS / OneMap',url:'https://www.onemap.gov.sg/',warning:'CAAS identifies OneMap as the authoritative source for no-fly, permit, and temporary restricted areas.'},
- ZA:{name:'South Africa',source:'SACAA / ATNS AIP',url:'https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/',warning:'Current restrictions are published through AIP, NOTAM, and SACAA RPAS rules; no reusable national drone-geozone feed was verified.'}
+ ZA:{name:'South Africa',source:'SACAA / ATNS AIP',url:'https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/',warning:'Current restrictions are published through AIP, NOTAM, and SACAA RPAS rules; no reusable national drone-geozone feed was verified.'},
+ MT:{name:'Malta',source:'Transport Malta / Civil Aviation Directorate',url:'https://www.transport.gov.mt/aviation/drones/geographical-zones-5487',warning:'Transport Malta publishes the national geographical-zone overview and links its interactive map. No reusable public zone feed or redistribution permission was verified.'},
+ CY:{name:'Cyprus',source:'Department of Civil Aviation Cyprus',url:'https://drones.gov.cy/gr/geo-zones-map/',warning:'The DCA publishes a versioned KMZ for pilots to download. No redistribution licence was verified; open the official map and download directly from the authority.'},
+ IS:{name:'Icelandic Transport Authority / Ísland.is',source:'Icelandic Transport Authority / Ísland.is',url:'https://island.is/en/drone-map',warning:'The government service links directly to the Transport Authority’s Icelandic Drone Map. Check protected-area rules and current restrictions before flight.'},
+ AE:{name:'United Arab Emirates',source:'GCAA UAE Fly Zone',url:'https://www.gcaa.gov.ae/en/Pages/NoFlyZonetest.aspx',warning:'GCAA’s official map shows no-fly and prohibited zones. Check the current My Drone Hub service and relevant emirate authority, including DCAA in Dubai, before flight.'},
+ AR:{name:'Argentina',source:'ANAC Aeronautical Information Service',url:'https://ais.anac.gob.ar/aip',warning:'ANAC publishes restricted, prohibited and dangerous areas in the AIP. Check its latest amendments and current NOTAMs before flight; no reusable drone-zone layer is verified.'},
+ MX:{name:'Mexico',source:'SENEAM / AFAC AIP Mexico',url:'https://aipmexico.seneam.gob.mx/AIP/',warning:'SENEAM publishes official aeronautical charts and restrictions; AFAC directs RPAS operators to AIP restrictions. Check current publications and NOTAMs before flight.'},
+ CN:{name:'China',source:'CAAC UOM platform',url:'https://app.caac.gov.cn/',warning:'CAAC’s UOM is the official national unmanned-aircraft management and airspace service. Local governments publish specific controlled-airspace extents; verify the selected location in UOM and with local authorities.'},
+ TR:{name:'Türkiye',source:'SHGM İHA Registration System',url:'https://iha.shgm.gov.tr/public/index',warning:'SHGM’s official İHA system shows free-flight areas and manages flight permissions. Check local flight bans, AIP and current NOTAMs before flight.'},
+ TH:{name:'Thailand',source:'CAAT UAS Portal',url:'https://uasportal.caat.or.th/',warning:'CAAT’s UAS Portal is the official drone operations service. Check current restricted areas and temporary notices in the portal before flight.'},
+ PH:{name:'Philippines',source:'CAAP Hazardous/Critical Airspace Point Search',url:'https://www.caap.gov.ph/hcp/',warning:'CAAP provides an official coordinate lookup for critical areas. The lookup requires its own CAPTCHA and user agreement; use the authority page directly.'},
+ ID:{name:'Indonesia',source:'AirNav Indonesia AIS Center',url:'https://pia.airnavindonesia.co.id/',warning:'AirNav Indonesia publishes official AIP, charts and NOTAMs. Drone permits are managed through the Ministry of Transport SIDOPI-GO system; check both sources.'},
+ MY:{name:'Malaysia',source:'CAAM UAS / Malaysia AIP',url:'https://www.caam.gov.my/public/unmanned-aircraft-system-uas/',warning:'CAAM UAS rules prohibit flight in specified controlled airspace and aerodrome zones without authorization. Consult the current Malaysia AIP, temporary restrictions and CAAM ATF workflow.'},
+ CO:{name:'Colombia',source:'Aerocivil Visor Geográfico UAS',url:'https://www.aerocivil.gov.co/servicios-a-la-navegacion/sistema-%20de-aeronaves-pilotadas-a-distancia-rpas-drones/Paginas/default.aspx',warning:'Aerocivil’s public UAS viewer shows RAC 100 and AIP restrictions, including drone no-fly zones. Open the authority viewer for current boundaries and conditions.'},
+ VN:{name:'Vietnam',source:'Ministry of National Defence UAV zones map',url:'https://cambay.mod.gov.vn/',warning:'Vietnam’s Ministry of National Defence publishes national prohibited and restricted UAV areas in its map portal. Check the official map and local notices before flight.'},
+ SA:{name:'Saudi Arabia',source:'GACA UAS Portal',url:'https://uas.gaca.gov.sa/uas/',warning:'GACA requires pilots to obtain current UAS geographical-zone information. Use the official portal and permit workflow before flight; no reusable public zone feed was verified.'}
 } as const;
 type CountryCode=keyof typeof COUNTRY_SOURCES|'DE'|'ES'|'LU'|'IE'|'GF'|'GP'|'MQ'|'RE'|'YT'|'PM'|'TF'|'XX';
 function countryAt(p:Location):CountryCode{
@@ -48,18 +81,24 @@ function countryAt(p:Location):CountryCode{
   ['LU',['luxembourg']],['IE',['ireland','éire','irland']],['ES',['spain','españa','spanien']],['DK',['denmark','danmark','dänemark']],
   ['GB',['united kingdom','great britain','england','scotland','wales','northern ireland','vereinigtes königreich','großbritannien']],
   ['US',['united states','usa','vereinigte staaten']],
-  ['CH',['switzerland','schweiz','suisse','svizzera']],['AT',['austria','österreich','autriche']],['IT',['italy','italia','italien','italie']],['DE',['germany','deutschland']],['FR',['france','frankreich','french guiana','guyane','guadeloupe','martinique','réunion','reunion','mayotte','saint pierre and miquelon','saint-pierre-et-miquelon']],['SE',['sweden','sverige','schweden']],
+  ['LI',['liechtenstein']],['CH',['switzerland','schweiz','suisse','svizzera']],['AT',['austria','österreich','autriche']],['IT',['italy','italia','italien','italie']],['DE',['germany','deutschland']],['FR',['france','frankreich','french guiana','guyane','guadeloupe','martinique','réunion','reunion','mayotte','saint pierre and miquelon','saint-pierre-et-miquelon']],['SE',['sweden','sverige','schweden']],
   ['NO',['norway','norge','norwegen']],['CA',['canada','kanada']],['NL',['netherlands','nederland','niederlande']],['FI',['finland','suomi','finnland']],['EE',['estonia','eesti','estland']],['BG',['bulgaria','българия','bulgarien']],['PT',['portugal','portugalia']],
   ['BE',['belgium','belgië','belgique','belgien']],['PL',['poland','polska','polen']],['CZ',['czechia','czech republic','česko','tschechien']],['SK',['slovakia','slovensko','slowakei']],
   ['HU',['hungary','magyarország','ungarn']],['RO',['romania','românia','rumänien']],['GR',['greece','ελλάδα','griechenland']],['HR',['croatia','hrvatska','kroatien']],
-  ['SI',['slovenia','slovenija','slowenien']],['LV',['latvia','latvija','lettland']],['LT',['lithuania','lietuva','litauen']],['AU',['australia','australien']],
-  ['NZ',['new zealand','aotearoa','neuseeland']],['JP',['japan','日本']],['BR',['brazil','brasil','brasilien']],['IN',['india','indien']],
-  ['SG',['singapore','singapur']],['ZA',['south africa','südafrika']]
+  ['SI',['slovenia','slovenija','slowenien']],['LV',['latvia','latvija','lettland']],['LT',['lithuania','lietuva','litauen']],['AU',['australia','australien']],['BB',['barbados']],
+  ['NZ',['new zealand','aotearoa','neuseeland']],['IS',['iceland','ísland','island']],['CY',['cyprus','κύπρος']],['JP',['japan','日本']],['BR',['brazil','brasil','brasilien']],['IN',['india','indien']],
+  ['SG',['singapore','singapur']],['ZA',['south africa','südafrika']],['MT',['malta']],['AF',['afghanistan']],['AG',['antigua and barbuda','antigua']],['AI',['anguilla']],['BA',['bosnia and herzegovina','bosnia','herzegovina','bosna i hercegovina']],['AL',['albania','shqipëria']],['AM',['armenia','հայաստան']],['AO',['angola']],['AQ',['antarctica','antarctic']],['AS',['american samoa']],['AW',['aruba']],['AX',['åland','aland','ahvenanmaa']],['AZ',['azerbaijan','azerbaycan','азербайджан']],['AE',['united arab emirates','uae','emirates','الإمارات']],['AR',['argentina']],['MX',['mexico','méxico']],['CN',['china','中国','prc']],['TR',['turkey','türkiye','turkiye']],['TH',['thailand','ประเทศไทย']],['PH',['philippines']],['ID',['indonesia']],['MY',['malaysia']],['CO',['colombia']],['VN',['vietnam','việt nam']],['SA',['saudi arabia','saudi','المملكة العربية السعودية']]
  ];
  for(const [code,names] of namedCountry)if(names.some(name=>named.includes(name)))return code;
+ if(p.lat>=-14.6&&p.lat<=-10.8&&p.lng>=-171.1&&p.lng<=-168.1)return'AS';
+  if(p.lat>=38.3&&p.lat<=41.9&&p.lng>=44.7&&p.lng<=50.8)return'AZ';
+  if(p.lat>=12.4&&p.lat<=12.65&&p.lng>=-70.1&&p.lng<=-69.85)return'AW';
+  if(p.lat>=12.9&&p.lat<=13.4&&p.lng>=-59.7&&p.lng<=-59.4)return'BB';
+ if(p.lat < -60)return'AQ';
  if(p.lat>=49.35&&p.lat<=50.25&&p.lng>=5.65&&p.lng<=6.65)return'LU';
  if(p.lat>=50.7&&p.lat<=53.7&&p.lng>=3.2&&p.lng<=7.25)return'NL';
  if(p.lat>=57.3&&p.lat<=60.1&&p.lng>=21.5&&p.lng<=28.3)return'EE';
+ if(p.lat>=59.3&&p.lat<=60.7&&p.lng>=19.1&&p.lng<=21.5)return'AX';
  if(p.lat>=59.5&&p.lat<=70.2&&p.lng>=19&&p.lng<=31.6)return'FI';
  if(p.lat>=41.1&&p.lat<=44.3&&p.lng>=22.2&&p.lng<=28.7)return'BG';
  if(p.lat>=30&&p.lat<=42.3&&p.lng>=-31.5&&p.lng<=-6)return'PT';
@@ -68,9 +107,16 @@ function countryAt(p:Location):CountryCode{
  if(p.lat>=49&&p.lat<=61&&p.lng>=-9&&p.lng<=2.5)return'GB';
  if(p.lat>=27&&p.lat<=44.5&&p.lng>=-18.5&&p.lng<=5)return'ES';
  if(p.lat>=54.4&&p.lat<=58&&p.lng>=7.8&&p.lng<=15.3)return'DK';
+ if(p.lat>=47.05&&p.lat<=47.27&&p.lng>=9.47&&p.lng<=9.64)return'LI';
+ if(p.lat>=22.6&&p.lat<=26.1&&p.lng>=51.5&&p.lng<=56.5)return'AE';
+ if(p.lat>=-55.2&&p.lat<=-21.7&&p.lng>=-73.6&&p.lng<=-53.6)return'AR';
+ if(p.lat>=14.4&&p.lat<=32.8&&p.lng>=-118.5&&p.lng<=-86.5)return'MX';
+ if(p.lat>=17.5&&p.lat<=53.6&&p.lng>=73.5&&p.lng<=134.8)return'CN';
  if(p.lat>=45.75&&p.lat<=47.85&&p.lng>=5.75&&p.lng<=10.65)return'CH';
  if(p.lat>=46.25&&p.lat<=49.15&&p.lng>=9.45&&p.lng<=17.2)return'AT';
+ if(p.lat>=35.78&&p.lat<=36.1&&p.lng>=14.18&&p.lng<=14.65)return'MT';
  if(p.lat>=35.3&&p.lat<=47.2&&p.lng>=6.5&&p.lng<=18.8)return'IT';
+ if(p.lat>=34.4&&p.lat<=35.8&&p.lng>=32.2&&p.lng<=34.6)return'CY';
  if(p.lat>=47&&p.lat<=55.2&&p.lng>=5.5&&p.lng<=15.5)return'DE';
  if(p.lat>=41&&p.lat<=51.5&&p.lng>=-5.5&&p.lng<=10)return'FR';
  if(p.lat>=57.5&&p.lat<=71.5&&p.lng>=4&&p.lng<=31.5){
@@ -78,8 +124,9 @@ function countryAt(p:Location):CountryCode{
   if(p.lng<border)return'NO';
  }
  if(p.lat>=55&&p.lat<=69.2&&p.lng>=10.4&&p.lng<=24.5)return'SE';
+ if(p.lat>=63.3&&p.lat<=66.7&&p.lng>=-24.7&&p.lng<=-13.1)return'IS';
  if(p.lat>=49&&p.lat<=83.5&&p.lng>=-141&&p.lng<=-52)return'CA';
- if(p.lat>=24&&p.lat<=49.5&&p.lng>=-125&&p.lng<=-66)return'US';
+ if((p.lat>=24&&p.lat<=49.5&&p.lng>=-125&&p.lng<=-66)||(p.lat>=51&&p.lat<=72&&p.lng>=-180&&p.lng<=-129)||(p.lat>=18&&p.lat<=23&&p.lng>=-161&&p.lng<=-154)||(p.lat>=17&&p.lat<=19&&p.lng>=-68&&p.lng<=-64)||(p.lat>=13&&p.lat<=22&&p.lng>=144&&p.lng<=147)||(p.lat>=-15&&p.lat<=-10&&p.lng>=-172&&p.lng<=-167)||(p.lat>=28&&p.lat<=29&&p.lng>=-178&&p.lng<=-176)||(p.lat>=19&&p.lat<=20&&p.lng>=166&&p.lng<=168)||(p.lat>=5&&p.lat<=6&&p.lng>=-162&&p.lng<=-161))return'US';
  return'XX';
 }
 const labels:Record<string,Record<string,string>>={
@@ -232,7 +279,9 @@ const sortZones=(zones:ZoneDetail[])=>zones.sort((a,b)=>severityRank[a.severity?
 
 async function dipul(point:Location):Promise<ZoneInfo>{
  const directUrl=`https://maptool-dipul.dfs.de/geozones/@${point.lng.toFixed(7)},${point.lat.toFixed(7)}?language=${language()==='de'?'de':'en'}&zoom=11.0`,result=base('DE',language()==='de'?'Deutschland':'Germany','DIPUL',directUrl);
- const d=.035,bbox=`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,layers=DIPUL_LAYERS.map(x=>`dipul:${x}`).join(',');
+ // Keep the GetFeatureInfo pixel centered on the chosen coordinate at sub-metre scale.
+ // A city-sized bbox made one 256px pixel cover ~30m and reported nearby features as hits.
+ const d=.0005,bbox=`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,layers=DIPUL_LAYERS.map(x=>`dipul:${x}`).join(',');
  const params=new URLSearchParams({SERVICE:'WMS',VERSION:'1.1.1',REQUEST:'GetFeatureInfo',LAYERS:layers,QUERY_LAYERS:layers,STYLES:'',SRS:'EPSG:4326',BBOX:bbox,WIDTH:'256',HEIGHT:'256',X:'128',Y:'128',INFO_FORMAT:'text/plain',FEATURE_COUNT:'50'});
  const response=await fetch(`https://uas-betrieb.de/geoservices/dipul/wms?${params}`);if(!response.ok)throw new Error('DIPUL query failed');
  const text=await response.text(),blocks=text.split(/Results for FeatureType/).slice(1);
@@ -284,9 +333,9 @@ const contains=(point:Location,geometry:any)=>geometry.type==='Polygon'?insidePo
 async function luxembourg(point:Location):Promise<ZoneInfo>{const result=base('LU','Luxembourg','DAC Luxembourg','https://g-o.lu/uas');const response=await fetch(`${import.meta.env.BASE_URL}data/zones/LU.geojson`);if(!response.ok)throw new Error('Offline Luxembourg pack missing');const data=await response.json();result.zones=data.features.filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{const p=feature.properties;return{id:p.id??`LU-${index}`,name:p.name??'Luxembourg UAS zone',type:translate(p.restriction??p.type??'COMMON'),message:(p.reasons??[]).join(', '),lower:p.lowerLimit!=null?`${p.lowerLimit} ${p.unit??'M'} ${p.lowerReference??''}`:undefined,upper:p.upperLimit!=null?`${p.upperLimit} ${p.unit??'M'} ${p.upperReference??''}`:undefined,contact:p.authority,source:'DAC Luxembourg',updated:p.updated}});result.status=result.zones.length?'loaded':'none';return result}
 async function ireland(point:Location):Promise<ZoneInfo>{const result=base('IE','Ireland','Irish Aviation Authority','https://www.iaa.ie/general-aviation/drones/uas-geographic-zones');const response=await fetch(`${import.meta.env.BASE_URL}data/zones/IE.geojson`);if(!response.ok)throw new Error('Ireland zone file missing');const data=await response.json();result.zones=data.features.filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{const p=feature.properties,authority=(p.zoneAuthority??[])[0]??{};return{id:p.identifier??`IE-${index}`,name:p.name??'Ireland UAS geographical zone',type:translate(p.type??'COMMON'),message:[p.restrictionConditions,p.message].filter(Boolean).join(' · '),legalReference:p.regulationExemption??undefined,contact:[authority.name,authority.service,authority.email,authority.phone].filter(Boolean).join(' · ')||undefined,source:'Irish Aviation Authority'}});result.status=result.zones.length?'loaded':'none';return result}
 async function uk(point:Location):Promise<ZoneInfo>{const source=COUNTRY_SOURCES.GB,result=base('GB',source.name,source.source,source.url),data=await fetchGeoJson(`${import.meta.env.BASE_URL}data/zones/GB.geojson`);result.zones=(data.features??[]).filter((feature:any)=>isUkDroneRelevant(feature.properties??{})&&contains(point,feature.geometry)).map((feature:any,index:number)=>{const p=feature.properties??{};return{id:p.identifier??`GB-${index}`,name:p.name??'UK UAS restriction',type:p.category??'UAS restriction',message:p.description,lower:p.lower,upper:p.upper,source:source.source,updated:p.effective}});result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result}
-async function bundledNationalGeozones(point:Location,code:'NL'|'FI'|'EE'):Promise<ZoneInfo>{
+async function bundledNationalGeozones(point:Location,code:'NL'|'FI'|'EE'|'AX'):Promise<ZoneInfo>{
  const source=COUNTRY_SOURCES[code],result=base(code,source.name,source.source,source.url);
- const data=await fetchGeoJson(code==='EE'?'https://utm.eans.ee/avm/utm/uas.geojson':`${import.meta.env.BASE_URL}data/zones/${code}.geojson`);
+ const data=await fetchGeoJson(code==='EE'?'https://utm.eans.ee/avm/utm/uas.geojson':`${import.meta.env.BASE_URL}data/zones/${code==='AX'?'FI':code}.geojson`);
  result.zones=(data.features??[]).filter((feature:any)=>feature.properties?.identifier!=='EERZout'&&contains(point,feature.geometry)).map((feature:any,index:number)=>{
   const p=feature.properties??{},authority=(p.zoneAuthority??[])[0]??{};
   const reasons=Array.isArray(p.reason)?p.reason.join(', '):p.reason;
@@ -303,13 +352,20 @@ async function portugal(point:Location):Promise<ZoneInfo>{
  });
  result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
 }
-async function unitedStates(point:Location):Promise<ZoneInfo>{
- const source=COUNTRY_SOURCES.US,result=base('US',source.name,source.source,source.url);
- const params=new URLSearchParams({where:'1=1',geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outFields:'OBJECTID,CEILING,UNIT,MAP_EFF,LAST_EDIT,APT1_FAAID,APT1_ICAO,APT1_NAME,APT1_LAANC,AIRSPACE_1,REGION',returnGeometry:'false',f:'json'});
- const response=await fetch(`https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0/query?${params}`);
- if(!response.ok)throw new Error('FAA query failed');
- const data=await response.json();
- result.zones=(data.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{};return{id:`US-${p.OBJECTID??index}`,name:p.APT1_NAME??p.APT1_ICAO??'FAA UAS Facility Map grid',type:`${p.CEILING??0} ${p.UNIT??'Feet'} authorization ceiling`,message:p.APT1_LAANC?'LAANC-enabled facility grid. This value is not an authorization.':'Facility-map planning grid. This value is not an authorization.',upper:`${p.CEILING??0} ${p.UNIT??'Feet'} AGL`,source:source.source,updated:p.MAP_EFF??p.LAST_EDIT}});result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
+async function unitedStates(point:Location,code:'US'|'AS'='US'):Promise<ZoneInfo>{
+ const source=COUNTRY_SOURCES[code],result=base(code,source.name,source.source,source.url);
+ const facilityParams=new URLSearchParams({where:'1=1',geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outFields:'OBJECTID,CEILING,UNIT,MAP_EFF,LAST_EDIT,APT1_FAAID,APT1_ICAO,APT1_NAME,APT1_LAANC,AIRSPACE_1,REGION',returnGeometry:'false',f:'json'});
+ const classParams=new URLSearchParams({where:"(CLASS IN ('B','C','D') OR CLASS = 'E') AND LOWER_DESC = 'SFC'",geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outFields:'OBJECTID,NAME,CLASS,LOWER_DESC,LOWER_VAL,LOWER_UOM,UPPER_DESC,UPPER_VAL,UPPER_UOM',returnGeometry:'false',f:'json'});
+ const specialParams=new URLSearchParams({where:"TYPE_CODE IN ('R','P')",geometry:`${point.lng},${point.lat}`,geometryType:'esriGeometryPoint',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outFields:'OBJECTID,NAME,TYPE_CODE,CLASS,LOWER_DESC,LOWER_VAL,LOWER_UOM,UPPER_DESC,UPPER_VAL,UPPER_UOM',returnGeometry:'false',f:'json'});
+ const [facilityResponse,classResponse,specialResponse]=await Promise.all([fetch(`${FAA_US_FACILITIES}?${facilityParams}`),fetch(`${FAA_US_CLASS_AIRSPACE}?${classParams}`),fetch(`${FAA_US_SPECIAL_USE}?${specialParams}`)]);
+ if(!facilityResponse.ok||!classResponse.ok||!specialResponse.ok)throw new Error('FAA airspace query failed');
+ const [facilityData,classData,specialData]=await Promise.all([facilityResponse.json(),classResponse.json(),specialResponse.json()]);
+ result.zones=[
+  ...(classData.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{};return{id:`US-AIRSPACE-${p.OBJECTID??index}`,name:p.NAME??`Class ${p.CLASS} airspace`,type:`Class ${p.CLASS} controlled airspace`,severity:'authorization' as const,message:'FAA chart data identifies controlled airspace beginning at the surface. Confirm the applicable authorization in B4UFLY and check current TFRs and NOTAMs.',lower:p.LOWER_VAL!=null?`${p.LOWER_VAL} ${p.LOWER_UOM??''} ${p.LOWER_DESC??''}`.trim():p.LOWER_DESC,upper:p.UPPER_VAL!=null?`${p.UPPER_VAL} ${p.UPPER_UOM??''} ${p.UPPER_DESC??''}`.trim():p.UPPER_DESC,source:'FAA AIS Class Airspace',sourceUrl:'https://www.faa.gov/uas/getting_started/b4ufly'}}),
+  ...(specialData.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{},prohibited=String(p.TYPE_CODE).toUpperCase()==='P';return{id:`US-SUA-${p.OBJECTID??index}`,name:p.NAME??(prohibited?'Prohibited area':'Restricted area'),type:prohibited?'FAA prohibited area':'FAA restricted area',severity:prohibited?'blocked' as const:'authorization' as const,message:'Review this area’s vertical limits and activation schedule, then check current FAA NOTAMs before flight.',lower:p.LOWER_VAL!=null?`${p.LOWER_VAL} ${p.LOWER_UOM??''} ${p.LOWER_DESC??''}`.trim():p.LOWER_DESC,upper:p.UPPER_VAL!=null?`${p.UPPER_VAL} ${p.UPPER_UOM??''} ${p.UPPER_DESC??''}`.trim():p.UPPER_DESC,source:'FAA AIS Special Use Airspace',sourceUrl:'https://ais-faa.opendata.arcgis.com/datasets/dd0d1b726e504137ab3c41b21835d05b_0'}}),
+  ...(facilityData.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{};return{id:`US-${p.OBJECTID??index}`,name:p.APT1_NAME??p.APT1_ICAO??'FAA UAS Facility Map grid',type:`${p.CEILING??0} ${p.UNIT??'Feet'} authorization ceiling`,message:p.APT1_LAANC?'LAANC-enabled facility grid. This value is not an authorization.':'Facility-map planning grid. This value is not an authorization.',upper:`${p.CEILING??0} ${p.UNIT??'Feet'} AGL`,source:'FAA UAS Facility Maps',sourceUrl:'https://www.faa.gov/uas/commercial_operators/uas_facility_maps',updated:p.MAP_EFF??p.LAST_EDIT}})
+ ];
+ result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
 }
 const distanceKm=(a:Location,b:{lat:number;lng:number})=>{const radius=6371,toRad=(value:number)=>value*Math.PI/180,dLat=toRad(b.lat-a.lat),dLng=toRad(b.lng-a.lng),lat1=toRad(a.lat),lat2=toRad(b.lat);const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;return radius*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))};
 async function canada(point:Location):Promise<ZoneInfo>{
@@ -322,7 +378,7 @@ async function canada(point:Location):Promise<ZoneInfo>{
  ]);
  if(!airportResponse.ok||!parkResponse.ok)throw new Error('Government of Canada open-data query failed');
  const [airportData,parkData]=await Promise.all([airportResponse.json(),parkResponse.json()]);
- const airports=(airportData.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{},coordinates=feature.geometry??{},lat=Number(coordinates.y??p.LATTITUDE),lng=Number(coordinates.x??p.LONGITUDE),distance=distanceKm(point,{lat,lng});return{distance,zone:{id:`CA-AIRPORT-${p.OBJECTID??index}`,name:p.AIRPORT??p.ICAO??'Canadian airport',type:'5.6 km airport advisory area',message:`${p.TYPE??'Airport'}${p.CITY?` · ${p.CITY}, ${p.PROVINCE}`:''}. Approximately ${distance.toFixed(1)} km from the selected point. This orientation ring is not a complete legal airspace check.`,source:'Transport Canada Open Government'}}}).filter((item:any)=>item.distance<=5.6).map((item:any)=>item.zone);
+ const airports=(airportData.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{},coordinates=feature.geometry??{},lat=Number(coordinates.y??p.LATTITUDE),lng=Number(coordinates.x??p.LONGITUDE),distance=distanceKm(point,{lat,lng});return{distance,zone:{id:`CA-AIRPORT-${p.OBJECTID??index}`,name:p.AIRPORT??p.ICAO??'Canadian airport',type:'5.6 km airport proximity indicator (not a legal zone)',severity:'information' as const,message:`${p.TYPE??'Airport'}${p.CITY?` · ${p.CITY}, ${p.PROVINCE}`:''}. Approximately ${distance.toFixed(1)} km from this airport in Transport Canada’s air-navigation-services dataset. This open dataset may omit certified airports and heliports; this radius is only an orientation aid. Check the NRC tool for the exact applicable restriction.`,source:'Transport Canada Open Government'}}}).filter((item:any)=>Number.isFinite(item.distance)&&item.distance<=5.6).map((item:any)=>item.zone);
  const parks=(parkData.features??[]).map((feature:any,index:number)=>{const p=feature.attributes??{};return{id:`CA-PARK-${p.OBJECTID??index}`,name:(language()==='fr'?p.adminAreaNameFra:p.adminAreaNameEng)||p.adminAreaNameEng||'Canadian national park',type:'National park or national park reserve',message:'Drone take-off and landing in Parks Canada places is restricted. Check the park authority and the official Drone Site Selection Tool before flight.',legalReference:p.webReference,source:'Natural Resources Canada / Parks Canada'}});
  result.zones=[...airports,...parks];
  result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
@@ -337,23 +393,25 @@ async function denmark(point:Location):Promise<ZoneInfo>{
 async function resolvedCountryAt(point:Location):Promise<CountryCode>{
  const initial=countryAt(point);
  const northAmericaOverlap=initial==='US'&&point.lat>=41&&point.lat<=50&&point.lng>=-141&&point.lng<=-52;
- const coordinateOrDevicePoint=/^-?\d/.test(point.name)||point.name==='My location';
- if(initial!=='XX'&&!northAmericaOverlap&&!coordinateOrDevicePoint)return initial;
+ // A hit from an explicit territory/country boundary is stronger than reverse geocoding.
+ // Use reverse lookup only for unknown points and the US/Canada overlap.
+ if(initial!=='XX'&&!northAmericaOverlap)return initial;
  try{
   const response=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${point.lat}&lon=${point.lng}&zoom=3&format=json&accept-language=en`);
   if(!response.ok)return initial;
   const country=String((await response.json()).address?.country_code??'').toUpperCase();
   if(['GF','GP','MQ','RE','YT','PM','TF'].includes(country))return'FR';
+  if(['PR','VI','GU','MP','UM'].includes(country))return'US';
   if(country in COUNTRY_SOURCES||['DE','ES','LU','IE'].includes(country))return country as CountryCode;
  }catch{return initial}
  return initial;
 }
 
-async function switzerland(point:Location):Promise<ZoneInfo>{
- const source=COUNTRY_SOURCES.CH;
+async function switzerland(point:Location,code:'CH'|'LI'='CH'):Promise<ZoneInfo>{
+ const source=COUNTRY_SOURCES[code];
  const query=`${point.lng.toFixed(6)},${point.lat.toFixed(6)}`;
  const url=`https://map.geo.admin.ch/#/map?lang=${encodeURIComponent(['de','fr','it','rm','en'].includes(language())?language():'en')}&topic=ech&layers=ch.bazl.einschraenkungen-drohnen&swisssearch=${encodeURIComponent(query)}&swisssearch_autoselect=true&z=9`;
- const result=base('CH',source.name,source.source,url);
+ const result=base(code,source.name,source.source,url);
  const data=await fetchGeoJson('https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson');
  result.zones=(data.features??[]).filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{const p=feature.properties??{};return{id:p.identifier??`CH-${index}`,name:p.name||'Swiss UAS geographical zone',type:translate(p.restriction??p.type??'COMMON'),message:[p.restrictionConditions,p.message].filter(Boolean).join(' · '),lower:p.lowerLimit!=null?`${p.lowerLimit} ${p.uomDimensions??'M'} ${p.lowerVerticalReference??''}`:undefined,upper:p.upperLimit!=null?`${p.upperLimit} ${p.uomDimensions??'M'} ${p.upperVerticalReference??''}`:undefined,contact:[p.authorityName,p.service,p.email,p.phone].filter(Boolean).join(' · ')||undefined,source:source.source,updated:p.startDateTime}});result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
 }
@@ -369,11 +427,11 @@ export async function getOfficialZoneInfo(point:Location,requestedLanguage=langu
   else if(code==='LU')result=await luxembourg(point);
   else if(code==='IE')result=await ireland(point);
   else if(code==='GB')result=await uk(point);
-  else if(code==='NL'||code==='FI'||code==='EE')result=await bundledNationalGeozones(point,code);
+  else if(code==='NL'||code==='FI'||code==='EE'||code==='AX')result=await bundledNationalGeozones(point,code);
   else if(code==='PT')result=await portugal(point);
   else if(code==='DK')result=await denmark(point);
-  else if(code==='CH')result=await switzerland(point);
-  else if(code==='US')result=await unitedStates(point);
+  else if(code==='CH'||code==='LI')result=await switzerland(point,code);
+  else if(code==='US'||code==='AS')result=await unitedStates(point,code);
   else if(code==='CA')result=await canada(point);
   else if(code in COUNTRY_SOURCES){const source=COUNTRY_SOURCES[code as keyof typeof COUNTRY_SOURCES];result={...base(code,source.name,source.source,source.url),status:'unsupported',warning:source.warning}}
   else result={...base(code,'Unknown','Official source directory','#'),status:'unsupported'};

@@ -1,39 +1,1155 @@
 [
-  {"countryCode":"DE","countryName":"Germany","sourceName":"DIPUL","officialMapUrl":"https://dipul.bund.de/homepage/en/information/geographical-zones/","endpointUrl":"https://uas-betrieb.de/geoservices/dipul/wfs","sourceType":"WMS + WFS","status":"active","supportsVector":true,"supportsWms":true,"supportsFeatureInfo":true,"supportsOffline":false,"canCache":false,"attribution":"Quelle Geodaten: DFS, BKG 2026 · WFS CC BY-ND 4.0","warnings":["Official raster renders live; exact viewport export uses the official WFS without simplifying or caching its geometry.","Confirm the current DIPUL map before takeoff."]},
-  {"countryCode":"ES","countryName":"Spain","sourceName":"ENAIRE servAIS / ED-318","officialMapUrl":"https://aip.enaire.es/AIP/UAS-en.html","endpointUrl":"https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer","sourceType":"ArcGIS Feature/MapServer","status":"active","supportsVector":true,"supportsWms":true,"supportsFeatureInfo":true,"supportsOffline":false,"canCache":false,"attribution":"ENAIRE / AIS","warnings":["Live official vectors are loaded by viewport across mainland Spain, the Canary Islands, Balearic Islands, Ceuta and Melilla; broad urban coverage is shown only at local zoom.","Re-check ENAIRE Drones before flight."]},
-  {"countryCode":"FR","countryName":"France","sourceName":"IGN / Géoportail","officialMapUrl":"https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme","endpointUrl":"https://data.geopf.fr/wfs/ows","sourceType":"WMTS + WFS","status":"active","supportsVector":true,"supportsWms":true,"supportsFeatureInfo":true,"supportsOffline":false,"canCache":false,"attribution":"Restrictions UAS © IGN / Géoportail","warnings":["Official WMTS styling plus live WFS point checks and viewport exports for metropolitan France and the published overseas coverage.","The published dataset does not cover temporary restrictions; check SIA before flight."]},
-  {"countryCode":"IE","countryName":"Ireland","sourceName":"Irish Aviation Authority","officialMapUrl":"https://www.iaa.ie/general-aviation/drones/uas-geographic-zones","sourceType":"official_geojson","status":"active","supportsVector":true,"supportsWms":false,"supportsFeatureInfo":true,"supportsOffline":true,"warnings":["Reference only, not to be used for navigation. Check current TRAs, NOTAMs and the official IAA file."]},
-  {"countryCode":"GB","countryName":"United Kingdom","sourceName":"NATS UK AIS","officialMapUrl":"https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/","endpointUrl":"https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/digital-datasets/index.html","sourceType":"AIRAC KML visualization","status":"active","supportsVector":true,"supportsWms":false,"supportsFeatureInfo":true,"supportsOffline":true,"canCache":true,"attribution":"NATS UK AIS · effective 9 July 2026","warnings":["Current permanent AIRAC UAS restriction geometry only; it will not match a live planning app that also includes temporary restrictions and NOTAMs.","Visualization only; consult the UK AIP and current NOTAMs before flight."]},
-  {"countryCode":"NL","countryName":"Netherlands","sourceName":"Ministry of Infrastructure and Water Management","officialMapUrl":"https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone","endpointUrl":"https://www.nieuwsienw.nl/api/documents/downloadfile?fileid=1650029&forcedownload=true&sectionid=178144","sourceType":"ED-269 JSON","status":"active","supportsVector":true,"supportsWms":false,"supportsFeatureInfo":true,"supportsOffline":true,"canCache":true,"attribution":"Ministerie van Infrastructuur en Waterstaat · CC0","warnings":["Current official ED-269 download; the former PDOK services were retired on 1 July 2026.","Check Aeret and current NOTAMs before flight."]},
-  {"countryCode":"BE","countryName":"Belgium","sourceName":"FPS Mobility / Droneguide","officialMapUrl":"https://mobilit.belgium.be/fr/aviation/voler-en-piloter/drones-uas/informations-generales/zones-geographiques","endpointUrl":"https://map.droneguide.be/","sourceType":"official interactive map","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["The federal authority publishes all fixed geozones and access conditions through Droneguide. A stable documented public data URL and explicit reuse terms were not established, so Aeris links to the official map instead of reverse-engineering the application."]},
-  {"countryCode":"LU","countryName":"Luxembourg","sourceName":"DAC Geoportal UAS Geozones","officialMapUrl":"https://data.public.lu/en/datasets/uas-geographical-zones-grand-duchy-of-luxembourg-zones-geographiques-uas-grand-duche-de-luxembourg/","endpointUrl":"https://drones.geoportail.lu/zones","sourceType":"ED-269 JSON","status":"vector_supported","supportsVector":true,"supportsWms":false,"supportsFeatureInfo":true,"supportsOffline":true,"canCache":true,"attribution":"Direction de l'Aviation Civile Luxembourg · CC0","warnings":["Geo-awareness only; consult the official geoportal and current restrictions before flight."]},
-  {"countryCode":"AT","countryName":"Austria","sourceName":"Austro Control Dronespace","officialMapUrl":"https://map.dronespace.at/","sourceType":"official_map","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["Use the official interactive Dronespace planning map; no verified reusable zone feed is copied by Aeris."]},
-  {"countryCode":"IT","countryName":"Italy","sourceName":"ENAC / d-flight","officialMapUrl":"https://www.d-flight.it/web-app/","endpointUrl":"https://www.d-flight.it/new_portal/","sourceType":"authenticated ED-269 manual download","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"canCache":false,"authentication":"required-user-login","attribution":"ENAC / d-flight","warnings":["ENAC requires pilots to check the official d-flight maps before every operation; the operator portal offers an ED-269 JSON download after registration.","d-flight terms reserve site content and permit local personal storage only without prior written consent for redistribution. Aeris therefore supports only an ignored local manual import and never publishes or automates login-protected data."]},
-  {"countryCode":"CH","countryName":"Switzerland","sourceName":"FOCA / geo.admin.ch","officialMapUrl":"https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen","endpointUrl":"https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson","sourceType":"official_geojson","status":"active","supportsVector":true,"supportsWms":true,"supportsFeatureInfo":true,"supportsOffline":false,"canCache":true,"attribution":"Federal Office of Civil Aviation FOCA / geo.admin.ch","warnings":["Complete federal UAS geozones render live. Confirm cantonal and temporary restrictions before flight."]},
-  {"countryCode":"PT","countryName":"Portugal","sourceName":"ANAC Portugal","officialMapUrl":"https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx","endpointUrl":"https://dnt.anac.pt/json/?","sourceType":"live ED-269 JSON","status":"active","supportsVector":true,"supportsWms":false,"supportsFeatureInfo":true,"supportsOffline":false,"canCache":false,"attribution":"ANAC Portugal","warnings":["The app discovers the newest dated official ED-269 file and converts it in memory; no snapshot is redistributed.","Check ANAC, military no-fly zones and current NOTAMs before flight."]},
-  {"countryCode":"SE","countryName":"Sweden","sourceName":"LFV Dronechart","officialMapUrl":"https://dronechart.lfv.se/","sourceType":"official_wfs","status":"active","supportsVector":true,"supportsWms":true,"supportsFeatureInfo":false,"supportsOffline":true,"warnings":["LFV CC BY-NC-ND 4.0. Raw geometry is preserved and official display filters are applied at render time. NOTAM indications are not a certified AIS service."]},
-  {"countryCode":"DK","countryName":"Denmark","sourceName":"Trafikstyrelsen Dronezoner","officialMapUrl":"https://www.droneregler.dk/dronezoner","endpointUrl":"https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/980697acd04d4a9bb1fd34bbefab924a/data","sourceType":"official_geojson","status":"active","supportsVector":true,"supportsWms":false,"supportsFeatureInfo":true,"supportsOffline":false,"canCache":false,"attribution":"Trafikstyrelsen Dronezoner","warnings":["Stable official GeoJSON is loaded live. Check Dronezoner for temporary restrictions before flight."]},
-  {"countryCode":"NO","countryName":"Norway","sourceName":"Avinor drone map","officialMapUrl":"https://www.avinor.no/en/practical-info/drone/dronekart/","sourceType":"official_map","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["Link only. Avinor's terms prohibit scraping, copying and redistributing its service data."]},
-  {"countryCode":"FI","countryName":"Finland","sourceName":"Traficom","officialMapUrl":"https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa","endpointUrl":"https://eservices.traficom.fi/Ilmatilasovellus/api/uas-reservations/json?lang=fi","sourceType":"ED-269 JSON","status":"active","supportsVector":true,"supportsWms":false,"supportsFeatureInfo":true,"supportsOffline":true,"canCache":true,"attribution":"Source: Finnish Transport and Communications Agency Traficom; modified to GeoJSON; CC BY 4.0","warnings":["Machine-readable official UAS zones; check the official map, temporary restrictions and NOTAMs before flight.","The circle-to-polygon conversion is marked as a modification under Traficom's CC BY 4.0 terms."]},
-  {"countryCode":"PL","countryName":"Poland","sourceName":"PANSA / DroneTower","officialMapUrl":"https://www.pansa.pl/dronetower/","sourceType":"official real-time planning service","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["PANSA requires pilots to check current zones and notify intended flights through the DroneTower app. No documented anonymous reusable geozone feed was verified."]},
-  {"countryCode":"CZ","countryName":"Czechia","sourceName":"CAA Czechia / DroneMap","officialMapUrl":"https://www.caa.cz/en/flight-operations/unmanned-aircraft/","endpointUrl":"https://dronemap.gov.cz/index.php?lang=2","sourceType":"official interactive map","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["CAA Czechia designates DroneMap as the practical source for exact boundaries and operating conditions. No documented reusable public zone endpoint was verified."]},
-  {"countryCode":"SK","countryName":"Slovakia","sourceName":"Transport Authority","officialMapUrl":"https://letectvo.nsat.sk/bezpilotne-letectvo/zemepisne-oblasti-uas/","sourceType":"official KML ZIP","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["The official page publishes a dated KML ZIP. Aeris can discover and inventory every placemark and style locally, but does not redistribute geometry while reuse terms remain unstated."]},
-  {"countryCode":"HU","countryName":"Hungary","sourceName":"HungaroControl MyDroneSpace","officialMapUrl":"https://mydronespace.hu/","sourceType":"official planning service","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["MyDroneSpace is Hungary's official pre-flight and operational service. No documented anonymous reusable national geozone feed was verified."]},
-  {"countryCode":"RO","countryName":"Romania","sourceName":"Romanian CAA","officialMapUrl":"https://www.caa.ro/ro/pages/drone","sourceType":"official interactive map and table","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["The Romanian CAA publishes prohibited/restricted UAS areas, contacts and an interactive map, but no stable reusable zone feed or reuse licence was verified."]},
-  {"countryCode":"BG","countryName":"Bulgaria","sourceName":"Bulgarian Civil Aviation Administration","officialMapUrl":"https://www.caa.bg/bg/category/633/7062","sourceType":"ED-269 ZIP","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"canCache":false,"warnings":["The local inspection adapter discovers the newest BGR_ZONES package, but Aeris does not redistribute it while Bulgarian CAA reuse permission remains unconfirmed.","Check B-FLIP and active or temporary restrictions before flight."]},
-  {"countryCode":"GR","countryName":"Greece","sourceName":"HCAA / Drone Aware Greece","officialMapUrl":"https://hcaa.gov.gr/el/where-you-are-allowed-fly-uas-greece","endpointUrl":"https://dagr.hasp.gov.gr/#map_page","sourceType":"official interactive map","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["HCAA requires a pre-flight DAGR check; yellow and magenta zones can require approval or prohibit flight. No documented reusable public feed was verified."]},
-  {"countryCode":"HR","countryName":"Croatia","sourceName":"Croatia Control AMC Portal","officialMapUrl":"https://amc.crocontrol.hr/Informacije","endpointUrl":"https://amc.crocontrol.hr/","sourceType":"official operational portal","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["Croatian UAS zones and current airspace use are managed through the AMC Portal and mobile workflow. The operational service requires registration and no reusable public geozone feed was verified."]},
-  {"countryCode":"SI","countryName":"Slovenia","sourceName":"Civil Aviation Agency","officialMapUrl":"https://www.caa.si/geografske-omejitve-za-uas.html","endpointUrl":"https://caa-slovenia.maps.arcgis.com/apps/webappviewer/index.html?id=25ba69037c264c5faa5381174f76f861","sourceType":"public ArcGIS web map","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["The official public web map exposes structured layer and renderer metadata, but no reuse licence is stated; Aeris inventories it without copying geometry."]},
-  {"countryCode":"EE","countryName":"Estonia","sourceName":"Transport Administration / EANS","officialMapUrl":"https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones","endpointUrl":"https://utm.eans.ee/avm/utm/uas.geojson","sourceType":"official_geojson","status":"active","supportsVector":true,"supportsWms":false,"supportsFeatureInfo":true,"supportsOffline":false,"canCache":false,"attribution":"Estonian Transport Administration / EANS","warnings":["Official GeoJSON is loaded live; check the EANS map and temporary restrictions before flight.","The live global outside-Estonia mask is excluded from rendering and point results."]},
-  {"countryCode":"LV","countryName":"Latvia","sourceName":"LGS / Civil Aviation Agency","officialMapUrl":"https://www.airspace.lv/drones/en","endpointUrl":"https://ais.lgs.lv/page/UAS_geozones","sourceType":"official_map","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["LGS states the official map updates every five minutes, but no stable reusable download URL was verified; use the official map directly."]},
-  {"countryCode":"LT","countryName":"Lithuania","sourceName":"Oro Navigacija / Lithuania Drone Map","officialMapUrl":"https://www.ans.lt/en/services/unmanned-aerial-vehicles-drones","endpointUrl":"https://utm.ans.lt/","sourceType":"registered UTM platform","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["All approved Lithuanian geozones and temporary restrictions are published in the UTM platform. Its user rules apply to registered users; no documented public reusable feed was verified."]},
-  {"countryCode":"US","countryName":"United States","sourceName":"FAA UAS Facility Maps / B4UFLY","officialMapUrl":"https://www.faa.gov/uas/getting_started/b4ufly","endpointUrl":"https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0","sourceType":"ArcGIS FeatureServer","status":"active","supportsVector":true,"supportsWms":false,"supportsFeatureInfo":true,"supportsOffline":false,"canCache":false,"attribution":"FAA / ATO Aeronautical Information Services","warnings":["Facility grids show authorization ceilings, not permission or every restriction.","Check B4UFLY and current TFRs before flight."]},
-  {"countryCode":"CA","countryName":"Canada","sourceName":"Government of Canada Open Data","officialMapUrl":"https://nrc.canada.ca/en/drone-tool-2/map.html","endpointUrl":"https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0","sourceType":"ArcGIS Feature Layers","status":"vector_supported","supportsVector":true,"supportsWms":true,"supportsFeatureInfo":true,"supportsOffline":false,"canCache":true,"attribution":"Transport Canada / Natural Resources Canada · Open Government Licence - Canada","warnings":["The map renders open federal airport data, 5.6 km airport orientation rings, and open national-park boundaries.","NRC states its NAV CANADA-derived database may not be redistributed; use the official Drone Site Selection Tool for the complete map."]},
-  {"countryCode":"AU","countryName":"Australia","sourceName":"CASA Drone Safety","officialMapUrl":"https://www.casa.gov.au/knowyourdrone/drone-safety-apps","sourceType":"CASA-verified third-party apps","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["CASA directs pilots to verified apps. Its digital platform data access is for onboarded providers and authenticated services, so Aeris does not bypass that access model."]},
-  {"countryCode":"NZ","countryName":"New Zealand","sourceName":"CAA New Zealand / AirShare","officialMapUrl":"https://www.aviation.govt.nz/drones/flying-your-drone-safely/check-the-airspace/","endpointUrl":"https://www.airshare.co.nz/","sourceType":"officially endorsed planning map","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["CAA directs pilots to AirShare for current low-flying, aerodrome, control, restricted, military and danger areas. No documented reusable public feed was verified."]},
-  {"countryCode":"JP","countryName":"Japan","sourceName":"MLIT DIPS 2.0","officialMapUrl":"https://www.mlit.go.jp/koku/koku_ua_dips.html","sourceType":"official authenticated platform","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["DIPS 2.0 is the official registration, planning and permission platform. No documented anonymous reusable national zone feed was verified."]},
-  {"countryCode":"BR","countryName":"Brazil","sourceName":"DECEA SARPAS","officialMapUrl":"https://www.gov.br/pt-br/servicos/solicitar-autorizacao-para-voo-de-aeronaves-remotamente-pilotadas","endpointUrl":"https://servicos.decea.gov.br/sarpas/","sourceType":"official authenticated planning service","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["SARPAS requires operator and aircraft registration for access requests. Aeris does not automate or bypass the authenticated operational service."]},
-  {"countryCode":"IN","countryName":"India","sourceName":"DGCA Digital Sky","officialMapUrl":"https://digitalsky.dgca.gov.in/","sourceType":"official real-time platform","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["Digital Sky is the government real-time repository for red, yellow and green airspace zones. No documented anonymous public API or reusable zone download was verified."]},
-  {"countryCode":"SG","countryName":"Singapore","sourceName":"CAAS / OneMap","officialMapUrl":"https://www.caas.gov.sg/unmanned-aircraft/no-fly-zones-and-ua-flying-areas/","endpointUrl":"https://www.onemap.gov.sg/","sourceType":"authoritative official map","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["CAAS identifies OneMap as the authoritative source for no-fly, permit and temporary restricted areas. No documented reusable UA-zone feed was verified."]},
-  {"countryCode":"ZA","countryName":"South Africa","sourceName":"SACAA / ATNS AIP","officialMapUrl":"https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/","endpointUrl":"https://www.atns.co.za/products/aim/AeronauticalInformationManagementProduct","sourceType":"official guidance and aeronautical publications","status":"official_link_only","supportsVector":false,"supportsWms":false,"supportsFeatureInfo":false,"supportsOffline":false,"warnings":["The authoritative restrictions are published through current AIP/NOTAM and SACAA RPAS rules. No national public drone-geozone feed with reuse terms was verified."]}
+  {
+    "countryCode": "BB",
+    "countryName": "Barbados",
+    "sourceName": "Barbados Civil Aviation Authority (BCAA)",
+    "officialMapUrl": "https://www.bcaa.gov.bb/remotely-piloted-aircraft-systems/",
+    "endpointUrl": "https://www.bcaa.gov.bb/remotely-piloted-aircraft-systems/",
+    "sourceType": "official RPAS rules and named approved locations",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "BCAA names five recreational free-to-fly locations subject to approval, licensing and insurance, but provides no georeferenced boundaries. Operators must apply in advance; check current restrictions, AIP and NOTAMs."
+    ]
+  },
+  {
+    "countryCode": "AF",
+    "countryName": "Afghanistan",
+    "sourceName": "Afghanistan Civil Aviation Authority / AIS",
+    "officialMapUrl": "https://www.afgais.com/",
+    "endpointUrl": "https://www.afgais.com/",
+    "sourceType": "official AIP and airspace NOTAM portal",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "Afghanistan AIS publishes the current AIP, airspace NOTAMs and flight permission workflow. No reusable drone-zone geometry feed was verified; check current official publications and permissions before flight."
+    ]
+  },
+  {
+    "countryCode": "AG",
+    "countryName": "Antigua and Barbuda",
+    "sourceName": "V.C. Bird Air Traffic Services (ANU)",
+    "officialMapUrl": "https://www.vcbirdats.com/nofly-zones",
+    "endpointUrl": "https://www.vcbirdats.com/nofly-zones",
+    "sourceType": "official RPAS guidance and no-fly-zone page",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "V.C. Bird ATS links an official no-fly-zones page, drone guidance and RPAS rules. No readable reusable zone geometry was available during review; linked guidance is dated 22 March 2019. Check current rules, AIP/NOTAMs and ATC permissions directly."
+    ]
+  },
+  {
+    "countryCode": "AD",
+    "countryName": "Andorra",
+    "sourceName": "Andorran Civil Aviation Authority / Government of Andorra",
+    "officialMapUrl": "https://www.govern.ad/ca/tematiques/accio-climatica/transports/transport-aeri",
+    "endpointUrl": "https://www.govern.ad/ca/tematiques/accio-climatica/transports/transport-aeri",
+    "sourceType": "official drone regulations and authority handoff",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "The Government of Andorra publishes drone FAQs and the 2025 UAS regulation, defining free, limited and prohibited flight zones. No current public zone map or reusable geometry download was verified; confirm the planned area and permissions with the authority."
+    ]
+  },
+  {
+    "countryCode": "DE",
+    "countryName": "Germany",
+    "sourceName": "DIPUL",
+    "officialMapUrl": "https://dipul.bund.de/homepage/en/information/geographical-zones/",
+    "endpointUrl": "https://uas-betrieb.de/geoservices/dipul/wfs",
+    "sourceType": "WMS + WFS",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": true,
+    "supportsFeatureInfo": true,
+    "supportsOffline": false,
+    "canCache": false,
+    "attribution": "Quelle Geodaten: DFS, BKG 2026 · WFS CC BY-ND 4.0",
+    "warnings": [
+      "Official raster renders live; exact viewport export uses the official WFS without simplifying or caching its geometry.",
+      "Confirm the current DIPUL map before takeoff."
+    ]
+  },
+  {
+    "countryCode": "ES",
+    "countryName": "Spain",
+    "sourceName": "ENAIRE servAIS / ED-318",
+    "officialMapUrl": "https://aip.enaire.es/AIP/UAS-en.html",
+    "endpointUrl": "https://servais.enaire.es/insignia/rest/services/NSF_SRV/SRV_UAS_ZG_V1/MapServer",
+    "sourceType": "ArcGIS Feature/MapServer",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": true,
+    "supportsFeatureInfo": true,
+    "supportsOffline": false,
+    "canCache": false,
+    "attribution": "ENAIRE / AIS",
+    "warnings": [
+      "Live official vectors are loaded by viewport across mainland Spain, the Canary Islands, Balearic Islands, Ceuta and Melilla; broad urban coverage is shown only at local zoom.",
+      "Re-check ENAIRE Drones before flight."
+    ]
+  },
+  {
+    "countryCode": "FR",
+    "countryName": "France",
+    "sourceName": "IGN / Géoportail",
+    "officialMapUrl": "https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme",
+    "endpointUrl": "https://data.geopf.fr/wfs/ows",
+    "sourceType": "WMTS + WFS",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": true,
+    "supportsFeatureInfo": true,
+    "supportsOffline": false,
+    "canCache": false,
+    "attribution": "Restrictions UAS © IGN / Géoportail",
+    "warnings": [
+      "Official WMTS styling plus live WFS point checks and viewport exports for metropolitan France and the published overseas coverage.",
+      "The published dataset does not cover temporary restrictions; check SIA before flight."
+    ]
+  },
+  {
+    "countryCode": "IE",
+    "countryName": "Ireland",
+    "sourceName": "Irish Aviation Authority",
+    "officialMapUrl": "https://www.iaa.ie/general-aviation/drones/uas-geographic-zones",
+    "sourceType": "official_geojson",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": true,
+    "warnings": [
+      "Official page currently publishes a 17 September 2026 GeoJSON file. Reference only, not to be used for navigation. Check current TRAs, NOTAMs and the official IAA file."
+    ]
+  },
+  {
+    "countryCode": "GB",
+    "countryName": "United Kingdom",
+    "sourceName": "NATS UK AIS",
+    "officialMapUrl": "https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/",
+    "endpointUrl": "https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/digital-datasets/index.html",
+    "sourceType": "AIRAC KML visualization",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": true,
+    "canCache": true,
+    "attribution": "NATS UK AIS · effective 3 September 2026",
+    "warnings": [
+      "Current permanent AIRAC UAS restriction geometry only; it will not match a live planning app that also includes temporary restrictions and NOTAMs.",
+      "Visualization only; consult the UK AIP and current NOTAMs before flight."
+    ]
+  },
+  {
+    "countryCode": "NL",
+    "countryName": "Netherlands",
+    "sourceName": "Ministry of Infrastructure and Water Management",
+    "officialMapUrl": "https://www.rijksoverheid.nl/vraag-en-antwoord/drone/waar-mag-ik-vliegen-met-een-drone",
+    "endpointUrl": "https://www.nieuwsienw.nl/api/documents/downloadfile?fileid=1650029&forcedownload=true&sectionid=178144",
+    "sourceType": "ED-269 JSON",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": true,
+    "canCache": true,
+    "attribution": "Ministerie van Infrastructuur en Waterstaat · CC0",
+    "warnings": [
+      "Current official ED-269 download; the former PDOK services were retired on 1 July 2026.",
+      "Check Aeret and current NOTAMs before flight."
+    ]
+  },
+  {
+    "countryCode": "BE",
+    "countryName": "Belgium",
+    "sourceName": "FPS Mobility / Droneguide",
+    "officialMapUrl": "https://mobilit.belgium.be/fr/aviation/voler-en-piloter/drones-uas/informations-generales/zones-geographiques",
+    "endpointUrl": "https://map.droneguide.be/",
+    "sourceType": "official interactive map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "The federal authority publishes all fixed geozones and access conditions through Droneguide. A stable documented public data URL and explicit reuse terms were not established, so Aeris links to the official map instead of reverse-engineering the application."
+    ]
+  },
+  {
+    "countryCode": "LU",
+    "countryName": "Luxembourg",
+    "sourceName": "DAC Geoportal UAS Geozones",
+    "officialMapUrl": "https://data.public.lu/en/datasets/uas-geographical-zones-grand-duchy-of-luxembourg-zones-geographiques-uas-grand-duche-de-luxembourg/",
+    "endpointUrl": "https://drones.geoportail.lu/zones",
+    "sourceType": "ED-269 JSON",
+    "status": "vector_supported",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": true,
+    "canCache": true,
+    "attribution": "Direction de l'Aviation Civile Luxembourg · CC0",
+    "warnings": [
+      "Geo-awareness only; consult the official geoportal and current restrictions before flight."
+    ]
+  },
+  {
+    "countryCode": "AT",
+    "countryName": "Austria",
+    "sourceName": "Austro Control Dronespace",
+    "officialMapUrl": "https://utm.dronespace.at/avm/",
+    "sourceType": "official_map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "Use the official interactive Dronespace planning map; no verified reusable zone feed is copied by Aeris."
+    ]
+  },
+  {
+    "countryCode": "IT",
+    "countryName": "Italy",
+    "sourceName": "ENAC / d-flight",
+    "officialMapUrl": "https://www.d-flight.it/web-app/",
+    "endpointUrl": "https://www.d-flight.it/new_portal/",
+    "sourceType": "authenticated ED-269 manual download",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "canCache": false,
+    "authentication": "required-user-login",
+    "attribution": "ENAC / d-flight",
+    "warnings": [
+      "ENAC requires pilots to check the official d-flight maps before every operation; the operator portal offers an ED-269 JSON download after registration.",
+      "d-flight terms reserve site content and permit local personal storage only without prior written consent for redistribution. Aeris therefore supports only an ignored local manual import and never publishes or automates login-protected data."
+    ]
+  },
+  {
+    "countryCode": "CH",
+    "countryName": "Switzerland",
+    "sourceName": "FOCA / geo.admin.ch",
+    "officialMapUrl": "https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen",
+    "endpointUrl": "https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson",
+    "sourceType": "official_geojson",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": true,
+    "supportsFeatureInfo": true,
+    "supportsOffline": false,
+    "canCache": true,
+    "attribution": "Federal Office of Civil Aviation FOCA / geo.admin.ch",
+    "warnings": [
+      "Complete federal UAS geozones render live. Confirm cantonal and temporary restrictions before flight."
+    ]
+  },
+  {
+    "countryCode": "LI",
+    "countryName": "Liechtenstein",
+    "sourceName": "FOCA / geo.admin.ch",
+    "officialMapUrl": "https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen",
+    "endpointUrl": "https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson",
+    "sourceType": "official_geojson",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": true,
+    "supportsFeatureInfo": true,
+    "supportsOffline": false,
+    "canCache": true,
+    "attribution": "Federal Office of Civil Aviation FOCA / geo.admin.ch",
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "The federal dataset's official coverage includes Switzerland and Liechtenstein. Confirm local rules and temporary restrictions before flight."
+    ]
+  },
+  {
+    "countryCode": "CY",
+    "countryName": "Cyprus",
+    "sourceName": "Department of Civil Aviation Cyprus",
+    "officialMapUrl": "https://drones.gov.cy/gr/geo-zones-map/",
+    "endpointUrl": "https://drones.gov.cy/wp-content/uploads/2026/07/CYPRUS_GEO_ZONES_MAP_ver09.kmz",
+    "sourceType": "official KML/KMZ download",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "The Department of Civil Aviation publishes a versioned KMZ for pilots to download. No redistribution licence was verified, so Aeris links to the official map and download instead of rehosting its zone data."
+    ]
+  },
+  {
+    "countryCode": "IS",
+    "countryName": "Iceland",
+    "sourceName": "Icelandic Transport Authority / Ísland.is",
+    "officialMapUrl": "https://island.is/en/drone-map",
+    "endpointUrl": "https://kort.gis.is/mapview/?app=dronar",
+    "sourceType": "official interactive map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "The government service links to the Icelandic Transport Authority's drone map. No reusable public zone feed was verified."
+    ]
+  },
+  {
+    "countryCode": "PT",
+    "countryName": "Portugal",
+    "sourceName": "ANAC Portugal",
+    "officialMapUrl": "https://www.anac.pt/vPT/Generico/drones/zona_proibidas_condicionadas/Paginas/Zonasproibidasoucondicionadas.aspx",
+    "endpointUrl": "https://dnt.anac.pt/json/?",
+    "sourceType": "live ED-269 JSON",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": false,
+    "canCache": false,
+    "attribution": "ANAC Portugal",
+    "warnings": [
+      "The app discovers the newest dated official ED-269 file and converts it in memory; no snapshot is redistributed.",
+      "Check ANAC, military no-fly zones and current NOTAMs before flight."
+    ]
+  },
+  {
+    "countryCode": "SE",
+    "countryName": "Sweden",
+    "sourceName": "LFV Dronechart",
+    "officialMapUrl": "https://dronechart.lfv.se/",
+    "sourceType": "official_wfs",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": true,
+    "supportsFeatureInfo": false,
+    "supportsOffline": true,
+    "warnings": [
+      "LFV CC BY-NC-ND 4.0. Raw geometry is preserved and official display filters are applied at render time. NOTAM indications are not a certified AIS service."
+    ]
+  },
+  {
+    "countryCode": "DK",
+    "countryName": "Denmark",
+    "sourceName": "Trafikstyrelsen Dronezoner",
+    "officialMapUrl": "https://www.droneregler.dk/dronezoner",
+    "endpointUrl": "https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/980697acd04d4a9bb1fd34bbefab924a/data",
+    "sourceType": "official_geojson",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": false,
+    "canCache": false,
+    "attribution": "Trafikstyrelsen Dronezoner",
+    "warnings": [
+      "Stable official GeoJSON is loaded live. Check Dronezoner for temporary restrictions before flight."
+    ]
+  },
+  {
+    "countryCode": "NO",
+    "countryName": "Norway",
+    "sourceName": "Avinor drone map",
+    "officialMapUrl": "https://experience.arcgis.com/experience/9d098dbc738e436f9525fdb4ef443f61",
+    "sourceType": "official_map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "Link only. Avinor's terms prohibit scraping, copying and redistributing its service data."
+    ]
+  },
+  {
+    "countryCode": "FI",
+    "countryName": "Finland",
+    "sourceName": "Traficom",
+    "officialMapUrl": "https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa",
+    "endpointUrl": "https://eservices.traficom.fi/Ilmatilasovellus/api/uas-reservations/json?lang=fi",
+    "sourceType": "ED-269 JSON",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": true,
+    "canCache": true,
+    "attribution": "Source: Finnish Transport and Communications Agency Traficom; modified to GeoJSON; CC BY 4.0",
+    "warnings": [
+      "Machine-readable official UAS zones; check the official map, temporary restrictions and NOTAMs before flight.",
+      "The circle-to-polygon conversion is marked as a modification under Traficom's CC BY 4.0 terms."
+    ]
+  },
+  {
+    "countryCode": "AX",
+    "countryName": "Åland Islands",
+    "sourceName": "Traficom (Finland UAS geographical zones)",
+    "officialMapUrl": "https://www.traficom.fi/en/unmanned-aviation/where-flying-prohibited",
+    "endpointUrl": "https://eservices.traficom.fi/Ilmatilasovellus/api/uas-reservations/json?lang=fi",
+    "sourceType": "Official machine-readable national UAS zone JSON; Åland geometries verified in downloaded FI dataset",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": true,
+    "canCache": true,
+    "attribution": "Source: Finnish Transport and Communications Agency Traficom; modified to GeoJSON; CC BY 4.0",
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "Åland is covered by Traficom's Finnish national UAS-zone dataset. Data is refreshed daily and shows permanent zones; verify temporary restrictions, airspace rules and NOTAMs before flight."
+    ],
+    "relatedEndpoints": [
+      "https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa",
+      "https://eservices.traficom.fi/Ilmatilasovellus/Map"
+    ]
+  },
+  {
+    "countryCode": "AZ",
+    "countryName": "Azerbaijan",
+    "sourceName": "State Civil Aviation Agency / Ministry of Digital Development and Transport",
+    "officialMapUrl": "https://mincom.gov.az/en/media-en/news/applications-for-special-permits-and-state-registration-of-civil-uavs-can-now-be-submitted-digitally-via-mygov",
+    "endpointUrl": "https://my.gov.az/",
+    "sourceType": "official UAV permit and registration guidance; no public geozone map verified",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "canCache": false,
+    "attribution": "State Civil Aviation Agency / Ministry of Digital Development and Transport of Azerbaijan",
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "The Ministry says civil UAV circulation requires a special permit and registration workflow; remote ID and geofencing are required. No public, reusable geospatial drone-zone map was verified. Permit submission is through the MyGov service; check current AIP, NOTAMs and legal requirements before flight."
+    ]
+  },
+  {
+    "countryCode": "PL",
+    "countryName": "Poland",
+    "sourceName": "PANSA / DroneTower",
+    "officialMapUrl": "https://www.pansa.pl/dronetower/",
+    "sourceType": "official real-time planning service",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "PANSA requires pilots to check current zones and notify intended flights through the DroneTower app. No documented anonymous reusable geozone feed was verified."
+    ]
+  },
+  {
+    "countryCode": "CZ",
+    "countryName": "Czechia",
+    "sourceName": "CAA Czechia / DroneMap",
+    "officialMapUrl": "https://www.caa.cz/en/flight-operations/unmanned-aircraft/",
+    "endpointUrl": "https://dronemap.gov.cz/index.php?lang=2",
+    "sourceType": "official interactive map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "CAA Czechia designates DroneMap as the practical source for exact boundaries and operating conditions. No documented reusable public zone endpoint was verified."
+    ]
+  },
+  {
+    "countryCode": "SK",
+    "countryName": "Slovakia",
+    "sourceName": "Transport Authority",
+    "officialMapUrl": "https://letectvo.nsat.sk/bezpilotne-letectvo/zemepisne-oblasti-uas/",
+    "sourceType": "official KML ZIP",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "The official page publishes a dated KML ZIP. Aeris can discover and inventory every placemark and style locally, but does not redistribute geometry while reuse terms remain unstated."
+    ]
+  },
+  {
+    "countryCode": "HU",
+    "countryName": "Hungary",
+    "sourceName": "HungaroControl MyDroneSpace",
+    "officialMapUrl": "https://mydronespace.hu/",
+    "sourceType": "official planning service",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "MyDroneSpace is Hungary's official pre-flight and operational service. No documented anonymous reusable national geozone feed was verified."
+    ]
+  },
+  {
+    "countryCode": "RO",
+    "countryName": "Romania",
+    "sourceName": "Romanian CAA",
+    "officialMapUrl": "https://www.caa.ro/ro/pages/drone",
+    "sourceType": "official interactive map and table",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "The Romanian CAA publishes prohibited/restricted UAS areas, contacts and an interactive map, but no stable reusable zone feed or reuse licence was verified."
+    ]
+  },
+  {
+    "countryCode": "BG",
+    "countryName": "Bulgaria",
+    "sourceName": "Bulgarian Civil Aviation Administration",
+    "officialMapUrl": "https://www.caa.bg/bg/category/633/7062",
+    "sourceType": "ED-269 ZIP",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "canCache": false,
+    "warnings": [
+      "The local inspection adapter discovers the newest BGR_ZONES package, but Aeris does not redistribute it while Bulgarian CAA reuse permission remains unconfirmed.",
+      "Check B-FLIP and active or temporary restrictions before flight."
+    ]
+  },
+  {
+    "countryCode": "GR",
+    "countryName": "Greece",
+    "sourceName": "HCAA / Drone Aware Greece",
+    "officialMapUrl": "https://hcaa.gov.gr/el/where-you-are-allowed-fly-uas-greece",
+    "endpointUrl": "https://dagr.hasp.gov.gr/#map_page",
+    "sourceType": "official interactive map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "HCAA requires a pre-flight DAGR check; yellow and magenta zones can require approval or prohibit flight. No documented reusable public feed was verified."
+    ]
+  },
+  {
+    "countryCode": "HR",
+    "countryName": "Croatia",
+    "sourceName": "Croatia Control AMC Map",
+    "officialMapUrl": "https://amc.crocontrol.hr/amc/maps/",
+    "endpointUrl": "https://amc.crocontrol.hr/amc/maps/",
+    "sourceType": "official public operational map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "The public AMC map displays UAG, ULG and URG drone zones and current airspace. Registration is needed for operational reservations or approvals; no reusable public geometry feed was verified."
+    ]
+  },
+  {
+    "countryCode": "SI",
+    "countryName": "Slovenia",
+    "sourceName": "Civil Aviation Agency",
+    "officialMapUrl": "https://www.caa.si/geografske-omejitve-za-uas.html",
+    "endpointUrl": "https://caa-slovenia.maps.arcgis.com/apps/webappviewer/index.html?id=25ba69037c264c5faa5381174f76f861",
+    "sourceType": "public ArcGIS web map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "The official public web map exposes structured layer and renderer metadata, but no reuse licence is stated; Aeris inventories it without copying geometry."
+    ]
+  },
+  {
+    "countryCode": "EE",
+    "countryName": "Estonia",
+    "sourceName": "Transport Administration / EANS",
+    "officialMapUrl": "https://transpordiamet.ee/en/aviation-and-aviation-safety/flying-drones-estonia/geographical-zones",
+    "endpointUrl": "https://utm.eans.ee/avm/utm/uas.geojson",
+    "sourceType": "official_geojson",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": false,
+    "canCache": false,
+    "attribution": "Estonian Transport Administration / EANS",
+    "warnings": [
+      "Official GeoJSON is loaded live; check the EANS map and temporary restrictions before flight.",
+      "The live global outside-Estonia mask is excluded from rendering and point results."
+    ]
+  },
+  {
+    "countryCode": "LV",
+    "countryName": "Latvia",
+    "sourceName": "LGS / Civil Aviation Agency",
+    "officialMapUrl": "https://www.airspace.lv/drones/en",
+    "endpointUrl": "https://ais.lgs.lv/page/UAS_geozones",
+    "sourceType": "official_map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "LGS states the official map updates every five minutes, but no stable reusable download URL was verified; use the official map directly."
+    ]
+  },
+  {
+    "countryCode": "LT",
+    "countryName": "Lithuania",
+    "sourceName": "Oro Navigacija / Lithuania Drone Map",
+    "officialMapUrl": "https://www.ans.lt/en/services/unmanned-aerial-vehicles-drones",
+    "endpointUrl": "https://utm.ans.lt/",
+    "sourceType": "registered UTM platform",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "All approved Lithuanian geozones and temporary restrictions are published in the UTM platform. Its user rules apply to registered users; no documented public reusable feed was verified."
+    ]
+  },
+  {
+    "countryCode": "US",
+    "countryName": "United States",
+    "sourceName": "FAA AIS Class Airspace / Special Use Airspace + UAS Facility Maps",
+    "officialMapUrl": "https://www.faa.gov/uas/getting_started/b4ufly",
+    "endpointUrl": "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Class_Airspace/FeatureServer/0",
+    "sourceType": "FAA AIS ArcGIS FeatureServer current AIRAC cycle",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": false,
+    "canCache": false,
+    "attribution": "FAA / ATO Aeronautical Information Services",
+    "warnings": [
+      "FAA class B/C/D and surface class E airspace and restricted/prohibited areas load by viewport; this is not a complete B4UFLY or TFR check.",
+      "UAS Facility Map ceilings are planning values for authorization requests, not permission to fly.",
+      "Check B4UFLY, current TFRs, NOTAMs and all FAA rules before flight."
+    ],
+    "relatedEndpoints": [
+      "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Special_Use_Airspace/FeatureServer/0",
+      "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0"
+    ]
+  },
+  {
+    "countryCode": "AS",
+    "countryName": "American Samoa",
+    "sourceName": "FAA AIS Class Airspace / Special Use Airspace + UAS Facility Maps",
+    "officialMapUrl": "https://www.faa.gov/uas/getting_started/b4ufly",
+    "endpointUrl": "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Class_Airspace/FeatureServer/0",
+    "sourceType": "FAA AIS ArcGIS FeatureServer current AIRAC cycle; US territory coverage",
+    "status": "active",
+    "supportsVector": true,
+    "supportsWms": false,
+    "supportsFeatureInfo": true,
+    "supportsOffline": true,
+    "canCache": false,
+    "attribution": "FAA / ATO Aeronautical Information Services",
+    "warnings": [
+      "FAA viewport layers cover American Samoa; this is not a complete B4UFLY or TFR check.",
+      "UAS Facility Map ceilings are planning values for authorization requests, not permission to fly.",
+      "Check B4UFLY, current TFRs, NOTAMs and local land-access rules before flight."
+    ],
+    "relatedEndpoints": [
+      "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Special_Use_Airspace/FeatureServer/0",
+      "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0"
+    ]
+  },
+  {
+    "countryCode": "AW",
+    "countryName": "Aruba",
+    "sourceName": "Department of Civil Aviation Aruba (DCA)",
+    "officialMapUrl": "https://www.dca.gov.aw/",
+    "endpointUrl": "https://www.dca.gov.aw/regulations-and-forms/",
+    "sourceType": "official civil aviation authority and regulatory publications",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "canCache": false,
+    "attribution": "Department of Civil Aviation Aruba",
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "DCA publishes regulations and an authority handoff; no public drone geofence or reusable zone geometry was verified. Check current DCA requirements, AIP and NOTAMs before flight."
+    ]
+  },
+  {
+    "countryCode": "CA",
+    "countryName": "Canada",
+    "sourceName": "Transport Canada Open Data + NRC Drone Site Selection Tool",
+    "officialMapUrl": "https://cnrc.canada.ca/en/drone-tool-2/",
+    "endpointUrl": "https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0",
+    "sourceType": "open ArcGIS feature layers + official airspace handoff",
+    "status": "vector_supported",
+    "supportsVector": true,
+    "supportsWms": true,
+    "supportsFeatureInfo": true,
+    "supportsOffline": true,
+    "canCache": true,
+    "attribution": "Transport Canada / Natural Resources Canada · Open Government Licence - Canada",
+    "warnings": [
+      "Offline packages include open airport-with-air-navigation-services points, WGS84 5.6 km orientation rings, and national-park boundaries. This is not a complete certified aerodrome/heliport or controlled-airspace map.",
+      "NRC states its NAV CANADA-derived airspace geometry cannot be redistributed. Use the official Drone Site Selection Tool for exact controlled airspace and current restrictions."
+    ]
+  },
+  {
+    "countryCode": "AU",
+    "countryName": "Australia",
+    "sourceName": "CASA Drone Safety",
+    "officialMapUrl": "https://www.casa.gov.au/knowyourdrone/drone-safety-apps",
+    "sourceType": "CASA-verified third-party apps",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "CASA directs pilots to verified apps. Its digital platform data access is for onboarded providers and authenticated services, so Aeris does not bypass that access model."
+    ]
+  },
+  {
+    "countryCode": "NZ",
+    "countryName": "New Zealand",
+    "sourceName": "CAA New Zealand / AirShare",
+    "officialMapUrl": "https://www.aviation.govt.nz/drones/flying-your-drone-safely/check-the-airspace/",
+    "endpointUrl": "https://www.airshare.co.nz/",
+    "sourceType": "officially endorsed planning map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "CAA directs pilots to AirShare for current low-flying, aerodrome, control, restricted, military and danger areas. No documented reusable public feed was verified."
+    ]
+  },
+  {
+    "countryCode": "JP",
+    "countryName": "Japan",
+    "sourceName": "MLIT DIPS 2.0",
+    "officialMapUrl": "https://www.mlit.go.jp/koku/koku_ua_dips.html",
+    "sourceType": "official authenticated platform",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "DIPS 2.0 is the official registration, planning and permission platform. No documented anonymous reusable national zone feed was verified."
+    ]
+  },
+  {
+    "countryCode": "BR",
+    "countryName": "Brazil",
+    "sourceName": "DECEA SARPAS",
+    "officialMapUrl": "https://www.gov.br/pt-br/servicos/solicitar-autorizacao-para-voo-de-aeronaves-remotamente-pilotadas",
+    "endpointUrl": "https://servicos.decea.gov.br/sarpas/",
+    "sourceType": "official authenticated planning service",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "SARPAS requires operator and aircraft registration for access requests. Aeris does not automate or bypass the authenticated operational service."
+    ]
+  },
+  {
+    "countryCode": "IN",
+    "countryName": "India",
+    "sourceName": "DGCA Digital Sky",
+    "officialMapUrl": "https://digitalsky.dgca.gov.in/",
+    "sourceType": "official real-time platform",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "Digital Sky is the government real-time repository for red, yellow and green airspace zones. No documented anonymous public API or reusable zone download was verified."
+    ]
+  },
+  {
+    "countryCode": "SG",
+    "countryName": "Singapore",
+    "sourceName": "CAAS / OneMap",
+    "officialMapUrl": "https://www.caas.gov.sg/unmanned-aircraft/no-fly-zones-and-ua-flying-areas/",
+    "endpointUrl": "https://www.onemap.gov.sg/",
+    "sourceType": "authoritative official map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "CAAS identifies OneMap as the authoritative source for no-fly, permit and temporary restricted areas. No documented reusable UA-zone feed was verified."
+    ]
+  },
+  {
+    "countryCode": "ZA",
+    "countryName": "South Africa",
+    "sourceName": "SACAA / ATNS AIP",
+    "officialMapUrl": "https://www.caa.co.za/industry-information/aeronautical-information-index-of-aics/",
+    "endpointUrl": "https://www.atns.co.za/products/aim/AeronauticalInformationManagementProduct",
+    "sourceType": "official guidance and aeronautical publications",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "The authoritative restrictions are published through current AIP/NOTAM and SACAA RPAS rules. No national public drone-geozone feed with reuse terms was verified."
+    ]
+  },
+  {
+    "countryCode": "AE",
+    "countryName": "United Arab Emirates",
+    "sourceName": "GCAA UAE Fly Zone",
+    "officialMapUrl": "https://www.gcaa.gov.ae/en/Pages/NoFlyZonetest.aspx",
+    "endpointUrl": "https://www.gcaa.gov.ae/en/Pages/NoFlyZonetest.aspx",
+    "sourceType": "official interactive map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "GCAA’s official interactive map shows no-fly and prohibited zones. The KMZ link on its registration page returned 404 during review; this registry links to the functioning map and does not claim a reusable downloadable feed."
+    ]
+  },
+  {
+    "countryCode": "AR",
+    "countryName": "Argentina",
+    "sourceName": "ANAC Aeronautical Information Service",
+    "officialMapUrl": "https://ais.anac.gob.ar/aip",
+    "endpointUrl": "https://ais.anac.gob.ar/aip",
+    "sourceType": "official AIP charts and restrictions",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "ANAC publishes national AIP charts and restricted, prohibited and dangerous area information. Current amendments and NOTAMs must be checked; no reusable drone-zone feed was verified."
+    ]
+  },
+  {
+    "countryCode": "MX",
+    "countryName": "Mexico",
+    "sourceName": "SENEAM / AFAC AIP Mexico",
+    "officialMapUrl": "https://aipmexico.seneam.gob.mx/AIP/",
+    "endpointUrl": "https://aipmexico.seneam.gob.mx/AIP/",
+    "sourceType": "official aeronautical information",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "SENEAM publishes official aeronautical charts and airspace restrictions; AFAC directs RPAS operators to AIP restrictions. No reusable national drone-zone feed was verified."
+    ]
+  },
+  {
+    "countryCode": "CN",
+    "countryName": "China",
+    "sourceName": "CAAC UOM platform",
+    "officialMapUrl": "https://app.caac.gov.cn/",
+    "endpointUrl": "https://app.caac.gov.cn/",
+    "sourceType": "official integrated UAV platform",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "CAAC identifies UOM as the national unmanned-aircraft management and airspace service. Local governments publish detailed controlled-airspace extents; no reusable public national feed was verified."
+    ]
+  },
+  {
+    "countryCode": "TR",
+    "countryName": "Türkiye",
+    "sourceName": "SHGM İHA Registration System",
+    "officialMapUrl": "https://iha.shgm.gov.tr/public/index",
+    "endpointUrl": "https://iha.shgm.gov.tr/public/index",
+    "sourceType": "official drone airspace and permission system",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "SHGM’s official İHA system displays green free-flight areas and manages permissions. Check local flight bans and current AIP/NOTAM restrictions."
+    ]
+  },
+  {
+    "countryCode": "TH",
+    "countryName": "Thailand",
+    "sourceName": "CAAT UAS Portal",
+    "officialMapUrl": "https://uasportal.caat.or.th/",
+    "endpointUrl": "https://uasportal.caat.or.th/",
+    "sourceType": "official UAS operations portal",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "CAAT identifies this as its official drone operations service. Check the current airspace restrictions and temporary notices in the portal."
+    ]
+  },
+  {
+    "countryCode": "PH",
+    "countryName": "Philippines",
+    "sourceName": "CAAP Hazardous/Critical Airspace Point Search",
+    "officialMapUrl": "https://www.caap.gov.ph/hcp/",
+    "endpointUrl": "https://www.caap.gov.ph/hcp/",
+    "sourceType": "official coordinate lookup",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "CAAP provides an official coordinate lookup for critical areas. It requires a CAPTCHA and agreement, so Aeris links pilots to the authority instead of automating the lookup."
+    ]
+  },
+  {
+    "countryCode": "ID",
+    "countryName": "Indonesia",
+    "sourceName": "AirNav Indonesia AIS Center",
+    "officialMapUrl": "https://pia.airnavindonesia.co.id/",
+    "endpointUrl": "https://pia.airnavindonesia.co.id/",
+    "sourceType": "official AIP, aeronautical charts and NOTAM",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "AirNav Indonesia publishes AIP, aeronautical charts and NOTAM. Drone permissions are managed through Ministry of Transport SIDOPI-GO; check both sources."
+    ]
+  },
+  {
+    "countryCode": "MY",
+    "countryName": "Malaysia",
+    "sourceName": "CAAM UAS / Malaysia AIP",
+    "officialMapUrl": "https://www.caam.gov.my/public/unmanned-aircraft-system-uas/",
+    "endpointUrl": "https://aip.caam.gov.my/",
+    "sourceType": "official UAS regulations and aeronautical maps",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "CAAM UAS guidance identifies airspace classes and restrictions; the current AIP contains official airspace maps. No reusable drone-zone feed was verified."
+    ]
+  },
+  {
+    "countryCode": "CO",
+    "countryName": "Colombia",
+    "sourceName": "Aerocivil Visor Geográfico UAS",
+    "officialMapUrl": "https://www.aerocivil.gov.co/servicios-a-la-navegacion/sistema-%20de-aeronaves-pilotadas-a-distancia-rpas-drones/Paginas/default.aspx",
+    "endpointUrl": "https://www.aerocivil.gov.co/servicios-a-la-navegacion/sistema-%20de-aeronaves-pilotadas-a-distancia-rpas-drones/Paginas/default.aspx",
+    "sourceType": "official public UAS restriction viewer",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "Aerocivil states the public UAS geographic viewer displays drone no-fly zones and RAC 100/AIP restrictions. No data reuse terms were verified."
+    ]
+  },
+  {
+    "countryCode": "VN",
+    "countryName": "Vietnam",
+    "sourceName": "Ministry of National Defence UAV zones map",
+    "officialMapUrl": "https://cambay.mod.gov.vn/",
+    "endpointUrl": "https://cambay.mod.gov.vn/",
+    "sourceType": "official prohibited and restricted UAV map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "The Ministry of National Defence publishes nationwide prohibited and restricted UAV areas in its public map portal. No reusable feed or redistribution terms were verified."
+    ]
+  },
+  {
+    "countryCode": "SA",
+    "countryName": "Saudi Arabia",
+    "sourceName": "GACA UAS Portal",
+    "officialMapUrl": "https://uas.gaca.gov.sa/uas/",
+    "endpointUrl": "https://uas.gaca.gov.sa/uas/",
+    "sourceType": "official UAS registration and permit portal",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-25",
+    "warnings": [
+      "GACA regulations require pilots to consult its published UAS geographical zones; the official portal manages registration and permits. No public reusable zone feed was verified."
+    ]
+  },
+  {
+    "countryCode": "MT",
+    "countryName": "Malta",
+    "sourceName": "Transport Malta / Civil Aviation Directorate",
+    "officialMapUrl": "https://www.transport.gov.mt/aviation/drones/geographical-zones-5487",
+    "sourceType": "official interactive map",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "warnings": [
+      "Transport Malta publishes the national geographical-zone overview and links its interactive map from this official page. No reusable public zone feed or redistribution permission was verified."
+    ]
+  },
+  {
+    "countryCode": "AI",
+    "countryName": "Anguilla",
+    "sourceName": "Government of Anguilla / Air Safety Support International",
+    "officialMapUrl": "https://www.gov.ai/laws/TCLU/Air%20Navigation%20%28OT%29%20Order%202013/docs/Air%20Navigation%20%28OT%29%20Order%202013_61.pdf",
+    "endpointUrl": "https://www.gov.ai/laws/TCLU/Air%20Navigation%20%28OT%29%20Order%202013/docs/Air%20Navigation%20%28OT%29%20Order%202013_61.pdf",
+    "sourceType": "official air navigation law containing UAS rules",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "The official Air Navigation (Overseas Territories) Order contains Anguilla UAS rules and requires ATC permission in specified controlled airspace and aerodrome traffic zones. No reusable current drone-zone geometry was verified; check AIP/NOTAMs and permissions directly."
+    ]
+  },
+  {
+    "countryCode": "BA",
+    "countryName": "Bosnia and Herzegovina",
+    "sourceName": "BHANSA Airspace Management Cell / BHDCA",
+    "officialMapUrl": "https://amc.bhansa.gov.ba/amc/maps",
+    "endpointUrl": "https://amc.bhansa.gov.ba/amc/maps",
+    "sourceType": "official airspace management map with RPAS/UAS layer",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "The BHANSA AMC map visibly includes an RPAS/UAS layer and warns that its preview does not replace current NAUP/NUUP and NOTAM checks. BHDCA publishes national drone rules including border-protection limits and airport/CTR coordination requirements. No reusable zone geometry or redistribution licence was verified."
+    ]
+  },
+  {
+    "countryCode": "AL",
+    "countryName": "Albania",
+    "sourceName": "Albanian Civil Aviation Authority (ACAA) / Albcontrol AIP",
+    "officialMapUrl": "https://www.aac.gov.al/avione-pa-pilote-drone/",
+    "endpointUrl": "https://www.aac.gov.al/aip/",
+    "sourceType": "official drone rules and aeronautical information publication",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "ACAA directs operators to AIP-defined prohibited or restricted zones; Albcontrol publishes an effective digital AIP with official airspace charts. No reusable public drone-zone geometry was verified; check current AIP amendments and NOTAMs directly."
+    ]
+  },
+  {
+    "countryCode": "AM",
+    "countryName": "Armenia",
+    "sourceName": "Civil Aviation Committee / Armats AIS",
+    "officialMapUrl": "https://armats.am/",
+    "endpointUrl": "https://armats.am/",
+    "sourceType": "official eAIP and RPAS permission information",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "The current Armenian eAIP requires advance applications to the Civil Aviation Committee for RPAS training and special flights and publishes airspace charts. No reusable drone-zone geometry was verified; check current AIP, NOTAMs and permissions."
+    ]
+  },
+  {
+    "countryCode": "AO",
+    "countryName": "Angola",
+    "sourceName": "ANAC / Serviço de Informação Aeronáutica e Documentação (SIAD)",
+    "officialMapUrl": "https://inavic.gov.ao/sia/introducao_sia",
+    "endpointUrl": "https://inavic.gov.ao/sia/introducao_sia",
+    "sourceType": "official aeronautical information service, charts and RPAS rules",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "ANAC SIAD publishes aeronautical information and ICAO charts; NTA 36 contains RPAS approval rules. No current public drone-zone map or reusable geospatial feed was verified. Check the current AIP, NOTAMs and ANAC permissions."
+    ]
+  },
+  {
+    "countryCode": "AQ",
+    "countryName": "Antarctica",
+    "sourceName": "Antarctic Treaty Secretariat APA Database",
+    "officialMapUrl": "https://www.ats.aq/devph/en/apa-database",
+    "endpointUrl": "https://www.ats.aq/devph/en/apa-database",
+    "sourceType": "official ASPA/ASMA management-plan and overview map database",
+    "status": "official_link_only",
+    "supportsVector": false,
+    "supportsWms": false,
+    "supportsFeatureInfo": false,
+    "supportsOffline": false,
+    "lastCheckedAt": "2026-09-26",
+    "warnings": [
+      "The public map provides indexed ASPA/ASMA/HSM locations but not precise georeferenced boundaries. The updated 2024 AAD polygon download requires an email request; no contact information was submitted. Verify management plans and expedition permissions directly."
+    ]
+  }
 ]

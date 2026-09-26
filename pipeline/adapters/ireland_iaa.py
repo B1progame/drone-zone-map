@@ -5,6 +5,10 @@ import httpx
 import json
 import shutil
 import subprocess
+import re
+from html import unescape
+from datetime import date
+from urllib.parse import urljoin
 
 from .base import FetchResult
 
@@ -12,10 +16,23 @@ from .base import FetchResult
 class IrelandIaaAdapter:
     country_code = "IE"
     source_page = "https://www.iaa.ie/general-aviation/drones/uas-geographic-zones"
-    endpoint = (
-        "https://www.iaa.ie/docs/default-source/default-document-library/uas/"
-        "20260714_uas_zones_ireland_v1.geojson?sfvrsn=f9d5eff3_167&download=true"
-    )
+    filename_pattern = re.compile(r"(\d{8}_uas_zones_ireland_v1\.geojson(?:\?[^\"'<>\s]*)?)", re.I)
+
+    def _current_endpoint(self, headers: dict[str, str]) -> str:
+        page = httpx.get(self.source_page, headers=headers, follow_redirects=True, timeout=60)
+        page.raise_for_status()
+        candidates = self.filename_pattern.findall(page.text)
+        dated = []
+        for candidate in candidates:
+            candidate = unescape(candidate)
+            match = re.match(r"(\d{8})_", candidate)
+            if match:
+                effective = date(int(match[1][:4]), int(match[1][4:6]), int(match[1][6:8]))
+                if effective <= date.today():
+                    dated.append((effective, candidate))
+        if not dated:
+            raise ValueError("IAA official page has no current dated GeoJSON download")
+        return urljoin(self.source_page, "/docs/default-source/default-document-library/uas/" + max(dated)[1])
 
     def fetch(self) -> FetchResult:
         headers = {
@@ -24,7 +41,8 @@ class IrelandIaaAdapter:
             "Referer": self.source_page,
         }
         try:
-            response = httpx.get(self.endpoint, headers=headers, follow_redirects=True, timeout=60)
+            endpoint = self._current_endpoint(headers)
+            response = httpx.get(endpoint, headers=headers, follow_redirects=True, timeout=60)
             response.raise_for_status()
             payload = response.json()
         except httpx.HTTPStatusError as error:
@@ -50,7 +68,7 @@ class IrelandIaaAdapter:
                     f"Accept: {headers['Accept']}",
                     "--header",
                     f"Referer: {headers['Referer']}",
-                    self.endpoint,
+                    endpoint,
                 ],
                 check=True,
                 stdout=subprocess.PIPE,

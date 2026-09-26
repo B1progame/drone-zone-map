@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-21T09:01:36.922573+00:00",
+  "generatedAt": "2026-09-26T10:06:12.224461+00:00",
   "passed": true,
   "tests": [
     {
@@ -13,7 +13,7 @@
         {
           "id": "A1ELLX0-0",
           "name": "EL-UAS-A1-ELLX0",
-          "sourceFile": "public/data/zones/LU.geojson"
+          "sourceFile": "public\\data\\zones\\LU.geojson"
         }
       ]
     },
@@ -22,23 +22,13 @@
       "fixture": "Dublin Airport",
       "lat": 53.4213,
       "lng": -6.2701,
-      "matchCount": 3,
+      "matchCount": 1,
       "passed": true,
       "matches": [
         {
           "id": "U27",
           "name": "Dublin Control Zone (CTR)- Red Zone",
-          "sourceFile": "public/data/zones/IE.geojson"
-        },
-        {
-          "id": "T32",
-          "name": "Baldonnel TRA 1",
-          "sourceFile": "public/data/zones/IE.geojson"
-        },
-        {
-          "id": "T35",
-          "name": "Baldonnel TRA 3",
-          "sourceFile": "public/data/zones/IE.geojson"
+          "sourceFile": "public\\data\\zones\\IE.geojson"
         }
       ]
     },
@@ -53,7 +43,7 @@
         {
           "id": "EGR1U028A",
           "name": "EGR1U028A LONDON HEATHROW",
-          "sourceFile": "public/data/zones/GB.geojson"
+          "sourceFile": "public\\data\\zones\\GB.geojson"
         }
       ]
     },
@@ -68,7 +58,7 @@
         {
           "id": "7.2-0",
           "name": "Nabijheid van vliegveld voor bemand luchtverkeer EHAM SCHIPHOL CTR 1",
-          "sourceFile": "public/data/zones/NL.geojson"
+          "sourceFile": "public\\data\\zones\\NL.geojson"
         }
       ]
     },
@@ -83,22 +73,22 @@
         {
           "id": "EFHKUASA-0",
           "name": "UAS-ilmatilavyöhyke A Helsinki-Vantaa",
-          "sourceFile": "public/data/zones/FI.geojson"
+          "sourceFile": "public\\data\\zones\\FI.geojson"
         },
         {
           "id": "EFHKUASB-0",
           "name": "UAS-ilmatilavyöhyke B Helsinki-Vantaa",
-          "sourceFile": "public/data/zones/FI.geojson"
+          "sourceFile": "public\\data\\zones\\FI.geojson"
         },
         {
           "id": "EFHKUASC-0",
           "name": "UAS-ilmatilavyöhyke C Helsinki-Vantaa",
-          "sourceFile": "public/data/zones/FI.geojson"
+          "sourceFile": "public\\data\\zones\\FI.geojson"
         },
         {
           "id": "EFHKUASD-0",
           "name": "UAS-ilmatilavyöhyke D Helsinki-Vantaa",
-          "sourceFile": "public/data/zones/FI.geojson"
+          "sourceFile": "public\\data\\zones\\FI.geojson"
         }
       ]
     },
@@ -113,62 +103,62 @@
         {
           "id": "RWY5K.22",
           "name": "DAIM_TOPO-RWY5K",
-          "sourceFile": "public/data/zones/sweden/DAIM_TOPO-RWY5K.geojson"
+          "sourceFile": "public\\data\\zones\\sweden\\DAIM_TOPO-RWY5K.geojson"
         },
         {
-          "id": "NOTAM.15332",
+          "id": "NOTAM.16149",
           "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.16580",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
+        },
+        {
+          "id": "NOTAM.16581",
+          "name": "dynais-NOTAM",
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
         },
         {
           "id": "NOTAM.15181",
           "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
         },
         {
-          "id": "NOTAM.15279",
+          "id": "NOTAM.16520",
           "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
         },
         {
-          "id": "NOTAM.14785",
+          "id": "NOTAM.16568",
           "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
         },
         {
-          "id": "NOTAM.15105",
+          "id": "NOTAM.16150",
           "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
         },
         {
-          "id": "NOTAM.15104",
+          "id": "NOTAM.16438",
           "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
         },
         {
-          "id": "NOTAM.15106",
+          "id": "NOTAM.16439",
           "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
         },
         {
-          "id": "NOTAM.15107",
+          "id": "NOTAM.16070",
           "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
         },
         {
-          "id": "NOTAM.15108",
+          "id": "NOTAM.16071",
           "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
-        },
-        {
-          "id": "NOTAM.15109",
-          "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
-        },
-        {
-          "id": "NOTAM.15110",
-          "name": "dynais-NOTAM",
-          "sourceFile": "public/data/zones/sweden/dynais-NOTAM.geojson"
+          "sourceFile": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson"
         }
       ]
     },
@@ -204,7 +194,7 @@
       "fixture": "Munich city centre",
       "lat": 48.1372,
       "lng": 11.5756,
-      "matchCount": 3,
+      "matchCount": 4,
       "passed": true,
       "source": "DIPUL pre-change live baseline"
     },

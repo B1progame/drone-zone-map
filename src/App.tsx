@@ -1,17 +1,22 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ArrowRight, Bot, Camera, Check, CircleDot, Cloud, CloudRain, CloudSun, Compass, Database, Download, Eye, Heart, Layers3, Map as MapIcon, Navigation, Pencil, RefreshCw, Route, Send, ShieldCheck, Sparkles, Star, Trash2, WifiOff, Wind, X } from 'lucide-react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { animate, stagger } from 'animejs';
+import { ArrowRight, Bot, Camera, Check, CircleDot, Cloud, CloudLightning, CloudRain, CloudSun, Compass, Database, Download, Eye, Heart, Layers3, Map as MapIcon, Navigation, Pencil, RefreshCw, Route, Send, ShieldCheck, Snowflake, Sparkles, Star, Trash2, WifiOff, Wind, X } from 'lucide-react';
 import type { AppSettings, Location, Page, SavedPlace, SavedRoute, Weather, WeatherHour, ZoneInfo } from './types';
-import { getWeather, quality } from './services';
+import { formatForecastTime, getWeather, quality, weatherCodeKind } from './services';
 import { getOfficialZoneInfo } from './zoneInfo';
 import { deleteAllOfflinePacks, deleteOfflinePack, downloadGeoJson, formatBytes, getOfflineContext, getOfflinePacks, isOfflinePackStale, isOfflineTestMode, refreshOfflinePack, setOfflineTestMode, verifyOfflinePack, type OfflineDownloadProgress, type OfflinePack } from './offline';
 import { OfflineDownloadPanel } from './OfflineDownloadPanel';
 import { Disclaimer, Header, IosInstallPrompt, Nav, Preferences, ResultCard, SearchBox, SourcePanel } from './components';
-import { MapCanvas, type GeoJsonExportProgress, type MapCanvasHandle } from './MapCanvas';
+import type { GeoJsonExportProgress, MapCanvasHandle } from './MapCanvas';
 import { normalizeLanguage, SUPPORTED_LANGUAGES } from './languages';
 import { FlightPlanner, flightDistance, type FlightPoint } from './FlightPlanner';
 import { answerFlightQuestion } from './localAssistant';
 import { askOpenRouter, OPENROUTER_MODEL, validateOpenRouterKey } from './openRouter';
 import { screenCopy } from './screenCopy';
+
+const MapCanvas = lazy(async () => ({ default: (await import('./MapCanvas')).MapCanvas }));
 
 function inlineMarkdown(text:string){
  const parts:ReactNode[]=[];
@@ -54,13 +59,15 @@ function MarkdownAnswer({text}:{text:string}){
 
 export default function App(){
  const [page,setPage]=useState<Page>('home'),[location,setLocation]=useState<Location>(),[weather,setWeather]=useState<Weather>(),[zoneInfo,setZoneInfo]=useState<ZoneInfo>(),[weatherError,setWeatherError]=useState(''),[saved,setSaved]=useState<SavedPlace[]>(()=>JSON.parse(localStorage.getItem('dzm-saved')||'[]')),[settingsOpen,setSettingsOpen]=useState(false);
+ const [pageDirection,setPageDirection]=useState<'forward'|'backward'>('forward'),pageRef=useRef<Page>('home');
+ const navigatePage=(next:Page)=>{const order:Page[]=['home','map','weather','ai','saved'],current=pageRef.current;if(current===next)return;setPageDirection(order.indexOf(next)>=order.indexOf(current)?'forward':'backward');pageRef.current=next;setPage(next)};
  const [savedRoutes,setSavedRoutes]=useState<SavedRoute[]>(()=>{try{return JSON.parse(localStorage.getItem('aeris-saved-routes')||'[]')}catch{return[]}});
  const [appSettings,setAppSettings]=useState<AppSettings>(()=>{try{const stored=JSON.parse(localStorage.getItem('aeris-settings')||'{}');return{renderDetail:'balanced',glassOpacity:.72,reducedMotion:false,terrain3d:false,showAi:false,...stored,language:stored.defaultLanguageVersion===2?normalizeLanguage(stored.language):'en'}}catch{return{renderDetail:'balanced',glassOpacity:.72,reducedMotion:false,terrain3d:false,showAi:false,language:'en'}}});
  const chooseRequest=useRef(0);
  const choose=(l:Location,navigate=true)=>{
- const request=++chooseRequest.current;setLocation(l);if(navigate)setPage('map');setWeather(undefined);setZoneInfo(undefined);setWeatherError('');
-  if(!navigator.onLine||isOfflineTestMode()){void getOfflineContext(l,appSettings.language).then(context=>{if(request!==chooseRequest.current)return;if(context){setWeather(context.weather);setZoneInfo(context.zoneInfo);setWeatherError(context.weather?'':'Weather was not downloaded for this exact point.')}else setWeatherError('This location is outside every downloaded offline package.')});return}
-  void getWeather(l).then(result=>{if(request===chooseRequest.current)setWeather(result)}).catch(async()=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l,appSettings.language);if(context?.weather)setWeather(context.weather);else setWeatherError(navigator.onLine?'Live weather is temporarily unavailable.':'This location is outside downloaded weather context.')});
+ const request=++chooseRequest.current;setLocation(l);if(navigate)navigatePage('map');setWeather(undefined);setZoneInfo(undefined);setWeatherError('');
+  if(!navigator.onLine||isOfflineTestMode()){void getOfflineContext(l,appSettings.language).then(context=>{if(request!==chooseRequest.current)return;if(context){setWeather(context.weather?{...context.weather,stale:true,offlineSnapshot:true,retrievedAt:context.weather.retrievedAt??Date.parse(context.pack.metadata.updatedAt)}:undefined);setZoneInfo(context.zoneInfo);setWeatherError(context.weather?'':'Weather was not downloaded for this exact point.')}else setWeatherError('This location is outside every downloaded offline package.')});return}
+  void getWeather(l).then(result=>{if(request===chooseRequest.current){setWeather(result);setWeatherError('')}}).catch(async(error:unknown)=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l,appSettings.language);if(context?.weather){setWeather({...context.weather,stale:true,offlineSnapshot:true,retrievedAt:context.weather.retrievedAt??Date.parse(context.pack.metadata.updatedAt)});setWeatherError('Showing saved forecast data.')}else setWeatherError(!navigator.onLine?'This location is outside downloaded weather context.':error instanceof Error&&error.message.includes('rate-limiting')?'Weather provider is limiting requests. Try again shortly.':'Live weather is temporarily unavailable.')});
   void getOfficialZoneInfo(l,appSettings.language).then(result=>{if(request===chooseRequest.current)setZoneInfo(result)}).catch(async()=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l,appSettings.language);if(context?.zoneInfo)setZoneInfo(context.zoneInfo)});
  };
  const persistSaved=(next:SavedPlace[])=>{setSaved(next);localStorage.setItem('dzm-saved',JSON.stringify(next))};
@@ -73,7 +80,7 @@ export default function App(){
  const geo=()=>navigator.geolocation?.getCurrentPosition(p=>choose({lat:p.coords.latitude,lng:p.coords.longitude,name:'My location'}));
  const updateSettings=(next:AppSettings)=>{setAppSettings(next);localStorage.setItem('aeris-settings',JSON.stringify({...next,defaultLanguageVersion:2}))};
  useEffect(()=>{document.documentElement.lang=appSettings.language},[appSettings.language]);
- useEffect(()=>{if(!appSettings.showAi&&page==='ai')setPage('home')},[appSettings.showAi,page]);
+ useEffect(()=>{if(!appSettings.showAi&&page==='ai')navigatePage('home')},[appSettings.showAi,page]);
  useEffect(()=>{
   if(!location)return;
   const request=++chooseRequest.current;
@@ -91,17 +98,58 @@ export default function App(){
   return()=>{window.removeEventListener('online',refresh);window.removeEventListener('offline',refresh);window.removeEventListener('aeris-offline-test-changed',refresh)};
  },[location,appSettings.language]);
  useEffect(()=>{window.scrollTo(0,0)},[page]);
- return <div className={`app page-${page} ${appSettings.reducedMotion?'reducedMotion':''}`} style={{'--glass-opacity':appSettings.glassOpacity} as React.CSSProperties}><div className="ambient a"/><div className="ambient b"/><Header setSettings={()=>setSettingsOpen(true)}/><div className="pageTransition" key={page}>{page==='home'&&<Home onChoose={choose} geo={geo} openMap={()=>setPage('map')} openWeather={()=>setPage('weather')} openAi={()=>setPage('ai')} showAi={appSettings.showAi} language={appSettings.language}/>} {page==='map'&&<MapPage location={location} weather={weather} weatherError={weatherError} zoneInfo={zoneInfo} choose={choose} save={save} saveRoute={saveRoute} settings={appSettings}/>} {page==='weather'&&<WeatherPage location={location} weather={weather} error={weatherError} choose={choose} language={appSettings.language}/>} {page==='ai'&&appSettings.showAi&&<AiPage location={location} weather={weather} zoneInfo={zoneInfo} saved={saved.length}/>} {page==='saved'&&<SavedPage saved={saved} routes={savedRoutes} choose={choose} openRoute={openRoute} remove={remove} removeRoute={removeRoute} update={updateSaved}/>}</div>{settingsOpen&&<Settings settings={appSettings} update={updateSettings} close={()=>setSettingsOpen(false)}/>}<Nav page={page} setPage={setPage} language={appSettings.language} showAi={appSettings.showAi}/><IosInstallPrompt/><Preferences close={()=>{}}/></div>
+ useLayoutEffect(()=>{
+  if(appSettings.reducedMotion)return;
+  const logo=document.querySelector<HTMLElement>('.app .brand.logoGlass');if(!logo)return;
+  const tween=gsap.fromTo(logo,{x:pageDirection==='forward'?-8:8,autoAlpha:.72,scale:.97},{x:0,autoAlpha:1,scale:1,duration:.48,ease:'back.out(1.5)',clearProps:'transform,opacity,visibility'});
+  return()=>{tween.kill();gsap.set(logo,{clearProps:'transform,opacity,visibility'})};
+ },[page,pageDirection,appSettings.reducedMotion]);
+ return <div className={`app page-${page} ${appSettings.reducedMotion?'reducedMotion':''}`} style={{'--glass-opacity':appSettings.glassOpacity} as React.CSSProperties}><div className="ambient a"/><div className="ambient b"/><Header setSettings={()=>setSettingsOpen(true)}/><PageTransition key={page} direction={pageDirection} reducedMotion={appSettings.reducedMotion}>{page==='home'&&<Home onChoose={choose} geo={geo} openMap={()=>navigatePage('map')} openWeather={()=>navigatePage('weather')} openAi={()=>navigatePage('ai')} showAi={appSettings.showAi} language={appSettings.language} reducedMotion={appSettings.reducedMotion}/>} {page==='map'&&<MapPage location={location} weather={weather} weatherError={weatherError} zoneInfo={zoneInfo} choose={choose} save={save} saveRoute={saveRoute} settings={appSettings}/>} {page==='weather'&&<WeatherPage location={location} weather={weather} error={weatherError} choose={choose} language={appSettings.language}/>} {page==='ai'&&appSettings.showAi&&<AiPage location={location} weather={weather} zoneInfo={zoneInfo} saved={saved.length}/>} {page==='saved'&&<SavedPage saved={saved} routes={savedRoutes} choose={choose} openRoute={openRoute} remove={remove} removeRoute={removeRoute} update={updateSaved}/>}</PageTransition>{settingsOpen&&<Settings settings={appSettings} update={updateSettings} close={()=>setSettingsOpen(false)}/>}<Nav page={page} setPage={navigatePage} language={appSettings.language} showAi={appSettings.showAi}/><IosInstallPrompt/><Preferences close={()=>{}}/></div>
+}
+
+function PageTransition({children,direction,reducedMotion}:{children:ReactNode;direction:'forward'|'backward';reducedMotion:boolean}){
+ const pageRef=useRef<HTMLDivElement>(null);
+ useLayoutEffect(()=>{
+  const element=pageRef.current;if(!element||reducedMotion)return;
+  const context=gsap.context(()=>gsap.fromTo(element,{x:direction==='forward'?-22:22,autoAlpha:0},{x:0,autoAlpha:1,duration:.62,ease:'back.out(1.35)',clearProps:'transform,opacity,visibility'}),element);
+  return()=>context.revert();
+ },[direction,reducedMotion]);
+ return <div ref={pageRef} className="pageTransition">{children}</div>;
 }
 
 function DroneWireframe(){return <div className="droneWireScene" aria-hidden="true"><div className="wireGrid"/><svg viewBox="0 0 820 520"><defs><filter id="wire-glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter><linearGradient id="wire-fade" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#d8ffc8"/><stop offset=".45" stopColor="#72ff34"/><stop offset="1" stopColor="#1b611d"/></linearGradient></defs><g className="terrainWire">{Array.from({length:11},(_,index)=><path key={`h${index}`} d={`M20 ${250+index*23} Q 210 ${190+index*16} 405 ${245+index*18} T 800 ${230+index*24}`}/>)}{Array.from({length:15},(_,index)=><path key={`v${index}`} d={`M${40+index*52} 220 Q ${80+index*48} 340 ${25+index*55} 510`}/>)}</g><g className="droneWire" filter="url(#wire-glow)"><ellipse cx="410" cy="270" rx="118" ry="50"/><path d="M292 270 150 185 90 198M528 270l142-85 60 13M310 300 162 374 98 360M510 300l148 74 64-14"/><path d="M342 238 381 175h58l39 63M350 309l28 62h64l28-62M373 222h74l32 54-37 56h-64l-37-56Z"/><circle cx="90" cy="198" r="64"/><circle cx="730" cy="198" r="64"/><circle cx="98" cy="360" r="64"/><circle cx="722" cy="360" r="64"/><circle cx="90" cy="198" r="9"/><circle cx="730" cy="198" r="9"/><circle cx="98" cy="360" r="9"/><circle cx="722" cy="360" r="9"/><path d="M377 332v48l-28 40M443 332v48l28 40M349 420h122"/></g></svg><span className="wireLabel one">LIVE SOURCES</span><span className="wireLabel two">36H WEATHER</span><span className="wireLabel three">ROUTE RANGE</span></div>}
 
-function Home({onChoose,geo,openMap,openWeather,openAi,showAi,language}:{onChoose:(l:Location)=>void;geo:()=>void;openMap:()=>void;openWeather:()=>void;openAi:()=>void;showAi:boolean;language:string}){const c=screenCopy(language);return <main className="home homeCinematic">
+function Home({onChoose,geo,openMap,openWeather,openAi,showAi,language,reducedMotion}:{onChoose:(l:Location)=>void;geo:()=>void;openMap:()=>void;openWeather:()=>void;openAi:()=>void;showAi:boolean;language:string;reducedMotion:boolean}){
+ const c=screenCopy(language),homeRef=useRef<HTMLElement>(null);
+ useEffect(()=>{
+  const root=homeRef.current;if(!root)return;
+  gsap.registerPlugin(ScrollTrigger);
+  const reduced=reducedMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduced){gsap.set(root.querySelectorAll<HTMLElement>('[data-reveal], [data-reveal-item]'),{autoAlpha:1,y:0});return}
+  const context=gsap.context(()=>{
+   gsap.utils.toArray<HTMLElement>('[data-reveal]',root).forEach(section=>{
+    const details=section.querySelectorAll<HTMLElement>('[data-reveal-item]');
+    const reveal=gsap.timeline({scrollTrigger:{trigger:section,start:'top 86%',toggleActions:'play none none reset'}});
+    reveal.fromTo(section,{autoAlpha:0,y:38},{autoAlpha:1,y:0,duration:.78,ease:'power3.out'});
+    if(details.length)reveal.fromTo(details,{autoAlpha:0,y:22},{autoAlpha:1,y:0,duration:.62,ease:'power2.out',stagger:.09},.12);
+   });
+   gsap.to('.heroPhoto',{yPercent:13,scale:1.07,ease:'none',scrollTrigger:{trigger:'.cinematicHero',start:'top top',end:'bottom top',scrub:.8}});
+   gsap.fromTo('.cinematicHero .heroPhoto',{backgroundPosition:'center 48%'},{backgroundPosition:'center 52%',duration:18,ease:'sine.inOut',repeat:-1,yoyo:true});
+   gsap.to('.droneWireScene',{yPercent:-18,rotation:1.2,ease:'none',scrollTrigger:{trigger:'.cinematicHero',start:'top top',end:'bottom top',scrub:1}});
+   gsap.utils.toArray<HTMLImageElement>('.missionPhoto img',root).forEach(image=>gsap.fromTo(image,
+    {scale:1.12,yPercent:-4},
+    {scale:1,yPercent:4,ease:'none',scrollTrigger:{trigger:image,start:'top bottom',end:'bottom top',scrub:.7}}));
+   gsap.fromTo('.homeFinalCta .finalCtaPhoto',{scale:1.12},{scale:1,ease:'none',scrollTrigger:{trigger:'.homeFinalCta',start:'top bottom',end:'bottom top',scrub:.8}});
+  },root);
+  const heroTargets=root.querySelectorAll<HTMLElement>('.cinematicHero .hero > *');
+  const entrance=animate(heroTargets,{opacity:[0,1],y:[18,0],delay:stagger(90),duration:760,ease:'out(3)'});
+  return()=>{entrance.revert();context.revert()};
+ },[reducedMotion]);
+ return <main ref={homeRef} className="home homeCinematic">
   <section className="cinematicHero">
     <div className="heroPhoto" aria-hidden="true"/>
     <DroneWireframe/>
     <div className="heroShade" aria-hidden="true"/>
-    <div className="coastLabel"><i/><span>{c.coverage}</span><b>{c.sources}</b></div>
     <div className="hero">
       <div className="pill"><Sparkles size={14}/> {c.pill}</div>
       <h1>{c.hero1}<br/><i>{c.hero2}</i></h1><div className="heroTelemetry"><span>LAT / LON</span><b>OFFICIAL CONTEXT</b><i>01</i></div>
@@ -110,46 +158,45 @@ function Home({onChoose,geo,openMap,openWeather,openAi,showAi,language}:{onChoos
       <div className="heroButtons"><button className="primary" onClick={geo}><Navigation size={17}/> {c.useLocation}</button><button className="exploreButton" onClick={openMap}><MapIcon size={17}/> {c.openMap} <ArrowRight size={16}/></button></div>
       <div className="trustRow"><span><ShieldCheck/>{c.officialContext}</span><span><CloudSun/>{c.forecast36}</span><span><Database/>{c.private}</span></div>
     </div>
-    <div className="flightReadout liquid"><div><span className="liveDot"/> {c.ready}</div><b>{c.safer}</b><p>{c.flightBody}</p><button onClick={openMap} aria-label={c.openMap}><ArrowRight/></button></div>
     <div className="scrollCue"><span>{c.discover}</span><i/></div>
   </section>
   <section className="homeBelow">
-    <div className="sectionIntro"><div className="eyebrow">{c.contextEyebrow}</div><h2>{c.decision1}<br/>{c.decision2}</h2><p>{c.contextBody}</p></div>
-    <section className="decisionStory" aria-label="How Aeris supports a flight decision">
+    <div className="sectionIntro" data-reveal><div className="eyebrow" data-reveal-item>{c.contextEyebrow}</div><h2 data-reveal-item>{c.decision1}<br/>{c.decision2}</h2><p data-reveal-item>{c.contextBody}</p></div>
+      <section className="featureGrid" data-reveal aria-label="Explore Aeris">{[[MapIcon,c.airspace,c.airspaceBody,openMap],[CloudSun,c.weatherWindows,c.weatherBody,openWeather],...(showAi?[[Bot,c.copilot,c.copilotBody,openAi]]:[])].map(([I,title,description,action],index)=>{const Icon=I as typeof MapIcon;return <article data-reveal-item style={{'--delay':`${index*90}ms`} as React.CSSProperties} key={String(title)}><small>0{index+1}</small><span><Icon/></span><b>{title as string}</b><p>{description as string}</p><button onClick={action as ()=>void} aria-label={`${c.discover} ${String(title)}`}><ArrowRight/></button></article>})}</section>
+    <section className="decisionStory" aria-label="How Aeris supports a flight decision" data-reveal>
       <div className="storyRail"><span>01</span><i/><span>02</span><i/><span>03</span></div>
       <div className="storyCopy">
-        <article><small>PLACE</small><h3>Start with a pin, not a pile of tabs.</h3><p>Search a town, paste coordinates, or use your live position. Aeris brings the relevant map, forecast and official-source context to the same point.</p></article>
-        <article><small>CONDITIONS</small><h3>Read the next 36 hours like a flight window.</h3><p>Compare wind, gusts, rain, cloud and visibility hour by hour, with a score that helps you spot calmer conditions quickly.</p></article>
-        <article><small>VERIFY</small><h3>Keep the official authority one click away.</h3><p>See what source is loaded, understand the visible zones, and hand off to the responsible national aviation map before takeoff.</p></article>
+        <article data-reveal-item><small>PLACE</small><h3>Start with a pin, not a pile of tabs.</h3><p>Search a town, paste coordinates, or use your live position. Aeris brings the relevant map, forecast and official-source context to the same point.</p></article>
+        <article data-reveal-item><small>CONDITIONS</small><h3>Read the next 36 hours like a flight window.</h3><p>Compare wind, gusts, rain, cloud and visibility hour by hour, with a score that helps you spot calmer conditions quickly.</p></article>
+        <article data-reveal-item><small>VERIFY</small><h3>Keep the official authority one click away.</h3><p>See what source is loaded, understand the visible zones, and hand off to the responsible national aviation map before takeoff.</p></article>
       </div>
-      <aside className="storyReadout liquid"><div><span className="liveDot"/> LIVE FLIGHT CONTEXT</div><b>One place.<br/>Three clear answers.</b><dl><dt>AIRSPACE</dt><dd>Official sources</dd><dt>WEATHER</dt><dd>36-hour outlook</dd><dt>PRIVACY</dt><dd>Local by default</dd></dl></aside>
+      <aside className="storyReadout liquid" data-reveal-item><div><span className="liveDot"/> LIVE FLIGHT CONTEXT</div><b>One place.<br/>Three clear answers.</b><dl><dt>AIRSPACE</dt><dd>Official sources</dd><dt>WEATHER</dt><dd>36-hour outlook</dd><dt>PRIVACY</dt><dd>Local by default</dd></dl></aside>
     </section>
-    <section className="missionGallery">
-      <div className="missionLead">
+    <section className="missionGallery" data-reveal>
+      <div className="missionLead" data-reveal-item>
         <div className="eyebrow">BUILT AROUND THE MOMENT BEFORE TAKEOFF</div>
         <h2>Less dashboard.<br/><i>More awareness.</i></h2>
         <p>Flight planning should feel calm even when the data is complex. Aeris uses progressive detail: a clear first answer, then the evidence when you need it.</p>
         <button className="primary" onClick={openMap}><MapIcon/> Explore the live map <ArrowRight/></button>
       </div>
-      <figure className="missionPhoto missionWide"><img src={`${import.meta.env.BASE_URL}media/drone-field-sunset.jpg`} alt="Drone flying above a field at sunset" loading="lazy"/><figcaption><small>01 · AIRSPACE</small><b>Know what surrounds the launch point.</b><span>Live map layers · route radius · official-source handoff</span></figcaption></figure>
-      <figure className="missionPhoto missionTall"><img src={`${import.meta.env.BASE_URL}media/drone-coast-sunset.jpg`} alt="Drone flying in warm evening light" loading="lazy"/><figcaption><small>02 · CONDITIONS</small><b>Find the quieter hour.</b><span>Wind · rain · visibility · daylight</span></figcaption></figure>
-      <div className="missionQuote liquid"><Sparkles/><p>“The best flight tool is the one that makes the next responsible action obvious.”</p><span>AERIS DESIGN PRINCIPLE</span></div>
+      <figure className="missionPhoto missionWide" data-reveal-item><img src="https://images.pexels.com/photos/11602798/pexels-photo-11602798.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1800" alt="Drone flying over a forest in Ilmenau, Germany" loading="lazy"/><figcaption><small>01 · AIRSPACE</small><b>Know what surrounds the launch point.</b><span>Live map layers · route radius · official-source handoff</span></figcaption></figure>
+      <figure className="missionPhoto missionTall" data-reveal-item><img src="/media/drone-mountain-alternative.jpg" alt="A drone hovering close to a rugged mountain cliff" loading="lazy"/><figcaption><small>02 · CONDITIONS</small><b>Find the quieter hour.</b><span>Wind · rain · visibility · daylight</span></figcaption></figure>
+      <div className="missionQuote liquid" data-reveal-item><Sparkles/><p>“The best flight tool is the one that makes the next responsible action obvious.”</p><span>AERIS DESIGN PRINCIPLE</span></div>
     </section>
-      <section className="featureGrid">{[[MapIcon,c.airspace,c.airspaceBody,openMap],[CloudSun,c.weatherWindows,c.weatherBody,openWeather],...(showAi?[[Bot,c.copilot,c.copilotBody,openAi]]:[])].map(([I,title,description,action],index)=>{const Icon=I as typeof MapIcon;return <article style={{'--delay':`${index*90}ms`} as React.CSSProperties} key={String(title)}><small>0{index+1}</small><span><Icon/></span><b>{title as string}</b><p>{description as string}</p><button onClick={action as ()=>void} aria-label={`${c.discover} ${String(title)}`}><ArrowRight/></button></article>})}</section>
-    <section className="flightPromise">
-      <div><div className="eyebrow">THE AERIS PROMISE</div><h2>Useful context.<br/>Honest limits.</h2></div>
-      <div className="promiseGrid"><article><ShieldCheck/><b>Source-aware</b><p>Official aviation links remain visible wherever an answer depends on them.</p></article><article><Eye/><b>Readable by design</b><p>Critical wind, rain and zone information is never buried behind decoration.</p></article><article><Database/><b>Private by default</b><p>Saved places and preferences stay on this device unless you export them.</p></article></div>
+    <section className="flightPromise" data-reveal>
+      <div data-reveal-item><div className="eyebrow">THE AERIS PROMISE</div><h2>Useful context.<br/>Honest limits.</h2></div>
+      <div className="promiseGrid" data-reveal-item><article><ShieldCheck/><b>Source-aware</b><p>Official aviation links remain visible wherever an answer depends on them.</p></article><article><Eye/><b>Readable by design</b><p>Critical wind, rain and zone information is never buried behind decoration.</p></article><article><Database/><b>Private by default</b><p>Saved places and preferences stay on this device unless you export them.</p></article></div>
     </section>
-    <div className="homeNote"><Compass/><div><b>{c.orientation}</b><p>{c.orientationBody}</p></div></div>
-    <section className="homeFinalCta">
+    <div className="homeNote" data-reveal><Compass data-reveal-item/><div data-reveal-item><b>{c.orientation}</b><p>{c.orientationBody}</p></div></div>
+    <section className="homeFinalCta" data-reveal>
       <div className="finalCtaPhoto" aria-hidden="true"/>
-      <div><span><i className="liveDot"/> READY FOR YOUR NEXT LOCATION</span><h2>Meet the sky<br/>with context.</h2><p>Drop a pin and turn airspace, weather and official sources into one calm pre-flight view.</p><button className="primary" onClick={openMap}>Plan a flight <ArrowRight/></button></div>
+      <div data-reveal-item><span><i className="liveDot"/> READY FOR YOUR NEXT LOCATION</span><h2>Meet the sky<br/>with context.</h2><p>Drop a pin and turn airspace, weather and official sources into one calm pre-flight view.</p><button className="primary" onClick={openMap}>Plan a flight <ArrowRight/></button></div>
     </section>
-    <section className="homeAbout" aria-labelledby="about-aeris-title">
-      <div><div className="eyebrow">ABOUT AERIS</div><h2 id="about-aeris-title">Built for calmer decisions before takeoff.</h2></div>
-      <div className="homeAboutCopy"><p>Aeris is a privacy-first public project by <a href="https://github.com/B1progame" target="_blank" rel="noreferrer">B1progame</a>. I built it because official drone tools can feel slow, fragmented, and difficult to use on the move. Aeris brings official airspace context, weather, route planning, and offline maps into one readable place—without pretending that a planning tool is an aviation authority.</p><p>It is free to use, transparent about source limits, and designed to stay useful when connectivity is unreliable.</p><div className="homeAboutLinks"><a href="https://github.com/B1progame/drone-zone-map" target="_blank" rel="noreferrer">Source on GitHub ↗</a><a href="https://github.com/B1progame/drone-zone-map/blob/main/LICENSE" target="_blank" rel="noreferrer">Usage license ↗</a></div></div>
+    <section className="homeAbout" aria-labelledby="about-aeris-title" data-reveal>
+      <div data-reveal-item><div className="eyebrow">ABOUT AERIS</div><h2 id="about-aeris-title">Built for calmer decisions before takeoff.</h2></div>
+      <div className="homeAboutCopy" data-reveal-item><p>Aeris is a privacy-first public project by <a href="https://github.com/B1progame" target="_blank" rel="noreferrer">B1progame</a>. I built it because official drone tools can feel slow, fragmented, and difficult to use on the move. Aeris brings official airspace context, weather, route planning, and offline maps into one readable place—without pretending that a planning tool is an aviation authority.</p><p>It is free to use, transparent about source limits, and designed to stay useful when connectivity is unreliable.</p><div className="homeAboutLinks"><a href="https://github.com/B1progame/drone-zone-map" target="_blank" rel="noreferrer">Source on GitHub ↗</a><a href="https://github.com/B1progame/drone-zone-map/blob/main/LICENSE" target="_blank" rel="noreferrer">Usage license ↗</a></div></div>
     </section>
-    <div className="photoCredits">Photography: <a href="https://www.pexels.com/photo/drone-flying-near-green-trees-in-forest-3823555/" target="_blank" rel="noreferrer">Pok Rie</a>, <a href="https://www.pexels.com/photo/black-quadcopter-drone-on-green-grass-field-442589/" target="_blank" rel="noreferrer">JESHOOTS.com</a>, and <a href="https://www.pexels.com/photo/drone-in-air-during-sunset-12446360/" target="_blank" rel="noreferrer">Matheus Bertelli</a> via Pexels.</div>
+    <div className="photoCredits">Photography via Pexels: <a href="https://www.pexels.com/photo/silhouette-of-flying-drone-at-sunset-18054381/" target="_blank" rel="noreferrer">Kaan Durmuş</a>, <a href="https://www.pexels.com/photo/drone-flying-over-a-forest-11602798/" target="_blank" rel="noreferrer">Justin Wolfert</a>, <a href="https://www.pexels.com/photo/drone-flying-against-mountainous-backdrop-29422400/" target="_blank" rel="noreferrer">Esmerald Heqimaj</a>, and <a href="https://www.pexels.com/photo/drone-flying-over-the-coast-at-sunset-12883671/" target="_blank" rel="noreferrer">Damian Barczak</a>; licensed under the <a href="https://www.pexels.com/license/" target="_blank" rel="noreferrer">Pexels license</a>.</div>
     <Disclaimer/>
   </section>
 </main>}
@@ -181,22 +228,24 @@ function MapPage({location,weather,weatherError,zoneInfo,choose,save,saveRoute,s
  };
  const exporting=Boolean(geoJsonProgress&&geoJsonProgress.percent<100);
  return <main className="mapPage">
-  <MapCanvas ref={mapCanvasRef} location={location} weather={weather} weatherError={weatherError} onPick={choose} settings={settings} plannerMode={plannerMode} planPoints={planPoints} flightRadiusKm={radiusKm} onPlanPoint={addPlanPoint}/>
+  <Suspense fallback={<div className="mapHost"><div className="mapLoading" role="status"><span />Loading interactive map…</div></div>}>
+   <MapCanvas ref={mapCanvasRef} location={location} weather={weather} weatherError={weatherError} onPick={choose} settings={settings} plannerMode={plannerMode} planPoints={planPoints} flightRadiusKm={radiusKm} onPlanPoint={addPlanPoint}/>
+  </Suspense>
   <div className="mapSearch"><SearchBox compact onLocation={choose} language={settings.language}/></div>
   <button className="mapDirectoryTrigger liquid" onClick={()=>setDirectoryOpen(value=>!value)} aria-label="Open airspace sources and downloads" aria-expanded={directoryOpen}><Layers3/><span>Sources</span></button>
   <div className={`mapPanel airspaceDirectory liquid${directoryOpen?' compactOpen':''}`}>
    <button className="compactPanelClose" onClick={()=>setDirectoryOpen(false)} aria-label="Close airspace directory"><X/></button>
    <div className="eyebrow">VERIFIED AIRSPACE DIRECTORY</div>
-   <div className="directoryStats"><span><b>15</b> live maps</span><span><b>21</b> handoffs</span><i><span className="liveDot"/> ACTIVE</i></div>
-   <p>Official layers load only inside their national coverage. Spain includes the Canary Islands; Portugal includes Madeira and the Azores. The UK layer is permanent AIRAC data, not temporary NOTAMs.</p>
-   <div className="directoryLinks"><a href="https://www.avinor.no/en/practical-info/drone/dronekart/" target="_blank" rel="noreferrer">Norway official map ↗</a><a href="https://map.dronespace.at/" target="_blank" rel="noreferrer">Austria Dronespace ↗</a></div>
+   <div className="directoryStats"><span><b>16</b> live maps</span><span><b>37</b> handoffs</span><i><span className="liveDot"/> ACTIVE</i></div>
+   <p>Official layers load only inside their national coverage. The remaining 196 ISO regions have no reviewed map source yet; Street and Satellite basemaps still work worldwide. Spain includes the Canary Islands; Portugal includes Madeira and the Azores. The UK layer is permanent AIRAC data, not temporary NOTAMs.</p>
+   <div className="directoryLinks"><a href="https://experience.arcgis.com/experience/9d098dbc738e436f9525fdb4ef443f61" target="_blank" rel="noreferrer">Norway official map ↗</a><a href="https://utm.dronespace.at/avm/" target="_blank" rel="noreferrer">Austria Dronespace ↗</a></div>
    <div className="directoryActions">
     <button onClick={()=>setOfflineBuilder(true)} disabled={!location}>{offline?<><Check/>Offline package saved</>:<><Download/>Download offline area</>}</button>
     <button onClick={()=>void runMapExport('geojson')} disabled={exporting}><Download/>{exporting?'Exporting…':'Download visible GeoJSON'}</button>
     <button onClick={()=>void runMapExport('snapshot')}><Camera/>Clean map PNG</button>
    </div>
    {exportStatus&&<small className="exportStatus">{exportStatus}</small>}
-   <small className="directoryNotice">Germany exports exact flight-critical official geometry only, keeping files practical; high-volume conservation and visual-detail layers remain on the map. Canada uses Open Government data and excludes protected NAV CANADA-derived shapes.</small>
+   <small className="directoryNotice">Germany exports exact flight-critical official geometry only, keeping files practical; high-volume conservation and visual-detail layers remain on the map. Canada shows open airport and park data; use the NRC Drone Site Selection Tool for complete airspace because its NAV CANADA-derived geometry cannot be redistributed.</small>
   </div>
   {geoJsonProgress&&<div className="exportDownloadProgress liquid" role="status" aria-live="polite">
    <div className="exportProgressRing" style={{'--export-progress':`${geoJsonProgress.percent*3.6}deg`} as React.CSSProperties}><span>{geoJsonProgress.percent}%</span></div>
@@ -204,28 +253,36 @@ function MapPage({location,weather,weatherError,zoneInfo,choose,save,saveRoute,s
   </div>}
   <FlightPlanner active={plannerMode} points={planPoints} selected={location} radiusKm={radiusKm} language={settings.language} onToggle={()=>setPlannerMode(value=>!value)} onUndo={()=>updatePlan(planPoints.slice(0,-1))} onClear={()=>updatePlan([])} onCheck={choose} onAddSelected={addPlanPoint} onRemove={index=>updatePlan(planPoints.filter((_,pointIndex)=>pointIndex!==index))} onReverse={()=>updatePlan([...planPoints].reverse())} onSave={saveCurrentRoute} onRadiusChange={updateRadius}/>
   {offlineBuilder&&location&&<OfflineDownloadPanel location={location} weather={weather} zoneInfo={zoneInfo} onClose={()=>setOfflineBuilder(false)} onSaved={()=>{setOffline(true);setExportStatus('Offline area saved. It will be selected automatically without a connection.')}}/>}
-  {!plannerMode&&(location&&resultOpen?<ResultCard location={location} weather={weather} zoneInfo={zoneInfo} onSave={save} onClose={()=>setResultOpen(false)} language={settings.language}/>:location?<button className="reopenResult liquid" onClick={()=>setResultOpen(true)}>Show location check</button>:<div className="emptyCheck liquid"><Compass/><b>Tap map to choose</b><span>Weather and official source details will meet you there.</span></div>)}
+  {!plannerMode&&(location&&resultOpen?<ResultCard location={location} weather={weather} weatherError={weatherError} zoneInfo={zoneInfo} onSave={save} onClose={()=>setResultOpen(false)} language={settings.language}/>:location?<button className="reopenResult liquid" onClick={()=>setResultOpen(true)}>Show location check</button>:<div className="emptyCheck liquid"><Compass/><b>Tap map to choose</b><span>Weather and official source details will meet you there.</span></div>)}
  </main>
 }
 
-const WeatherIcon=({hour}:{hour:WeatherHour})=>hour.rainProbability>55?<CloudRain/>:hour.cloud>75?<Cloud/>:<CloudSun/>;
+const WeatherIcon=({hour}:{hour:WeatherHour})=>{
+ const kind=weatherCodeKind(hour.weatherCode);
+ if(kind==='thunderstorm')return <CloudLightning aria-hidden="true"/>;
+ if(kind==='snow')return <Snowflake aria-hidden="true"/>;
+ if(kind==='rain')return <CloudRain aria-hidden="true"/>;
+ if(kind==='cloudy'||kind==='fog'||kind==='unknown')return <Cloud aria-hidden="true"/>;
+ return <CloudSun aria-hidden="true"/>;
+};
 function WeatherPage({location,weather,error,choose,language}:{location?:Location;weather?:Weather;error:string;choose:(l:Location)=>void;language:string}){
  const [selected,setSelected]=useState(0),c=screenCopy(language);
  const hour=weather?.hourly[selected];
  const best=useMemo(()=>weather?.hourly.slice(0,24).map((x,i)=>({...x,index:i})).sort((a,b)=>b.score-a.score).slice(0,3)??[],[weather]);
- const selectedLabel=hour?new Date(hour.time).toLocaleString(language,{weekday:'long',hour:'2-digit',minute:'2-digit'}):'';
+ const selectedLabel=hour?formatForecastTime(hour.time,weather?.timezone??'UTC',language,{weekday:'long',hour:'2-digit',minute:'2-digit'}):'';
  return <main className="page weatherPage">
-  <div className="weatherTopline"><span><i className="liveDot"/> LIVE 36H MODEL</span><span>UPDATED FOR THE SELECTED POINT</span><span>{weather?.timezone??'LOCAL TIME'}</span></div>
+  <div className="weatherTopline"><span>{weather&&!weather.stale&&!weather.offlineSnapshot&&<i className="liveDot"/>}{weather?.offlineSnapshot?'OFFLINE WEATHER SNAPSHOT':weather?.stale?'CACHED MODEL FORECAST':weather?'MODEL FORECAST':location?'LOADING MODEL FORECAST':'SELECT A LOCATION'}</span><span>{weather?.retrievedAt?`${weather.stale?'LAST FETCH':'FETCHED'} ${formatForecastTime(weather.retrievedAt/1000,weather.timezone,language,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}${weather.stale?' · RECONNECT TO UPDATE':''}`:weather?'FETCH TIME UNKNOWN':location?'FETCHING FORECAST':''}</span><span>{weather?.timezone??'LOCAL TIME'}</span></div>
   <div className="weatherHero"><div><div className="eyebrow">{c.weatherEyebrow}</div><h1>{c.calm}</h1><p>{c.tapHour}</p></div><div className="weatherOrb"><CloudSun/><span>{hour?.temperature??weather?.temperature??'—'}°</span><small>{hour?.isDay?'DAYLIGHT':'AFTER DARK'}</small></div></div>
   {location?<>
    <div className="weatherLocationRow"><div className="locationChip"><Navigation size={15}/>{location.name}<small>{weather?.timezone}</small></div>{hour&&<div className="selectedForecast"><span>SELECTED WINDOW</span><b>{selectedLabel}</b></div>}</div>
    {weather&&hour?<>
     <section className="weatherDashboard liquid">
-     <div className="weatherVerdict"><div className="scoreRing" style={{'--score':hour.score} as React.CSSProperties}><div><strong>{hour.score}</strong><span>{c.flightScore}</span></div></div><div className="weatherSummary"><small>{selectedLabel}</small><h2>{quality(hour.score)}</h2><p>{hour.wind<20?c.manageable:c.windCare} {hour.rainProbability<25?c.lowRain:c.rainElevated}</p><div className="conditionTags"><span className={hour.wind<20?'good':'care'}><Wind/> {hour.wind<20?'Wind manageable':'Watch the wind'}</span><span className={hour.rainProbability<25?'good':'care'}><CloudRain/> {hour.rainProbability<25?'Low rain risk':'Rain risk elevated'}</span></div></div></div>
-     <div className="metrics"><Metric icon={<Wind/>} label={c.wind} value={`${hour.wind} km/h`} hint={`Gusts ${hour.gusts} km/h`} level={Math.min(100,hour.wind/45*100)}/><Metric icon={<CloudRain/>} label={c.rain} value={`${hour.rainProbability}%`} hint={`${hour.rain} mm`} level={hour.rainProbability}/><Metric icon={<Cloud/>} label={c.cloud} value={`${hour.cloud}%`} hint={hour.isDay?c.daylight:c.afterDark} level={hour.cloud}/><Metric icon={<Eye/>} label={c.visibility} value={`${Math.round(hour.visibility/1000)} km`} hint={`${hour.temperature}°C`} level={Math.min(100,hour.visibility/30000*100)}/></div>
+     <div className="weatherVerdict"><div className="scoreRing" style={{'--score':hour.score} as React.CSSProperties}><div><strong>{hour.score}</strong><span>{c.weatherScore}</span></div></div><div className="weatherSummary"><small>{selectedLabel}</small><h2>{quality(hour.score)}</h2><p>{hour.wind<20?c.manageable:c.windCare} {hour.rainProbability<25?c.lowPrecipitation:c.precipitationElevated}</p><div className="conditionTags"><span className={hour.wind<20?'good':'care'}><Wind/> {hour.wind<20?'Wind manageable':'Watch the wind'}</span><span className={hour.rainProbability<25?'good':'care'}><CloudRain/> {hour.rainProbability<25?c.lowPrecipitation:c.precipitationElevated}</span></div></div></div>
+     <div className="metrics"><Metric icon={<Wind/>} label={c.wind} value={`${hour.wind} km/h`} hint={`10 m · gusts ${hour.gusts} km/h · 80 m ${hour.wind80===null||hour.wind80===undefined?'unavailable':`${Math.round(hour.wind80)} km/h`}`} level={Math.min(100,Math.max(hour.wind,hour.wind80??0)/45*100)}/><Metric icon={<CloudRain/>} label={c.precipitationProbability} value={`${hour.rainProbability}%`} hint={`${hour.rain} mm`} level={hour.rainProbability}/><Metric icon={<Cloud/>} label={c.cloud} value={`${hour.cloud}%`} hint={hour.isDay?c.daylight:c.afterDark} level={hour.cloud}/><Metric icon={<Eye/>} label={c.visibility} value={`${Math.round(hour.visibility/1000)} km`} hint={`${hour.temperature}°C`} level={Math.min(100,hour.visibility/30000*100)}/></div>
     </section>
-    <div className="bestWindows"><div><div className="eyebrow">{c.best}</div><b>{c.topToday}</b><span>Ranked by wind, rain and visibility</span></div>{best.map((item,rank)=><button className={item.index===selected?'active':''} key={item.time} onClick={()=>setSelected(item.index)}><small>0{rank+1}</small><span>{new Date(item.time).toLocaleTimeString(language,{hour:'2-digit',minute:'2-digit'})}</span><b>{item.score}</b></button>)}</div>
-    <section className="forecastTimeline"><div className="timelineHeading"><div><div className="eyebrow">24-HOUR FLIGHT STRIP</div><b>Move through the day</b></div><span><i/> SCORE <i/> WIND</span></div><div className="timeline rich">{weather.hourly.slice(0,24).map((item,index)=><button className={index===selected?'selected':''} onClick={()=>setSelected(index)} key={item.time}><small>{index===0?c.now:new Date(item.time).toLocaleTimeString(language,{hour:'2-digit'})}</small><WeatherIcon hour={item}/><b>{item.score}</b><span>{item.wind} km/h</span><i style={{height:`${Math.max(8,item.score)}%`}}/></button>)}</div></section>
+    <div className="weatherDataNote"><p>{c.precipitationNote} {c.weatherScoreNote}</p><span>Weather models by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer noopener">Open-Meteo</a> · data under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer noopener">CC BY 4.0</a>.</span></div>
+    <div className="bestWindows"><div><div className="eyebrow">{c.best}</div><b>{c.topToday}</b><span>Ranked by wind, precipitation and visibility</span></div>{best.map((item,rank)=><button className={item.index===selected?'active':''} key={item.time} onClick={()=>setSelected(item.index)}><small>0{rank+1}</small><span>{formatForecastTime(item.time,weather.timezone,language,{hour:'2-digit',minute:'2-digit'})}</span><b>{item.score}</b></button>)}</div>
+    <section className="forecastTimeline"><div className="timelineHeading"><div><div className="eyebrow">24-HOUR FLIGHT STRIP</div><b>Move through the day</b></div><span><i/> SCORE <i/> WIND</span></div><div className="timeline rich">{weather.hourly.slice(0,24).map((item,index)=><button className={index===selected?'selected':''} onClick={()=>setSelected(index)} key={item.time}><small>{index===0?c.now:formatForecastTime(item.time,weather.timezone,language,{hour:'2-digit'})}</small><WeatherIcon hour={item}/><b>{item.score}</b><span>{item.wind} km/h</span><i style={{height:`${Math.max(8,item.score)}%`}}/></button>)}</div></section>
     <Disclaimer/>
    </>:error?<div className="weatherUnavailable liquid"><CloudRain/><div><b>Forecast temporarily unavailable</b><p>{error} Try this location again in a moment.</p></div></div>:<div className="loadingCard">{c.reading}</div>}
   </>:<section className="emptyPage weatherEmpty liquid"><div className="emptyWeatherVisual"><CloudSun/><i/></div><div><div className="eyebrow">START WITH A LOCATION</div><h2>{c.chooseFlight}</h2><p>{c.chooseFlightBody}</p><SearchBox onLocation={choose} language={language}/></div></section>}

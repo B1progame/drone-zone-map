@@ -1,4 +1,5 @@
 import type { Location, Weather, ZoneInfo } from './types';
+import { formatForecastTime } from './services';
 
 type FlightContext = {
   question: string;
@@ -7,8 +8,8 @@ type FlightContext = {
   zoneInfo?: ZoneInfo;
 };
 
-const formatHour = (value: string) =>
-  new Date(value).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
+const formatHour = (value: number|string, timezone:string) =>
+  formatForecastTime(value,timezone,'en',{hour:'2-digit',minute:'2-digit'});
 
 export function answerFlightQuestion({ question, location, weather, zoneInfo }: FlightContext) {
   if (!location) {
@@ -17,7 +18,7 @@ export function answerFlightQuestion({ question, location, weather, zoneInfo }: 
 
   const normalized = question.toLowerCase();
   const weatherSummary = weather
-    ? `**Weather:** ${weather.score}/100, ${weather.wind} km/h wind, gusts up to ${weather.gusts} km/h, ${weather.rainProbability}% rain probability and about ${Math.round(weather.visibility / 1000)} km visibility.`
+    ? `**Weather:** ${weather.score}/100, ${weather.wind} km/h wind, gusts up to ${weather.gusts} km/h, ${weather.rainProbability}% precipitation probability and about ${Math.round(weather.visibility / 1000)} km visibility.`
     : 'Live weather has not loaded for this point yet.';
   const zoneSummary = !zoneInfo
     ? 'The official airspace source is still loading.'
@@ -42,14 +43,14 @@ export function answerFlightQuestion({ question, location, weather, zoneInfo }: 
       .map(hour => ({ ...hour }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 3);
-    return standardAnswer(`The strongest forecast windows are ${best.map(hour => `**${formatHour(hour.time)}** (${hour.score}/100, ${hour.wind} km/h wind, ${hour.rainProbability}% rain)`).join(', ')}.`,['Forecast rankings are weather-only and do not override airspace restrictions.']);
+    return standardAnswer(`The strongest forecast windows are ${best.map(hour => `**${formatHour(hour.time,weather.timezone)}** (${hour.score}/100, ${hour.wind} km/h wind, ${hour.rainProbability}% precipitation probability)`).join(', ')}.`,['Forecast rankings are weather-only and do not override airspace restrictions.']);
   }
 
   if (/zone|airspace|restriction|overlay|source/.test(normalized)) {
     return standardAnswer(zoneInfo?.zones.length?'The map found relevant airspace or infrastructure objects at this point. Their type and published conditions matter more than their color or lower altitude.':'No overlapping object was returned, but that is not permission to fly.');
   }
 
-  if (/weather|wind|rain|visibility|risk|gust/.test(normalized)) {
+  if (/weather|wind|rain|precipitation|visibility|risk|gust/.test(normalized)) {
     if (!weather) return standardAnswer('Live weather is not available yet. Wait for the forecast to finish loading or select the point again.');
     const risk = weather.score >= 75 ? 'relatively favorable' : weather.score >= 50 ? 'mixed and worth extra care' : 'unfavorable';
     return standardAnswer(`Based only on the loaded forecast, conditions look **${risk}**. This is not a go/no-go decision.`,['Compare wind and gusts with the limits for your exact aircraft and takeoff site.']);

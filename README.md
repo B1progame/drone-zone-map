@@ -20,7 +20,7 @@ The site is deployed from `main` at [b1progame.github.io/drone-zone-map](https:/
 
 I built Aeris to make the moment before a flight calmer and more honest: the official source should stay visible, weather should be understandable, and offline planning should remain useful when connectivity is poor. It deliberately separates planning context from legal clearance and records source limitations instead of filling gaps with guesses.
 
-Coverage is still growing. I am actively working on adding every other place and making each country’s official source, attribution, and offline support as reliable as the existing coverage.
+Coverage is still growing. Aeris directly maps 16 countries, provides official-map hand-offs for 37 more, and does not yet support the remaining 196 ISO regions in its current 249-region audit. See [map coverage](wiki/Map-coverage.md) for the complete, country-by-country status and official links; a missing overlay never means it is legal to fly.
 
 ## What is included
 
@@ -69,6 +69,7 @@ The documentation is kept in [`wiki/`](wiki/) so it works immediately from the r
 - [`wiki/Local-setup.md`](wiki/Local-setup.md) — setup and verification from a clean machine
 - [`wiki/Why-Aeris.md`](wiki/Why-Aeris.md) — motivation, privacy, and design choices
 - [`wiki/Offline-maps.md`](wiki/Offline-maps.md) — Street/Satellite packages and storage behavior
+- [`wiki/Map-coverage.md`](wiki/Map-coverage.md) — directly mapped countries, official hand-offs, and every unsupported ISO region
 - [`wiki/License-and-attribution.md`](wiki/License-and-attribution.md) — usage boundaries and third-party notices
 
 GitHub’s native Wiki is enabled, but its first page must be created once in the [Wiki editor](https://github.com/B1progame/drone-zone-map/wiki/_new). GitHub only provisions the separate wiki repository after that first save.

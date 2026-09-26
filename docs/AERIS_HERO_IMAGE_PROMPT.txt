@@ -1,0 +1,9 @@
+AERIS HOME HERO — IMAGE GENERATION PROMPT
+
+Create a photorealistic, cinematic landscape photograph for the homepage of Aeris, a calm and trustworthy drone airspace and weather planning tool.
+
+Wide 16:9 composition. A single modern consumer quadcopter is in flight over a real European lakeside forest at first light, seen at a believable distance and angle. The landscape feels spacious, quiet, and safe: layered spruce and deciduous tree lines, a pale mist over water, soft overcast morning light, subtle cool greens and slate blues with a small warm sunrise reflection. Keep the drone and strongest visual detail in the right third. Leave the left third dark, low-detail, and naturally shaded so white headline text and a search field can sit there legibly. Gentle atmospheric depth, documentary outdoor photography, natural lens and exposure, restrained contrast, realistic scale and materials, high-end editorial travel photography.
+
+Avoid: text, lettering, logos, UI, graphics, grids, glowing wireframes, radar rings, neon green, oversaturated teal/orange grading, dramatic storm clouds, city skylines, people, multiple drones, toy-like drone proportions, artificial CGI, fake bokeh, and any implication that the depicted location is legally cleared for flight.
+
+Deliver a clean 16:9 image at 2400 × 1350 pixels or larger. The image must have no embedded text. Use only imagery the project has rights to distribute; record the generation tool/model and license or terms alongside the asset before shipping it.

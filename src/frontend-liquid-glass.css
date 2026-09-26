@@ -1,0 +1,326 @@
+:root {
+  color-scheme: dark;
+  --lime: #b9e8cf;
+  --mint: #83cbb4;
+  --ink: #091715;
+  --panel: #122320d9;
+  --line: #e0f5eb24;
+  --muted: #afc0ba;
+  --ease: cubic-bezier(.2, .78, .22, 1);
+  --glass-edge: rgb(237 255 246 / 23%);
+  --glass-shadow: 0 24px 64px rgb(2 11 9 / 48%);
+  --sky: #a9d9f2;
+  --caution: #f2ce8b;
+  --danger: #ff8c82;
+}
+
+html { background: #091715; }
+body { color: #edf4f0; background: #091715; }
+button, input, select, textarea { font-family: inherit; }
+a { color: #c1e9d6; }
+:focus-visible { outline: 2px solid #d1f1e1 !important; outline-offset: 3px; }
+
+.app {
+  color: #edf4f0;
+  background:
+    radial-gradient(ellipse at 88% 3%, rgb(86 143 124 / 20%), transparent 34%),
+    radial-gradient(ellipse at 4% 88%, rgb(45 91 79 / 19%), transparent 40%),
+    linear-gradient(155deg, #0e1c1a 0%, #091715 54%, #0b1918 100%);
+}
+.app:after { opacity: .035; }
+.ambient { opacity: .09; filter: blur(120px); }
+.ambient.a { background: #86c9ad; }
+.ambient.b { background: #b9d8c6; }
+
+/* Shared glass: cool translucency, edge light and readable depth. */
+.liquid:not(.flightReadout):not(.mapPanel):not(.resultCard):not(.emptyCheck):not(.mapWeatherControl):not(.mapDirectoryTrigger):not(.exportDownloadProgress) { position: relative; }
+.liquid {
+  border: 1px solid var(--glass-edge) !important;
+  background:
+    linear-gradient(145deg, rgb(242 255 248 / 9%), rgb(206 239 223 / 2%) 42%, transparent 76%),
+    rgb(13 29 27 / var(--glass-opacity, .72)) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 0 0 1px rgb(255 255 255 / 2%), var(--glass-shadow) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  backdrop-filter: blur(26px) saturate(150%);
+}
+.liquid:before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: inherit;
+  border-top: 1px solid rgb(255 255 255 / 17%);
+  background: linear-gradient(115deg, rgb(255 255 255 / 4%), transparent 34% 74%, rgb(188 233 212 / 3%));
+  pointer-events: none;
+}
+.liquid > * { position: relative; }
+
+header { background: linear-gradient(180deg, rgb(7 19 17 / 72%), transparent); }
+.brand b { color: #e3f2eb; letter-spacing: .16em; }
+.brand small { color: #9aafa6; }
+.icon, header > .icon {
+  border: 1px solid rgb(238 255 246 / 20%);
+  background: rgb(19 38 34 / 66%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 12%), 0 8px 24px rgb(0 0 0 / 20%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(18px) saturate(145%);
+}
+button {
+  color: #e7f1ec;
+  border-color: rgb(235 250 242 / 14%);
+  background: rgb(234 250 241 / 7%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 5%);
+  transition: transform 180ms var(--ease), color 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+button:hover { background-color: rgb(222 247 234 / 13%); box-shadow: inset 0 1px rgb(255 255 255 / 8%), 0 8px 22px rgb(1 9 7 / 22%); }
+button:active { transform: scale(.975); }
+button:disabled { cursor: not-allowed; opacity: .52; transform: none; }
+button.primary, .primary, .searchWrap button, .emptyPage button {
+  color: #0d211a;
+  border-color: #c2ead4;
+  background: linear-gradient(150deg, #d5efdf, #9fd3b9);
+  box-shadow: inset 0 1px rgb(255 255 255 / 72%), 0 7px 22px rgb(108 178 145 / 24%);
+}
+button.primary:hover, .primary:hover, .searchWrap button:hover, .emptyPage button:hover { background: #dbf4e5; box-shadow: inset 0 1px #fff, 0 9px 27px rgb(108 178 145 / 31%); }
+button.danger, .delete { color: #ffb9b0; }
+.eyebrow, .pill, .heroTelemetry b, .heroTelemetry i { color: #b8e4cf; }
+.pill { background: rgb(188 229 207 / 10%); border-color: rgb(203 240 220 / 24%); }
+.hero h1, .sectionIntro h2, .missionLead h2, .flightPromise h2, .homeFinalCta h2 { color: #f0f5f2; }
+.homeCinematic .hero h1 i, .missionLead h2 i { color: #c5ead5; text-shadow: 0 0 28px rgb(142 202 171 / 18%); }
+.homeCinematic .hero h1 { font-size: clamp(64px, 7.5vw, 112px); line-height: .88; }
+.hero > p { color: #d0ddd6; }
+.homeCinematic .heroSearch {
+  border-color: rgb(235 255 245 / 27%);
+  background: rgb(10 24 22 / 77%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 9%), 0 18px 54px rgb(1 8 7 / 38%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  backdrop-filter: blur(28px) saturate(150%);
+}
+.searchWrap:focus-within { border-color: rgb(194 234 212 / 75%); box-shadow: 0 0 0 3px rgb(194 234 212 / 17%), 0 18px 54px rgb(1 8 7 / 38%); }
+.homeCinematic .heroSearch input::placeholder, .searchWrap input::placeholder { color: #a4b7ae; }
+.heroTelemetry { color: #a0b5ab; }
+.heroTelemetry:before { background: #9bcdb3; }
+.trustRow, .trustRow svg { color: #c2d4ca; }
+
+/* Use a credited Pexels photograph instead of the uncredited aerial image. */
+.cinematicHero { min-height: clamp(700px, 94svh, 930px); background: #0a1715; }
+.heroPhoto {
+  background-image: url('/media/drone-forest.jpg') !important;
+  background-position: 54% 48% !important;
+  filter: saturate(.86) contrast(1.03) brightness(.88) !important;
+  animation: heroReveal 900ms var(--ease) both !important;
+}
+.cinematicHero .heroPhoto { filter: saturate(.86) contrast(1.03) brightness(.88) !important; }
+.heroShade {
+  background: linear-gradient(90deg, rgb(6 19 17 / 95%) 0%, rgb(6 19 17 / 78%) 35%, rgb(6 19 17 / 18%) 68%, transparent 100%), linear-gradient(0deg, #091715 0%, transparent 36%, rgb(7 20 18 / 15%) 100%) !important;
+}
+.heroShade:after { opacity: .35; }
+.droneWireScene { display: none !important; }
+.coastLabel, .flightReadout {
+  border: 1px solid rgb(237 255 246 / 24%);
+  background: rgb(11 27 24 / 66%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  backdrop-filter: blur(24px) saturate(145%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 12%), 0 18px 45px rgb(0 0 0 / 25%);
+}
+.coastLabel span, .flightReadout > div { color: #c1e6d1; }
+.flightReadout { border-radius: 22px 8px 22px 8px; }
+.flightReadout b { color: #edf5f0; }
+.flightReadout p { color: #bdcec5; }
+.flightReadout button { background: #c2ead4; color: #10241b; }
+.scrollCue { color: #c9d9d1; }
+.scrollCue i { background: linear-gradient(#b9e8cf, transparent); }
+.homeBelow { background: radial-gradient(ellipse at 22% 0%, rgb(48 91 76 / 13%), transparent 35%), #091715; }
+.sectionIntro p, .missionLead p, .homeAboutCopy, .homeNote p { color: #afc0ba; }
+.storyRail span, .missionPhoto small, .homeFinalCta span { color: #bce5ce; }
+.storyRail i { background: linear-gradient(#86c8a7, transparent); }
+.storyReadout, .missionQuote { border-radius: 22px; }
+.missionQuote { background: linear-gradient(150deg, rgb(23 46 39 / 94%), rgb(9 23 20 / 95%)); }
+.missionQuote > svg, .missionQuote span, .promiseGrid svg { color: #b9e8cf; }
+.missionPhoto { border-radius: 20px !important; }
+.missionPhoto img { transition: transform 480ms var(--ease), filter 480ms var(--ease); }
+.missionLead h2 i { font-style: italic; }
+.promiseGrid article { border-left-color: rgb(170 218 191 / 42%); background: linear-gradient(90deg, rgb(179 225 198 / 5%), transparent); }
+.homeFinalCta { border-radius: 28px; border-color: rgb(237 255 246 / 18%); }
+.finalCtaPhoto { background-image: url('/media/drone-coast-sunset.jpg') !important; filter: saturate(.55) brightness(.75) !important; }
+.homeFinalCta:after { background: linear-gradient(90deg, rgb(4 15 13 / 94%) 3%, rgb(4 15 13 / 72%) 50%, rgb(4 15 13 / 16%)), linear-gradient(0deg, rgb(4 15 13 / 52%), transparent 55%); }
+.homeAbout { border-color: rgb(237 255 246 / 13%); }
+.homeAboutCopy a, .homeAboutLinks a, .photoCredits a { color: #c2ead4; }
+.photoCredits { color: #96aaa1; }
+
+/* Weather and airspace controls share the material but stay subordinate to data. */
+.mapHint, .mapError, .mapStyleControl, .mapPanel, .resultCard, .emptyCheck,
+.mapWeatherControl, .airspaceDirectory, .exportDownloadProgress, .mapDirectoryTrigger {
+  border: 1px solid rgb(237 255 246 / 24%);
+  background: rgb(10 25 23 / 79%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 10%), 0 18px 46px rgb(0 0 0 / 32%);
+  -webkit-backdrop-filter: blur(22px) saturate(145%);
+  backdrop-filter: blur(22px) saturate(145%);
+}
+.mapPage { background: #0b1715; }
+.mapPage .mapPanel, .mapPage .resultCard, .mapPage .emptyCheck, .mapPage .mapDirectoryTrigger,
+.mapPage .reopenResult, .mapPage .exportDownloadProgress, .mapPage .mapWeatherControl { position: absolute; }
+.mapStyleControl button { color: #d2ded8; }
+.mapStyleControl button.active, .mapStyleControl button.weather.active { color: #10241b; background: #c2ead4; }
+.mapPanel, .resultCard, .emptyCheck { border-radius: 22px; }
+.resultCard h2, .mapPanel > b { color: #edf5f0; }
+.resultCard > p, .mapPanel p, .emptyCheck span { color: #bdcec5; }
+.emptyCheck svg, .mapDirectoryTrigger svg { color: #b9e8cf; }
+.status.caution { color: #f4d08c; background: rgb(242 206 139 / 14%); }
+.status.unknown { color: #d3dfda; }
+.weatherline { color: #d7eee2; background: rgb(152 207 177 / 12%); }
+.zoneResults details, .zoneBody { background: rgb(7 18 17 / 45%); }
+.zoneResults summary span, .danger { color: var(--caution); }
+.mapWeatherNow > svg, .mapWeatherNow b { color: var(--sky); }
+.weatherTicks button.active { color: #10241b; background: #b9e8cf; }
+.mapWeatherControl input { accent-color: #b9e8cf; }
+.mapWeatherControl .windLegend {
+  display: grid;
+  grid-template-columns: auto minmax(52px, 1fr) repeat(4, auto);
+  align-items: center;
+  gap: 7px;
+  padding-top: 5px;
+  border-top: 1px solid rgb(236 255 246 / 9%);
+  color: #a9bbb1;
+  font: 8px 'DM Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.mapWeatherControl .windLegend i {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e3fbff, #74e3ff 38%, #ffe08a 70%, #ff8b70);
+  box-shadow: 0 0 9px rgb(116 227 255 / 22%);
+}
+.mapWeatherControl .windLegend small { color: #82968c; font: inherit; }
+
+.page { color: #edf4f0; }
+.page h1, .page h2, .page h3 { color: #f0f5f2; }
+.page h1 i, .page h2 i { color: #c5ead5 !important; text-shadow: none !important; }
+.page p { color: #afc0ba; }
+.weatherPage:before { opacity: .36; }
+.weatherPage:after { background: linear-gradient(105deg, rgb(9 23 21 / 90%) 8%, rgb(9 23 21 / 20%) 72%); }
+.weatherTopline { color: #a4b7ae; border-color: rgb(237 255 246 / 16%); }
+.weatherTopline span:first-child { color: #c2ead4; }
+.weatherOrb { border-color: rgb(237 255 246 / 34%); background: radial-gradient(circle at 35% 28%, #e8f5eb, #a9d9c1 35%, #31594b 37%, #10211d 72%); box-shadow: 0 16px 48px rgb(4 17 14 / 40%); }
+.weatherOrb span { color: #10241b; background: #d8eee0; }
+.weatherDashboard, .weatherVerdict, .metric, .weatherCard, .aiCard, .sources, .savedList, .settings,
+.chatPanel, .contextCard, .localAssistantCard, .openRouterCard, .savedCard, .routeCard, .offlineCard,
+.storagePanel, .librarySummary, .aiTrustLedger article, .weatherUnavailable, .loadingCard {
+  border-color: rgb(237 255 246 / 17%);
+  background-color: rgb(18 35 32 / 78%);
+}
+.weatherDashboard { border-radius: 28px; }
+.weatherVerdict { border-radius: 22px; }
+.scoreRing { box-shadow: 0 0 36px rgb(127 187 151 / 14%); }
+.scoreRing, .weatherOrb { color: #c5ead4; }
+.weatherSummary h2 { color: #eef5f1; }
+.weatherSummary small, .conditionTags .good, .timeline.rich button svg { color: #bde5ce; }
+.conditionTags .good { border-color: rgb(185 232 207 / 32%); background: rgb(185 232 207 / 8%); }
+.conditionTags .care { color: #f2ce8b; border-color: rgb(242 206 139 / 28%); background: rgb(242 206 139 / 7%); }
+.metric { border-radius: 15px !important; }
+.metric > i > span { background: linear-gradient(90deg, #8dc9aa, #c3e9d4); box-shadow: 0 0 10px rgb(141 201 170 / 48%); }
+.timeline.rich button { border-radius: 16px; transition: background-color 180ms ease, border-color 180ms ease, transform 180ms var(--ease); }
+.timeline.rich button.selected { background: rgb(185 232 207 / 13%); border-color: rgb(185 232 207 / 48%); }
+.bestWindows button b { color: #c2ead4; }
+.emptyPage { border-color: rgb(237 255 246 / 23%); color: #d4e0da; }
+.emptyPage svg, .savedHeader > svg { color: #b9e8cf; }
+.aiPulse { background: #c2ead4; color: #10241b; box-shadow: 0 0 44px rgb(185 232 207 / 18%); }
+.aiPulse i { border-color: rgb(185 232 207 / 42%); }
+.aiSafety svg { color: #f2ce8b; }
+.segmented { border-color: rgb(237 255 246 / 17%); background: rgb(13 28 25 / 60%); }
+.segmented button.active { color: #10241b; background: #c2ead4; }
+.savedMapThumb { filter: saturate(.7); }
+.savedHeroMark { border-color: rgb(185 232 207 / 34%); border-radius: 22px 8px 22px 8px; background: rgb(185 232 207 / 7%); color: #b9e8cf; }
+.savedHeroMark span { color: #10241b; background: #c2ead4; box-shadow: 0 5px 16px rgb(136 207 163 / 24%); }
+.librarySummary span { border-left-color: rgb(185 232 207 / 46%); background: rgb(234 250 241 / 5%); color: #b2c2ba; }
+.librarySummary b { color: #e8f2ed; }
+.savedContent small, .offlineCard small, .routeContent > small { color: #a4b9ae; }
+.savedScore svg, .storagePanel > svg, .countryCode { color: #b9e8cf; }
+.savedSource, .answerSource { border-color: rgb(185 232 207 / 24%); background: rgb(185 232 207 / 7%); }
+
+.modalShade { background: rgb(2 12 10 / 68%); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.settings { border-radius: 26px; }
+.settings select, .settings input:not([type="checkbox"]):not([type="range"]), .sourceSearch {
+  color: #edf4f0; background: rgb(6 18 16 / 72%); border-color: rgb(237 255 246 / 17%);
+}
+.settings option { color: #13221e; }
+.toggleSetting input, .glassSlider input { accent-color: #b9e8cf; }
+.languageSearch:focus, .sourceSearch:focus-within { outline: 2px solid #c2ead4; outline-offset: 2px; }
+.consent, .iosInstall { border-color: rgb(237 255 246 / 22%); background: rgb(11 27 24 / 83%); -webkit-backdrop-filter: blur(24px) saturate(145%); backdrop-filter: blur(24px) saturate(145%); }
+.consent > button:last-child { color: #10241b; background: #c2ead4; }
+
+/* Signature dock: one bright glass lens with a directional stretch and settle. */
+.dock {
+  isolation: isolate;
+  gap: 2px;
+  padding: 7px;
+  border: 1px solid rgb(240 255 247 / 24%);
+  border-radius: 25px;
+  background: linear-gradient(140deg, rgb(220 244 231 / 17%), rgb(27 49 43 / 64%) 42%, rgb(9 22 20 / 77%));
+  box-shadow: inset 0 1px rgb(255 255 255 / 22%), inset 0 -1px rgb(0 0 0 / 18%), 0 22px 58px rgb(0 0 0 / 42%);
+  -webkit-backdrop-filter: blur(34px) saturate(175%);
+  backdrop-filter: blur(34px) saturate(175%);
+}
+.dockSlider {
+  top: 7px;
+  height: calc(100% - 14px);
+  border: 1px solid rgb(248 255 250 / 61%);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgb(248 255 250 / 91%), rgb(203 236 216 / 81%) 54%, rgb(148 206 173 / 76%));
+  box-shadow: inset 0 1px rgb(255 255 255 / 92%), inset 0 -1px rgb(91 144 113 / 18%), 0 5px 18px rgb(136 207 163 / 33%), 0 0 24px rgb(207 240 220 / 14%);
+  transition: transform 360ms cubic-bezier(.2, .82, .22, 1), width 360ms cubic-bezier(.2, .82, .22, 1);
+  will-change: transform, width, scale;
+}
+.dockSlider:after {
+  inset: -30% -25%;
+  opacity: .72;
+  background: radial-gradient(ellipse at 27% 23%, rgb(255 255 255 / 92%) 0 7%, transparent 35%), linear-gradient(105deg, transparent 28%, rgb(255 255 255 / 62%) 48%, transparent 64%);
+  transform: translate3d(calc(var(--liquid-dir, 1) * 9%), 0, 0);
+  transition: transform 360ms cubic-bezier(.2, .82, .22, 1);
+}
+.dock button { z-index: 1; color: #cfddd5; }
+.dock button.active { color: #173126; }
+.dock .navIcon { transition: transform 260ms cubic-bezier(.2, .82, .22, 1); }
+.dock button.active .navIcon { transform: translateY(-1px) scale(1.06); }
+.dock .navLabel { font-weight: 650; }
+
+.pageTransition { animation: pageIn 260ms var(--ease) both; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.featureGrid article { animation: none !important; }
+.liveDot { background: #b9e8cf; box-shadow: 0 0 9px rgb(185 232 207 / 54%); }
+.resultCard { animation-duration: 300ms; }
+.modalShade .settings { animation: settingsIn 280ms var(--ease) both; }
+@keyframes settingsIn { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 900px) {
+  .flightPromise { gap: 4vw; }
+  .promiseGrid article { padding: 16px; }
+}
+@media (max-width: 680px) {
+  .cinematicHero { min-height: max(820px, 100svh); align-items: flex-start; }
+  .heroPhoto { background-position: 53% 46% !important; }
+  .heroShade { background: linear-gradient(180deg, rgb(6 19 17 / 83%) 0%, rgb(6 19 17 / 63%) 38%, rgb(6 19 17 / 50%) 70%, #091715 100%) !important; }
+  .homeCinematic .hero { width: auto; margin: 90px 18px 0; padding-top: 20px; }
+  .homeCinematic .hero h1 { font-size: clamp(48px, 13vw, 66px); }
+  .coastLabel { display: none; }
+  .flightReadout { left: 18px; right: 18px; bottom: 60px; width: auto; }
+  .homeCinematic .featureGrid { margin-top: 66px; }
+  .flightPromise { display: block; margin-top: 70px; padding: 42px 0; }
+  .promiseGrid { grid-template-columns: 1fr; margin-top: 22px; }
+  .homeFinalCta { min-height: 490px; margin-inline: 16px; padding: 28px; }
+  .dock { width: calc(100% - 24px); bottom: max(10px, env(safe-area-inset-bottom)); border-radius: 23px; }
+  .dockSlider { border-radius: 18px; }
+  .dock button { min-width: 0; flex: 1; }
+  .mapStyleControl, .mapSearch { -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); }
+  .mapWeatherControl .windLegend { grid-template-columns: auto minmax(32px, 1fr) repeat(4, auto); gap: 5px; font-size: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient, .heroPhoto, .liveDot, .aiPulse i, .emptyOrbit > i, .emptyWeatherVisual i { animation: none !important; }
+  .pageTransition, .settings { animation: none !important; }
+}
+.reducedMotion .ambient, .reducedMotion .heroPhoto, .reducedMotion .liveDot,
+.reducedMotion .aiPulse i, .reducedMotion .emptyOrbit > i, .reducedMotion .emptyWeatherVisual i,
+.reducedMotion .pageTransition, .reducedMotion .settings { animation: none !important; }
+.reducedMotion .dockSlider, .reducedMotion .dockSlider:after, .reducedMotion .dock .navIcon,
+.reducedMotion button { transition-duration: .01ms !important; }
+.reducedMotion *, .reducedMotion *:before, .reducedMotion *:after { scroll-behavior: auto !important; }
