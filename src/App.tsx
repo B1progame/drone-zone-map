@@ -16,7 +16,11 @@ import { answerFlightQuestion } from './localAssistant';
 import { askOpenRouter, OPENROUTER_MODEL, validateOpenRouterKey } from './openRouter';
 import { screenCopy } from './screenCopy';
 
-const MapCanvas = lazy(async () => ({ default: (await import('./MapCanvas')).MapCanvas }));
+const MapCanvas = lazy(async () => {
+ const module=await import('./MapCanvas');
+ try{sessionStorage.removeItem('aeris:stale-chunk-retry')}catch{}
+ return {default:module.MapCanvas};
+});
 
 function inlineMarkdown(text:string){
  const parts:ReactNode[]=[];

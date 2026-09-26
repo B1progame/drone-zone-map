@@ -59,8 +59,9 @@
   .mapPage .searchSuggestions, .mapPage .searchSuggesting { position: fixed; top: 184px; left: 10px; right: 10px; }
   .mapPage .mapStyleControl { top: 76px; left: auto; right: 52px; width: max-content; height: auto; box-sizing: border-box; display: grid; grid-template-columns: 1fr; align-items: end; gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .mapPage .mapStyleControl button { width: 44px; min-width: 44px; max-width: 176px; min-height: 42px; flex: 0 0 auto; padding: 0 12px; display: flex; align-items: center; justify-content: flex-start; gap: 0; overflow: hidden; white-space: nowrap; border: 1px solid rgb(230 255 240 / 22%); border-radius: 15px; background: rgb(8 24 20 / 91%); box-shadow: 0 8px 22px rgb(0 0 0 / 28%); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); transition: width 420ms cubic-bezier(.2,.82,.22,1), background-color 220ms ease, border-color 220ms ease, transform 420ms cubic-bezier(.2,.82,.22,1), box-shadow 220ms ease; will-change: width; }
+  .mapPage .mapStyleControl button.active:not(.zones):not(.weather) { background: #c2ead4; color: #10241b; border-color: rgb(230 255 240 / 72%); }
   .mapPage .mapStyleControl button svg { width: 17px; height: 17px; flex: 0 0 17px; }
-  .mapPage .mapStyleControl button span { display: block; max-width: 0; margin-left: 0; overflow: hidden; opacity: 0; font-size: 11px; font-weight: 700; transition: max-width 300ms ease, opacity 180ms ease, margin-left 300ms ease; }
+  .mapPage .mapStyleControl button span { display: block !important; max-width: 0; margin-left: 0; overflow: hidden; opacity: 0; font-size: 11px; font-weight: 700; transition: max-width 300ms ease, opacity 180ms ease, margin-left 300ms ease; }
   .mapPage .mapStyleControl button.revealed { width: 176px; transform: translateX(-1px) scale(1.025); box-shadow: 0 12px 28px rgb(0 0 0 / 38%), 0 0 22px rgb(185 232 207 / 15%); }
   .mapPage .mapStyleControl button.revealed span { max-width: 124px; margin-left: 9px; opacity: 1; }
   .mapPage .mapStyleControl button.gsapOpening,
@@ -83,6 +84,19 @@
   .mapPage .resultCard { max-height: min(24dvh, 216px) !important; overflow: hidden; padding: 10px 13px 12px; border-radius: 23px; }
   .mapPage .resultCard:not(.mobileExpanded) { top: auto !important; left: 10px !important; right: 10px !important; bottom: calc(166px + env(safe-area-inset-bottom)) !important; width: auto; max-height: 44px !important; padding: 0; overflow: hidden; border: 0 !important; border-radius: 99px; background: transparent !important; box-shadow: none !important; -webkit-backdrop-filter: none; backdrop-filter: none; transform: none; }
   .mapPage .resultCard.mobileExpanded { top: auto !important; left: 10px !important; right: 10px !important; bottom: calc(166px + env(safe-area-inset-bottom)) !important; width: auto; max-height: min(42dvh, 360px) !important; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; transition: max-height 380ms cubic-bezier(.2,.82,.22,1), border-radius 240ms ease; }
+  /* Expanded location details get a clear sheet layer; map widgets must not sit on top of its close/search controls. */
+  .mapPage:has(.resultCard.mobileExpanded) .resultCard.mobileExpanded { position: fixed !important; z-index: 70 !important; top: calc(66px + env(safe-area-inset-top)) !important; bottom: calc(74px + env(safe-area-inset-bottom)) !important; left: 10px !important; right: 10px !important; width: auto !important; max-height: none !important; overflow-x: hidden; overflow-y: auto; border-radius: 25px; }
+  .mapPage:has(.resultCard.mobileExpanded) .mapSearch,
+  .mapPage:has(.resultCard.mobileExpanded) .mapStyleControl,
+  .mapPage:has(.resultCard.mobileExpanded) .maplibregl-ctrl-top-right,
+  .mapPage:has(.resultCard.mobileExpanded) .maplibregl-ctrl-bottom-left,
+  .mapPage:has(.resultCard.mobileExpanded) .mapDirectoryTrigger,
+  .mapPage:has(.resultCard.mobileExpanded) .plannerLauncher,
+  .mapPage:has(.resultCard.mobileExpanded) .mapWeatherControl,
+  .mapPage:has(.resultCard.mobileExpanded) .mapWeatherStatus,
+  .mapPage:has(.resultCard.mobileExpanded) .emptyCheck { display: none !important; }
+  .mapPage:has(.resultCard.mobileExpanded) .resultCard .resultCardHeader { top: -10px; }
+  .mapPage:has(.resultCard.mobileExpanded) .resultCard .resultClose { min-width: 40px; min-height: 40px; border: 1px solid rgb(233 255 243 / 20%); border-radius: 13px; background: rgb(226 255 239 / 9%); }
   .mapPage .resultCardHeader { position: sticky; z-index: 4; top: -10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -10px -13px 8px; padding: 6px 10px 6px 13px; border-bottom: 1px solid rgb(233 255 243 / 11%); background: rgb(15 34 28 / 94%); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
   .mapPage .resultCard .sheetHandle { width: auto; min-height: 34px; flex: 1; margin: 0; padding: 0 4px; display: flex; align-items: center; justify-content: flex-start; gap: 7px; border: 0; background: transparent; color: #c9ded2; font-size: 10px; font-weight: 650; cursor: pointer; text-align: left; }
   .mapPage .resultCard .sheetHandle span { width: 24px; height: 3px; border-radius: 99px; background: #d8efe1a0; }

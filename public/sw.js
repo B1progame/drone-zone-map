@@ -1,5 +1,5 @@
-const VERSION='aeris-shell-v10';
-const RUNTIME='aeris-runtime-v6';
+const VERSION='aeris-shell-v11';
+const RUNTIME='aeris-runtime-v7';
 const SHELL=['./','./index.html','./manifest.webmanifest','./icons/apple-touch-icon.png','./icons/aeris-192.png','./icons/aeris-512.png','./data/sources/countries.json'];
 
 self.addEventListener('install',event=>{

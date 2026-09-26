@@ -837,28 +837,32 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   const [mapControlRevealVersion,setMapControlRevealVersion]=useState(0);
   const mapControlTimerRef=useRef<number|undefined>(undefined);
   const lastAnimatedMapControlRef=useRef<string|null>(null);
+  const scheduleMapControlCollapse=()=>{
+    if(mapControlTimerRef.current!==undefined)window.clearTimeout(mapControlTimerRef.current);
+    mapControlTimerRef.current=window.setTimeout(()=>{setRevealedMapControl(null);mapControlTimerRef.current=undefined},4000);
+  };
   const revealMapControl=(control:string)=>{
     setRevealedMapControl(control);
     setMapControlRevealVersion(version=>version+1);
     if(mapControlTimerRef.current!==undefined)window.clearTimeout(mapControlTimerRef.current);
-    mapControlTimerRef.current=window.setTimeout(()=>{setRevealedMapControl(null);mapControlTimerRef.current=undefined},4000);
   };
   useLayoutEffect(()=>{
-    if(!revealedMapControl||window.innerWidth>680||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    if(!revealedMapControl)return;
+    if(window.innerWidth>680||settings.reducedMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches){scheduleMapControlCollapse();return}
     const button=document.querySelector<HTMLButtonElement>(`.mapStyleControl [data-map-control="${revealedMapControl}"]`);
     const label=button?.querySelector<HTMLElement>('span');
-    if(!button||!label)return;
+    if(!button||!label){scheduleMapControlCollapse();return}
     const targetWidth=button.getBoundingClientRect().width;
     const targetLabelWidth=Math.max(48,targetWidth-52);
     const collapsedWidth=window.matchMedia('(max-width: 380px)').matches?42:44;
     const alreadyExpanded=lastAnimatedMapControlRef.current===revealedMapControl;
     lastAnimatedMapControlRef.current=revealedMapControl;
     button.classList.add('gsapOpening');
-    const opening=gsap.timeline({onComplete:()=>button.classList.remove('gsapOpening')});
+    const opening=gsap.timeline({onComplete:()=>{button.classList.remove('gsapOpening');scheduleMapControlCollapse()}});
     opening.fromTo(button,{width:alreadyExpanded?targetWidth:collapsedWidth,x:alreadyExpanded?0:9,scale:alreadyExpanded?.98:.96},{width:targetWidth,x:0,scale:1,duration:.46,ease:'back.out(1.55)',clearProps:'width,x,scale'});
-    opening.fromTo(label,{maxWidth:alreadyExpanded?targetLabelWidth:0,opacity:alreadyExpanded?1:0,x:alreadyExpanded?0:-5},{maxWidth:targetLabelWidth,opacity:1,x:0,duration:.27,ease:'power2.out',clearProps:'maxWidth,x'},'<0.1');
+    opening.fromTo(label,{maxWidth:alreadyExpanded?targetLabelWidth:0,opacity:alreadyExpanded?1:0,x:alreadyExpanded?0:-5},{maxWidth:targetLabelWidth,opacity:1,x:0,duration:.27,ease:'power2.out',clearProps:'maxWidth,opacity,x'},'<0.1');
     return()=>{opening.kill();button.classList.remove('gsapOpening')};
-  },[revealedMapControl,mapControlRevealVersion]);
+  },[revealedMapControl,mapControlRevealVersion,settings.reducedMotion]);
   useEffect(()=>()=>{if(mapControlTimerRef.current!==undefined)window.clearTimeout(mapControlTimerRef.current)},[]);
   const [zonesVisible, setZonesVisible] = useState(true);
   const zonesVisibleRef=useRef(zonesVisible);
@@ -1104,7 +1108,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   const weatherModes:{id:string;label:string;layers:WeatherLayer[];icon:typeof CloudSun}[]=[
     {id:'weather',label:'Weather',layers:['weather'],icon:CloudSun},
     {id:'wind',label:'Wind',layers:['wind'],icon:Wind},
-    {id:'both',label:'Weather + Wind',layers:['weather','wind'],icon:Layers3},
+    {id:'both',label:'Weather + Wind',layers:['weather','wind'],icon:Wind},
     {id:'temperature',label:'Temperature',layers:['temperature'],icon:Thermometer},
     {id:'off',label:'Weather off',layers:[],icon:Ban}
   ];
