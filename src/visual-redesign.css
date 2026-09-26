@@ -1,6 +1,6 @@
 /* Product-first home hierarchy, intentional reveals, and replacement photography. */
 .cinematicHero .heroPhoto {
-  background-image: url('/media/drone-sunset-silhouette.jpg') !important;
+  background-image: var(--aeris-image-hero) !important;
   background-position: center 48%;
   background-size: cover !important;
   background-repeat: no-repeat !important;
