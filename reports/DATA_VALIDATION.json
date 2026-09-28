@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-26T10:27:45.057553+00:00",
+  "generatedAt": "2026-09-28T09:52:26.386458+00:00",
   "valid": true,
   "datasets": [
     {
       "countryCode": "FI",
-      "path": "public\\data\\zones\\FI.geojson",
+      "path": "public/data/zones/FI.geojson",
       "valid": true,
       "featureCount": 732,
       "geometryChecksum": "de91d17465dc847ea4b3a9649437f0a82a9f4c5da6992cbb5d954f2d5ee07924",
@@ -17,7 +17,7 @@
     },
     {
       "countryCode": "GB",
-      "path": "public\\data\\zones\\GB.geojson",
+      "path": "public/data/zones/GB.geojson",
       "valid": true,
       "featureCount": 1069,
       "geometryChecksum": "0673b45d5d0d9acfdfe64f701cc244b1fdb48f71978a54436c7a5934b6196f92",
@@ -30,7 +30,7 @@
     },
     {
       "countryCode": "IE",
-      "path": "public\\data\\zones\\IE.geojson",
+      "path": "public/data/zones/IE.geojson",
       "valid": true,
       "featureCount": 85,
       "geometryChecksum": "8cbead435de4477560e044f1de50f7767f21c20311a9b8423019b322db40c420",
@@ -43,10 +43,10 @@
     },
     {
       "countryCode": "LU",
-      "path": "public\\data\\zones\\LU.geojson",
+      "path": "public/data/zones/LU.geojson",
       "valid": true,
-      "featureCount": 43,
-      "geometryChecksum": "65e99ae428dec32a518d24d72025770384e19f1ce9d45d309f8312076cd028e5",
+      "featureCount": 44,
+      "geometryChecksum": "de617cc13ae6654ff67feee7c58af6ebdfb4e26ab567ad9add4f407566a49b7f",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 100.0,
@@ -56,7 +56,7 @@
     },
     {
       "countryCode": "NL",
-      "path": "public\\data\\zones\\NL.geojson",
+      "path": "public/data/zones/NL.geojson",
       "valid": true,
       "featureCount": 774,
       "geometryChecksum": "393e0360051b32bf74d110c152859c60e6b224344136e9a57500fb5a3e49833e",
@@ -69,7 +69,7 @@
     },
     {
       "countryCode": "SE",
-      "path": "public\\data\\zones\\sweden\\DAIM_TOPO-HKP1K.geojson",
+      "path": "public/data/zones/sweden/DAIM_TOPO-HKP1K.geojson",
       "valid": true,
       "featureCount": 38,
       "geometryChecksum": "5cad067879899be3c679e094b160ae585fc494f57d8e47650ceb12da70fd4529",
@@ -82,7 +82,7 @@
     },
     {
       "countryCode": "SE",
-      "path": "public\\data\\zones\\sweden\\DAIM_TOPO-RWY5K.geojson",
+      "path": "public/data/zones/sweden/DAIM_TOPO-RWY5K.geojson",
       "valid": true,
       "featureCount": 47,
       "geometryChecksum": "f448e159d0be4314ccda3478e19061b1e289dc5625dbf40177d7a0abb7170fe2",
@@ -95,7 +95,7 @@
     },
     {
       "countryCode": "SE",
-      "path": "public\\data\\zones\\sweden\\DAIM_TOPO-SUP.geojson",
+      "path": "public/data/zones/sweden/DAIM_TOPO-SUP.geojson",
       "valid": true,
       "featureCount": 83,
       "geometryChecksum": "87c6da8a91876f6c94073bf0f9a69804610fe848d901ac83e9a2a2f6faf48e3d",
@@ -108,7 +108,7 @@
     },
     {
       "countryCode": "SE",
-      "path": "public\\data\\zones\\sweden\\dynais-NOTAM.geojson",
+      "path": "public/data/zones/sweden/dynais-NOTAM.geojson",
       "valid": true,
       "featureCount": 342,
       "geometryChecksum": "7f4249086da745bbcb7cfa2aceca4a827995835027150ffd20c3d6964d6f0a8e",
@@ -121,7 +121,7 @@
     },
     {
       "countryCode": "SE",
-      "path": "public\\data\\zones\\sweden\\mais-ARP.geojson",
+      "path": "public/data/zones/sweden/mais-ARP.geojson",
       "valid": true,
       "featureCount": 139,
       "geometryChecksum": "b3dc9ab014230cea448df56071be5d3dbda5e52c2c84c70938909a10625d6d2d",
@@ -134,7 +134,7 @@
     },
     {
       "countryCode": "SE",
-      "path": "public\\data\\zones\\sweden\\mais-ATZ.geojson",
+      "path": "public/data/zones/sweden/mais-ATZ.geojson",
       "valid": true,
       "featureCount": 2,
       "geometryChecksum": "2fa51a602475cb2796a58fe457e2508e10f2deebc962886beab20f97bf383d53",
@@ -147,7 +147,7 @@
     },
     {
       "countryCode": "SE",
-      "path": "public\\data\\zones\\sweden\\mais-CTR.geojson",
+      "path": "public/data/zones/sweden/mais-CTR.geojson",
       "valid": true,
       "featureCount": 43,
       "geometryChecksum": "2b49661845bfd3f6537e449d9a975842a29a7c0304bb479322e8cf40122ccc21",
@@ -160,7 +160,7 @@
     },
     {
       "countryCode": "SE",
-      "path": "public\\data\\zones\\sweden\\mais-DNGA.geojson",
+      "path": "public/data/zones/sweden/mais-DNGA.geojson",
       "valid": true,
       "featureCount": 21,
       "geometryChecksum": "ec98f783897f475978f6626ecbbce0ac26d6f6e8fcd47116fd928547fe21a2ab",
@@ -173,7 +173,7 @@
     },
     {
       "countryCode": "SE",
-      "path": "public\\data\\zones\\sweden\\mais-RSTA.geojson",
+      "path": "public/data/zones/sweden/mais-RSTA.geojson",
       "valid": true,
       "featureCount": 168,
       "geometryChecksum": "beb8c1d1e6816473800bc632373ed2ed862c0f83752693bf283e4d9251d8cd58",
@@ -186,7 +186,7 @@
     },
     {
       "countryCode": "SE",
-      "path": "public\\data\\zones\\sweden\\mais-TIZ.geojson",
+      "path": "public/data/zones/sweden/mais-TIZ.geojson",
       "valid": true,
       "featureCount": 11,
       "geometryChecksum": "aa9d244d53e08f703fde92dd732235797a9b67221734a757e0b356567810440e",

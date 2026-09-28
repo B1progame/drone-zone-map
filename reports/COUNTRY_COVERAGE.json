@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-26T10:27:46.237794+00:00",
+  "generatedAt": "2026-09-28T09:52:27.170101+00:00",
   "isoEntryCount": 249,
   "providerCount": 68,
   "completenessCounts": {
@@ -147,8 +147,8 @@
       "source": "DAC Geoportal UAS Geozones",
       "officialMap": "https://data.public.lu/en/datasets/uas-geographical-zones-grand-duchy-of-luxembourg-zones-geographiques-uas-grand-duche-de-luxembourg/",
       "offline": true,
-      "featureCount": 43,
-      "geometryChecksum": "65e99ae428dec32a518d24d72025770384e19f1ce9d45d309f8312076cd028e5",
+      "featureCount": 44,
+      "geometryChecksum": "de617cc13ae6654ff67feee7c58af6ebdfb4e26ab567ad9add4f407566a49b7f",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 100.0,
