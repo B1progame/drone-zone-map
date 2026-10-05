@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-28T09:52:27.170101+00:00",
+  "generatedAt": "2026-10-05T10:32:30.978449+00:00",
   "isoEntryCount": 249,
   "providerCount": 68,
   "completenessCounts": {
@@ -148,7 +148,7 @@
       "officialMap": "https://data.public.lu/en/datasets/uas-geographical-zones-grand-duchy-of-luxembourg-zones-geographiques-uas-grand-duche-de-luxembourg/",
       "offline": true,
       "featureCount": 44,
-      "geometryChecksum": "de617cc13ae6654ff67feee7c58af6ebdfb4e26ab567ad9add4f407566a49b7f",
+      "geometryChecksum": "ddab4c848de96884bcac455a9eaa6a2f99380f766fb024ae3515deb052bae68d",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 100.0,
@@ -260,8 +260,8 @@
       "source": "Traficom",
       "officialMap": "https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa",
       "offline": true,
-      "featureCount": 732,
-      "geometryChecksum": "de91d17465dc847ea4b3a9649437f0a82a9f4c5da6992cbb5d954f2d5ee07924",
+      "featureCount": 733,
+      "geometryChecksum": "86f881636d0b97c96ad55057b6b9d02018dea69dd19c463dcec4891f3c635ad8",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 0.0,
