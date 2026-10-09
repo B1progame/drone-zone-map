@@ -37,16 +37,19 @@ function circleGeometry(center:number[],radiusMetres:number,segments=96){
 }
 
 export function normalizeEd269(payload:any){
+ if(Array.isArray(payload))payload={features:payload};
+ if(!payload||typeof payload!=='object')throw new Error('Invalid zone payload');
  const features:any[]=[];
  for(const [zoneIndex,zone] of (payload.features??[]).entries()){
   const volumes=Array.isArray(zone.geometry)?zone.geometry:[zone.geometry];
   for(const [volumeIndex,volume] of volumes.entries()){
    const projection=volume?.horizontalProjection;
-   if(!projection)continue;
+   if(!projection)throw new Error('Zone volume has no boundary.');
+   if(projection.type==='Circle'&&(!Array.isArray(projection.center)||projection.center.length<2||!projection.center.slice(0,2).every(Number.isFinite)||!Number.isFinite(Number(projection.radius))||Number(projection.radius)<=0))throw new Error('Invalid circular zone.');
    const geometry=projection.type==='Circle'
     ?circleGeometry(projection.center,Number(projection.radius))
     :projection.type==='Polygon'||projection.type==='MultiPolygon'?projection:undefined;
-   if(!geometry)continue;
+   if(!geometry)throw new Error('Unsupported zone boundary type.');
    const authority=(zone.zoneAuthority??[])[0]??{};
    const {geometry:_zoneGeometry,...zoneProperties}=zone;
    const {horizontalProjection:_projection,...volumeProperties}=volume;

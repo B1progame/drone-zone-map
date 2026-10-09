@@ -3,6 +3,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch: {}
+  workflow_run:
+    workflows: [Update source metadata]
+    types: [completed]
+    branches: [main]
 permissions:
   contents: read
   pages: write
@@ -12,9 +16,12 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.sha }}
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci

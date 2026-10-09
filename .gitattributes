@@ -1,0 +1,2 @@
+# Preserve the Swiss publisher's original CRLF snapshot bytes and checksum.
+public/data/zones/CH.geojson -text whitespace=cr-at-eol

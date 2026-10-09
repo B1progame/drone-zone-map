@@ -239,7 +239,7 @@
     "supportsFeatureInfo": false,
     "supportsOffline": false,
     "warnings": [
-      "Use the official interactive Dronespace planning map; no verified reusable zone feed is copied by Aeris."
+      "Import the current Austro Control zone JSON in Sources; files stay on this device."
     ]
   },
   {
@@ -277,7 +277,7 @@
     "canCache": true,
     "attribution": "Federal Office of Civil Aviation FOCA / geo.admin.ch",
     "warnings": [
-      "Complete federal UAS geozones render live. Confirm cantonal and temporary restrictions before flight."
+      "FOCA UAS zones render from the dated local snapshot, refreshed weekly."
     ]
   },
   {

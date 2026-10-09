@@ -22,6 +22,7 @@ except ImportError:  # Direct execution: python pipeline/import_private_export.p
 
 ROOT = Path(__file__).resolve().parents[1]
 SUPPORTED = {
+    "AT": {"authority": "Austro Control", "sourceUrl": "https://www.austrocontrol.at/luftfahrtbehoerde/lizenzen__bewilligungen/drohnen/geografische_zonen", "layerName": "Austro Control personal ED-269 export"},
     "IT": {
         "authority": "ENAC / d-flight",
         "sourceUrl": "https://www.d-flight.it/web-app/",
@@ -51,7 +52,7 @@ def import_export(country: str, source: Path, output: Path | None = None) -> dic
         raise ValueError("Refusing to import an empty export")
     payload = json.loads(raw.decode("utf-8-sig"))
     config = SUPPORTED[code]
-    if payload.get("type") == "FeatureCollection":
+    if isinstance(payload, dict) and payload.get("type") == "FeatureCollection":
         input_features = payload.get("features")
         if not isinstance(input_features, list):
             raise ValueError("GeoJSON export has no features array")

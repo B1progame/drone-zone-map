@@ -420,3 +420,59 @@
 @media (prefers-reduced-motion: reduce) {
   .mapPage .mapStyleControl button, .mapPage .mapStyleControl button span, .settings .toggleSetting input, .settings .toggleSetting input::before { transition: none !important; }
 }
+
+.zoneImport { padding: 18px; margin: 18px 0; border: 1px solid #a7f0bd40; border-radius: 18px; background: #092c2099; }
+.zoneImport h3 { margin: 0 0 8px; }
+.zoneImport p,.zoneCoverageNote { font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.zoneImportControls { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+.zoneImportControls label { display: grid; gap: 6px; min-width: 0; }
+.zoneImport select,.zoneImport button { min-height: 44px; font: inherit; }
+.zoneImportFile { padding: 12px; border-radius: 12px; background: #b9ebc92b; max-width: 100%; }
+.zoneImportFile input { max-width: 100%; min-width: 0; font-size: 16px; }
+.zoneImportRow { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid #ffffff20; }
+.zoneImportRow > div { min-width: 0; overflow-wrap: anywhere; }
+.zoneImportRow span { display: block; font-size: 12px; margin-top: 5px; }
+.zoneImportRow button { flex: none; padding: 8px 12px; }
+.zoneBody dd,.zoneBody p { overflow-wrap: anywhere; }
+@media (min-width: 681px) and (max-width: 1100px) {
+ .resultCard { max-height: calc(100dvh - 190px); width: min(370px,calc(100vw - 100px)); overflow-y: auto; }
+ .airspaceDirectory { max-width: calc(100vw - 32px); max-height: calc(100dvh - 170px); overflow-y: auto; }
+}
+.mapPage .airspaceDirectory { max-height: min(76dvh,740px); overflow-y: auto; }
+.airspaceDirectory .zoneImport { padding: 12px; }
+.airspaceDirectory .zoneImport h3 { font-size: 16px; }
+.airspaceDirectory .zoneImport p { display: block !important; font-size: 12px; }
+.airspaceDirectory .zoneImport select { width: 100%; max-width: 100%; font-size: 16px; }
+.airspaceDirectory .zoneImportControls { display: grid; grid-template-columns: minmax(0,1fr); }
+.airspaceDirectory .zoneImportFile input { width: 100%; box-sizing: border-box; }
+.airspaceDirectory .zoneImportRow { display: grid; grid-template-columns: minmax(0,1fr) auto; }
+.airspaceDirectory .zoneImportRow button { width: auto !important; min-width: 70px; }
+.airspaceDirectory .zoneImportRow b { font-size: 12px; line-height: 1.5; }
+@media (min-width: 681px) {
+ .mapPage .plannerLauncher { position: absolute !important; left: 5vw; right: auto !important; top: 156px !important; }
+ .mapPage .flightPlanner { position: absolute !important; left: 5vw; right: auto; top: 210px; max-height: calc(100dvh - 310px); overflow-y: auto; }
+ .mapPage .resultCard { top: 162px !important; bottom: 96px !important; max-height: calc(100dvh - 258px) !important; }
+ .mapPage .resultCard .cardActions { position: static !important; background: transparent; border-top: 1px solid #ffffff20; padding-top: 14px; }
+}
+@media (min-width: 681px) and (max-width: 1100px) {
+ .mapPage .mapSearch { top: 80px; left: 16px; }
+ .mapPage .mapSearch:has(.responsiveSearch.open) { width: calc(100vw - 100px); z-index: 60; }
+ .mapPage .mapDirectoryTrigger { top: 136px !important; left: 16px !important; bottom: auto !important; }
+ .mapPage .plannerLauncher { left: 16px; top: 190px !important; }
+ .mapPage .flightPlanner { left: 16px; top: 246px; max-height: calc(100dvh - 346px); }
+ .mapPage .resultCard { right: 84px !important; left: auto !important; top: 210px !important; width: min(370px,calc(100vw - 110px)); max-height: calc(100dvh - 306px) !important; }
+ .mapPage .mapStyleControl { position: absolute; top: 80px !important; right: 16px !important; left: auto; width: 44px; min-width: 44px; height: auto; display: grid; grid-template-columns: 44px; gap: 8px; padding: 0; border: 0; background: none; box-shadow: none; backdrop-filter: none; overflow: visible; }
+ .mapPage .mapStyleControl button[data-map-control] { width: 44px; min-width: 44px; height: 44px; min-height: 44px; max-width: 230px; padding: 0 12px; display: flex; flex-direction: row-reverse; justify-content: flex-start; justify-self: end; gap: 0; border-radius: 15px; background: #c2ead4; color: #10241b; overflow: hidden; }
+ .mapPage .mapStyleControl button svg { width: 18px; height: 18px; flex: 0 0 18px; }
+ .mapPage .mapStyleControl button span { display: inline-block !important; max-width: 0; opacity: 0; margin: 0; overflow: hidden; white-space: nowrap; transition: max-width 280ms ease,opacity 180ms ease,margin-right 280ms ease; }
+ .mapPage .mapStyleControl button.revealed { width: var(--map-reveal-width,max-content); }
+ .mapPage .mapStyleControl button.revealed span { max-width: 178px; opacity: 1; margin-right: 8px; }
+ .mapPage .maplibregl-ctrl-top-right { top: 330px !important; right: 12px !important; }
+ .mapPage .overlayProgress,.mapPage .mapError { top: 140px !important; left: 82px !important; right: 92px !important; width: auto !important; max-width: 490px; }
+}
+@media (min-width: 681px) and (max-width: 1100px) {
+ .mapPage .overlayProgress,.mapPage .mapError { transform: none !important; }
+ .mapPage .mapWeatherStatus { top: 140px !important; left: 82px !important; right: 92px !important; width: auto !important; max-width: 490px; transform: none !important; }
+ .mapPage:has(.overlayProgress) .mapWeatherStatus { display: none; }
+ .mapPage .mapStyleControl button svg { position: static !important; margin: 0 !important; transform: none !important; }
+}

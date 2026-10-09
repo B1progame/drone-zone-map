@@ -18,7 +18,10 @@
     "data:test-locations": "python pipeline/world.py test-locations",
     "data:report": "python pipeline/world.py report",
     "world:continue": "python pipeline/world.py continue",
-    "data:baseline": "python pipeline/generate_provider_baselines.py"
+    "data:baseline": "python pipeline/generate_provider_baselines.py",
+    "zones:scan": "python pipeline/zone_map_tool.py scan",
+    "zones:build": "python pipeline/zone_map_tool.py build",
+    "zones:refresh": "python pipeline/zone_map_tool.py refresh-swiss"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

@@ -1,3 +1,5 @@
+import {localZoneMap,ZONES_CHANGED} from './localZones';
+import {currentZones} from './zoneGeometry';
 import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import maplibregl, { Map as MapLibreMap, Marker, type FilterSpecification, type StyleSpecification } from 'maplibre-gl';
 import { gsap } from 'gsap';
@@ -87,7 +89,7 @@ const FAA_SPECIAL_USE_AIRSPACE='https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/ar
 const US_AIRSPACE_COVERAGE:[number,number,number,number][]=[[-125,24,-66,50],[-180,51,-129,72],[-161,18,-154,23],[-68,17,-64,19],[144,13,147,22],[-172,-15,-167,-10],[-178,28,-176,29],[166,19,168,20],[-162,5,-161,6]];
 const CANADA_AIRPORTS='https://maps-cartes.services.geo.ca/server_serveur/rest/services/TC/canadian_airports_w_air_navigation_services_en/MapServer/0';
 const CANADA_NATIONAL_PARKS='https://proxyinternet.nrcan-rncan.gc.ca/arcgis/rest/services/CLSS-SATC/CLSS_Administrative_Boundaries/MapServer/1';
-const SWISS_UAS='https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson';
+const SWISS_UAS=`${import.meta.env.BASE_URL}data/zones/CH.geojson`;
 const franceTiles='https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=TRANSPORTS.DRONES.RESTRICTIONS&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/png';
 const DENMARK_ZONES='https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/980697acd04d4a9bb1fd34bbefab924a/data';
 const DENMARK_NATURE='https://trafikstyrelsen.maps.arcgis.com/sharing/rest/content/items/ff657943724944faaf19807380f5e24a/data';
@@ -104,7 +106,8 @@ const FRANCE_EXTENTS:[number,number,number,number][]=[
  [-56.6,46.7,-55.8,47.3],[44.9,-13.1,45.4,-12.5],[55,-21.6,56,-20.7],
  [39,-50,78,-11]
 ];
-const ZONE_LAYER_IDS = ['offline-package-fill','offline-package-line','offline-package-points','dipul-zones','dipul-detail','enaire-nature','enaire-urban','enaire-infrastructure','enaire-aero-zones','enaire-notam','enaire-altitude-infrastructure','enaire-altitude-aero','enaire-altitude-notam','enaire-aero-sites','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-class-airspace-fill','us-class-airspace-line','us-special-use-fill','us-special-use-line','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airports','canada-airport-rings','canada-airport-lines','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
+const ZONE_LAYER_IDS = ['local-import-fill','local-import-line','offline-package-fill','offline-package-line','offline-package-points','dipul-zones','dipul-detail','enaire-nature','enaire-urban','enaire-infrastructure','enaire-aero-zones','enaire-notam','enaire-altitude-infrastructure','enaire-altitude-aero','enaire-altitude-notam','enaire-aero-sites','france-zones','uk-zones','uk-lines','swiss-zones','swiss-lines','us-class-airspace-fill','us-class-airspace-line','us-special-use-fill','us-special-use-line','us-facility-fill','us-facility-line','canada-national-parks','canada-national-park-lines','canada-airports','canada-airport-rings','canada-airport-lines','luxembourg-zones','ireland-zones','ireland-lines','denmark-zones','denmark-lines','denmark-nature','denmark-nature-lines',...NATIONAL_GEOZONE_SOURCES.flatMap(source=>[`${source.id}-zones`,`${source.id}-lines`]),...SWEDEN_POLYGON_SOURCES.flatMap(id=>[`sweden-${id}-fill`,`sweden-${id}-line`]),'sweden-airports'] as const;
+const pendingVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const loadedVectorSources=new WeakMap<MapLibreMap,Set<string>>();
 const dynamicRequestKeys=new WeakMap<MapLibreMap,Map<string,string>>();
 const emptyGeoJson={type:'FeatureCollection' as const,features:[]};
@@ -145,7 +148,7 @@ const vectorSources=():VectorSourceConfig[]=>[
  {id:'luxembourg',url:`${import.meta.env.BASE_URL}data/zones/LU.geojson`,bounds:[5.65,49.35,6.65,50.25]},
  {id:'ireland',url:`${import.meta.env.BASE_URL}data/zones/IE.geojson`,bounds:[-11,51.2,-5,55.6]},
  {id:'uk',url:`${import.meta.env.BASE_URL}data/zones/GB.geojson`,bounds:[-9,49,2.5,61],transform:filterUkDroneRelevant},
- {id:'switzerland',url:SWISS_UAS,bounds:[5.75,45.75,10.65,47.85]},
+ {id:'switzerland',url:SWISS_UAS,bounds:[5.75,45.75,10.65,47.85],transform:currentZones},
  {id:'denmark',url:DENMARK_ZONES,bounds:[7.8,54.4,15.3,58]},
  {id:'denmark-nature',url:DENMARK_NATURE,bounds:[7.8,54.4,15.3,58],semantic:'nature'},
  ...NATIONAL_GEOZONE_SOURCES.map(source=>({id:source.id,url:'url' in source?source.url:`${import.meta.env.BASE_URL}data/zones/${source.file}`,bounds:source.bounds as [number,number,number,number],...('transform' in source?{transform:source.transform}:{})})),
@@ -256,15 +259,18 @@ function loadDynamicCountrySources(map:MapLibreMap,detail:RenderDetail,hooks?:Ov
 function loadVisibleVectorSources(map:MapLibreMap,hooks?:OverlayHooks){
  const loaded=loadedVectorSources.get(map)??new Set<string>();
  loadedVectorSources.set(map,loaded);
+ const pending=pendingVectorSources.get(map)??new Set<string>();pendingVectorSources.set(map,pending);
  for(const config of vectorSources()){
-   if(loaded.has(config.id)||!viewportIntersects(map,config.bounds))continue;
+   if(loaded.has(config.id)||pending.has(config.id)||!viewportIntersects(map,config.bounds))continue;
    const source=map.getSource(config.id) as maplibregl.GeoJSONSource|undefined;
    if(!source)continue;
+   pending.add(config.id);
    const key=`vector:${config.id}`;
    hooks?.start(key,config.id.replaceAll('-',' '));
    void Promise.resolve(typeof config.url==='function'?config.url():config.url).then(url=>fetch(url)).then(response=>{if(!response.ok)throw new Error(`${config.id} failed (${response.status})`);return response.json()}).then(data=>{
+     if(map.getSource(config.id)!==source)return;
      source.setData(enrichZoneSemantics(config.transform?config.transform(data):data,config.semantic));loaded.add(config.id);
-   }).catch(error=>console.warn(error)).finally(()=>hooks?.finish(key));
+   }).catch(error=>console.warn(error)).finally(()=>{pending.delete(config.id);hooks?.finish(key)});
  }
 }
 
@@ -578,6 +584,7 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       'enaire-aero-sites':{type:'raster',tiles:[arcGisMapTiles(ENAIRE_AERO,[0,4])],tileSize:256,bounds:ENAIRE_BOUNDS,attribution:'Aerodromes and model-aircraft sites © ENAIRE / AIS'},
       france: {type:'raster',tiles:[franceTiles],tileSize:256,bounds:[-63.7,-50,78,51.6],minzoom:6,maxzoom:18,attribution:'<a href="https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme" target="_blank">Restrictions UAS © IGN / Géoportail</a>'},
       uk:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/" target="_blank">NATS UK AIS · effective 3 Sep 2026</a>'},
+      'local-import':{type:'geojson',data:emptyGeoJson,attribution:'Local zone file · source details preserved on this device'},
       switzerland:{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://opendata.swiss/en/dataset/geografische-uas-gebiete-der-schweiz" target="_blank">UAS zones © FOCA / geo.admin.ch</a>'},
       'us-facility':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://www.faa.gov/uas/getting_started/b4ufly" target="_blank">FAA UAS Facility Maps</a>'},
       'us-class-airspace':{type:'geojson',data:emptyGeoJson,attribution:'<a href="https://ais-faa.opendata.arcgis.com/datasets/c6a62360338e408cb1512366ad61559e_0" target="_blank">FAA AIS Class Airspace · current AIRAC cycle</a>'},
@@ -607,6 +614,8 @@ function mapStyle(baseMap: BaseMap, zonesVisible: boolean): StyleSpecification {
       {id:'offline-package-points',type:'circle',source:'offline-package',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,2.5,12,6] as any,'circle-color':semanticFillColor(['match',['get','_aerisOfflineCategory'],'restricted','#ff405d','airports','#ffb34d','controlled','#d678ff','nature','#5bdc86','warnings','#ffe067','basic','#8db8b0','#6fcfff']),'circle-stroke-color':'#06100d','circle-stroke-width':1.2}},
       {id:'offline-coverage-fill',type:'fill',source:'offline-coverage',layout:{visibility:'none'},paint:{'fill-color':'#b7ff9c','fill-opacity':.025}},
       {id:'offline-coverage-line',type:'line',source:'offline-coverage',layout:{visibility:'none'},paint:{'line-color':'#b7ff9c','line-width':['interpolate',['linear'],['zoom'],2,1,12,2.5] as any,'line-dasharray':[3,2],'line-opacity':.95}},
+      {id:'local-import-fill',type:'fill',source:'local-import',layout:{visibility:zonesVisible?'visible':'none'},paint:{'fill-color':geozoneColor,'fill-opacity':.25}},
+      {id:'local-import-line',type:'line',source:'local-import',layout:{visibility:zonesVisible?'visible':'none'},paint:{'line-color':geozoneColor,'line-width':2}},
       { id: 'dipul-zones', type: 'raster', source: 'dipul', layout: { visibility: zonesVisible ? 'visible' : 'none' }, paint: { 'raster-opacity': 0.78, 'raster-fade-duration': 150 } },
       { id:'dipul-detail',type:'raster',source:'dipul-detail',minzoom:8.5,layout:{visibility:zonesVisible?'visible':'none'},paint:{'raster-opacity':.76,'raster-fade-duration':120}},
       // These are the exact public operational services used by drones.enaire.es.
@@ -850,7 +859,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   };
   useLayoutEffect(()=>{
     if(!revealedMapControl)return;
-    if(window.innerWidth>680||settings.reducedMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches){scheduleMapControlCollapse();return}
+    if(window.innerWidth>1100||settings.reducedMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches){scheduleMapControlCollapse();return}
     const button=hostRef.current?.querySelector<HTMLButtonElement>(`[data-map-control="${revealedMapControl}"]`);
     const label=button?.querySelector<HTMLElement>('span');
     if(!button||!label){scheduleMapControlCollapse();return}
@@ -1044,6 +1053,8 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     const refresh=()=>{const detail=settingsRef.current.renderDetail,hooks=hooksRef.current??undefined,state=weatherStateRef.current;if(!mapShouldUseOffline()){loadVisibleVectorSources(map,hooks);loadDynamicCountrySources(map,detail,hooks);ensureRadar(map,state.visible,state.hour,hooks,hasWeatherLayer(state.layers,'weather'));loadWeatherGrid(map,state.hour,state.visible,detail,state.visible,hooks,!settingsRef.current.reducedMotion)}else void syncOfflinePackage()};
     map.on('load', () => { map.setProjection({type:'globe'});applyTerrain(map,settingsRef.current.terrain3d&&!mapShouldUseOffline(),false);setLoaded(true); setError(''); map.resize();refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeatherLayerVisibility(map,weatherStateRef.current.layers,weatherStateRef.current.visible);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current); });
     map.on('style.load',()=>{styleReadyRef.current=true;map.setProjection({type:'globe'});applyTerrain(map,settingsRef.current.terrain3d&&!mapShouldUseOffline(),false);loadedVectorSources.set(map,new Set());dynamicRequestKeys.set(map,new Map());setLoaded(true);setError('');map.resize();refresh();void syncOfflinePackage(weatherStateRef.current.location);applyWeatherLayerVisibility(map,weatherStateRef.current.layers,weatherStateRef.current.visible);applyWeather(map,weatherStateRef.current.location,weatherStateRef.current.weather,weatherStateRef.current.hour,weatherStateRef.current.visible);applyFlightRange(map,planPointsRef.current,flightRadiusRef.current);applyFlightPlan(map,planPointsRef.current)});
+    const refreshImports=()=>{void localZoneMap().then(data=>{if(mapRef.current===map)(map.getSource('local-import') as maplibregl.GeoJSONSource|undefined)?.setData(enrichZoneSemantics(data))}).catch(error=>console.warn(error))};
+    map.on('style.load',refreshImports);map.on('load',refreshImports);window.addEventListener(ZONES_CHANGED,refreshImports);
     map.on('moveend',refresh);
     map.on('click', event => {
       const point={lat:event.lngLat.lat,lng:event.lngLat.lng,name:`${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`};
@@ -1066,6 +1077,7 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     const resize = new ResizeObserver(() => map.resize());
     resize.observe(hostRef.current);
     return () => {
+      window.removeEventListener(ZONES_CHANGED,refreshImports);
       resize.disconnect();
       const weatherFrame=weatherGridFrames.get(map);if(weatherFrame)cancelAnimationFrame(weatherFrame);
       weatherGridFrames.delete(map);weatherGridDisplayed.delete(map);
@@ -1097,11 +1109,13 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
     // map and sets the location in the same transition; flying before MapLibre
     // finishes its initial load can be lost when the globe projection is set.
     if (!location || !map || !loaded) return;
-    const reducedMotion=settingsRef.current.reducedMotion;
+    const reducedMotion=settingsRef.current.reducedMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const moveToLocation=()=>{
       if(mapRef.current!==map)return;
       map.stop();
-      map.flyTo({ center: [location.lng, location.lat], zoom: Math.max(map.getZoom(), settingsRef.current.terrain3d?15.2:13), pitch:settingsRef.current.terrain3d?58:map.getPitch(), duration:reducedMotion?0:1800, curve:1.55, essential: !reducedMotion });
+      const viewportWidth=map.getContainer().clientWidth;
+      const cameraOffset:[number,number]=[viewportWidth>680?(viewportWidth<=1100?-225:-230):0,-10];
+      map.flyTo({ center: [location.lng, location.lat], offset:cameraOffset, zoom: Math.max(map.getZoom(), settingsRef.current.terrain3d?15.2:13), pitch:settingsRef.current.terrain3d?58:map.getPitch(), duration:reducedMotion?0:1800, curve:1.55, essential: !reducedMotion });
       markerRef.current?.remove();
       markerRef.current = new maplibregl.Marker({ color: '#b6ff94' })
         .setLngLat([location.lng, location.lat])

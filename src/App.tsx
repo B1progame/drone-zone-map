@@ -1,3 +1,5 @@
+import {ZoneImportPanel} from './ZoneImportPanel';
+import {ZONES_CHANGED} from './localZones';
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -5,7 +7,7 @@ import { animate, stagger } from 'animejs';
 import { ArrowRight, Bot, Camera, Check, CircleDot, Cloud, CloudLightning, CloudRain, CloudSun, Compass, Database, Download, Eye, Heart, Layers3, Map as MapIcon, Navigation, Pencil, RefreshCw, Route, Send, ShieldCheck, Snowflake, Sparkles, Star, Trash2, WifiOff, Wind, X } from 'lucide-react';
 import type { AppSettings, Location, Page, SavedPlace, SavedRoute, Weather, WeatherHour, ZoneInfo } from './types';
 import { formatForecastTime, getWeather, quality, weatherCodeKind } from './services';
-import { getOfficialZoneInfo } from './zoneInfo';
+import { getOfficialZoneInfo, getImportedZoneInfo } from './zoneInfo';
 import { deleteAllOfflinePacks, deleteOfflinePack, downloadGeoJson, formatBytes, getOfflineContext, getOfflinePacks, isOfflinePackStale, isOfflineTestMode, refreshOfflinePack, setOfflineTestMode, verifyOfflinePack, type OfflineDownloadProgress, type OfflinePack } from './offline';
 import { OfflineDownloadPanel } from './OfflineDownloadPanel';
 import { Disclaimer, Header, IosInstallPrompt, Nav, Preferences, ResultCard, SearchBox, SourcePanel } from './components';
@@ -70,11 +72,12 @@ export default function App(){
  const chooseRequest=useRef(0);
  const choose=(l:Location,navigate=true)=>{
  const request=++chooseRequest.current;setLocation(l);if(navigate)navigatePage('map');setWeather(undefined);setZoneInfo(undefined);setWeatherError('');
-  if(!navigator.onLine||isOfflineTestMode()){void getOfflineContext(l,appSettings.language).then(context=>{if(request!==chooseRequest.current)return;if(context){setWeather(context.weather?{...context.weather,stale:true,offlineSnapshot:true,retrievedAt:context.weather.retrievedAt??Date.parse(context.pack.metadata.updatedAt)}:undefined);setZoneInfo(context.zoneInfo);setWeatherError(context.weather?'':'Weather was not downloaded for this exact point.')}else setWeatherError('This location is outside every downloaded offline package.')});return}
+  if(!navigator.onLine||isOfflineTestMode()){void Promise.all([getOfflineContext(l,appSettings.language),getImportedZoneInfo(l,appSettings.language).catch(()=>undefined)]).then(([context,imported])=>{if(request!==chooseRequest.current)return;setZoneInfo(imported??context?.zoneInfo);if(context){setWeather(context.weather?{...context.weather,stale:true,offlineSnapshot:true,retrievedAt:context.weather.retrievedAt??Date.parse(context.pack.metadata.updatedAt)}:undefined);setWeatherError(context.weather?'':'Weather was not downloaded for this exact point.')}else setWeatherError(imported?'Weather is unavailable offline. Imported zones remain available.':'This location is outside every downloaded offline package.')});return}
   void getWeather(l).then(result=>{if(request===chooseRequest.current){setWeather(result);setWeatherError('')}}).catch(async(error:unknown)=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l,appSettings.language);if(context?.weather){setWeather({...context.weather,stale:true,offlineSnapshot:true,retrievedAt:context.weather.retrievedAt??Date.parse(context.pack.metadata.updatedAt)});setWeatherError('Showing saved forecast data.')}else setWeatherError(!navigator.onLine?'This location is outside downloaded weather context.':error instanceof Error&&error.message.includes('rate-limiting')?'Weather provider is limiting requests. Try again shortly.':'Live weather is temporarily unavailable.')});
   void getOfficialZoneInfo(l,appSettings.language).then(result=>{if(request===chooseRequest.current)setZoneInfo(result)}).catch(async()=>{if(request!==chooseRequest.current)return;const context=await getOfflineContext(l,appSettings.language);if(context?.zoneInfo)setZoneInfo(context.zoneInfo)});
  };
  const persistSaved=(next:SavedPlace[])=>{setSaved(next);localStorage.setItem('dzm-saved',JSON.stringify(next))};
+ useEffect(()=>{const refresh=()=>{if(location)choose(location,false)};window.addEventListener(ZONES_CHANGED,refresh);return()=>window.removeEventListener(ZONES_CHANGED,refresh)},[location,appSettings.language]);
  const save=()=>{if(!location)return;const existing=saved.find(x=>Math.abs(x.lat-location.lat)<=.00001&&Math.abs(x.lng-location.lng)<=.00001);const place:SavedPlace={...existing,...location,id:existing?.id??crypto.randomUUID(),savedAt:new Date().toISOString(),score:weather?.score,weather:weather?{score:weather.score,temperature:weather.temperature,wind:weather.wind,gusts:weather.gusts,rainProbability:weather.rainProbability}:existing?.weather,airspace:zoneInfo?{countryCode:zoneInfo.countryCode,countryName:zoneInfo.countryName,sourceName:zoneInfo.sourceName,status:zoneInfo.status,zoneCount:zoneInfo.zones.length,zoneTypes:[...new Set(zoneInfo.zones.map(zone=>zone.type))].slice(0,6),sourceUrl:zoneInfo.sourceUrl}:existing?.airspace};persistSaved([place,...saved.filter(x=>x.id!==existing?.id)].slice(0,50))};
  const remove=(id:string)=>{const next=saved.filter(x=>x.id!==id);setSaved(next);localStorage.setItem('dzm-saved',JSON.stringify(next))};
  const updateSaved=(id:string,changes:Partial<SavedPlace>)=>persistSaved(saved.map(place=>place.id===id?{...place,...changes}:place));
@@ -89,7 +92,7 @@ export default function App(){
   if(!location)return;
   const request=++chooseRequest.current;
   const update=async()=>{
-   if(!navigator.onLine||isOfflineTestMode()){const context=await getOfflineContext(location,appSettings.language);if(request===chooseRequest.current&&context)setZoneInfo(context.zoneInfo);return}
+   if(!navigator.onLine||isOfflineTestMode()){const [context,imported]=await Promise.all([getOfflineContext(location,appSettings.language),getImportedZoneInfo(location,appSettings.language).catch(()=>undefined)]);if(request===chooseRequest.current)setZoneInfo(imported??context?.zoneInfo);return}
    const result=await getOfficialZoneInfo(location,appSettings.language);
    if(request===chooseRequest.current)setZoneInfo(result);
   };
@@ -241,10 +244,10 @@ function MapPage({location,weather,weatherError,zoneInfo,choose,save,saveRoute,s
   <div className={`mapPanel airspaceDirectory liquid${directoryOpen?' compactOpen':''}`}>
    <button className="compactPanelClose" onClick={()=>setDirectoryOpen(false)} aria-label="Close airspace directory"><X/></button>
    <div className="eyebrow">VERIFIED AIRSPACE DIRECTORY</div>
-   <div className="directoryStats"><span><b>16</b> live maps</span><span><b>37</b> handoffs</span><i><span className="liveDot"/> ACTIVE</i></div>
-   <p>Official layers load only inside their national coverage. The remaining 196 ISO regions have no reviewed map source yet; Street and Satellite basemaps still work worldwide. Spain includes the Canary Islands; Portugal includes Madeira and the Azores. The UK layer is permanent AIRAC data, not temporary NOTAMs.</p>
+   <div className="directoryStats"><span><b>DE</b> live zones</span><span><b>CH</b> refreshed zones</span><span><b>AT</b> local import</span></div>
+   <p>Zone layers load inside their source coverage. Germany uses live DIPUL layers; Switzerland uses a refreshed FOCA snapshot. Import an Austrian zone file below to load its boundaries and explanations on this device. Basemaps work worldwide. Spain includes the Canary Islands; Portugal includes Madeira and the Azores. The UK layer is permanent AIRAC data, not temporary NOTAMs.</p>
    <div className="directoryLinks"><a href="https://experience.arcgis.com/experience/9d098dbc738e436f9525fdb4ef443f61" target="_blank" rel="noreferrer">Norway official map ↗</a><a href="https://utm.dronespace.at/avm/" target="_blank" rel="noreferrer">Austria Dronespace ↗</a></div>
-   <div className="directoryActions">
+   <ZoneImportPanel/><div className="directoryActions">
     <button onClick={()=>setOfflineBuilder(true)} disabled={!location}>{offline?<><Check/>Offline package saved</>:<><Download/>Download offline area</>}</button>
     <button onClick={()=>void runMapExport('geojson')} disabled={exporting}><Download/>{exporting?'Exporting…':'Download visible GeoJSON'}</button>
     <button onClick={()=>void runMapExport('snapshot')}><Camera/>Clean map PNG</button>

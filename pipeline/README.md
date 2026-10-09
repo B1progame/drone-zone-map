@@ -49,3 +49,53 @@ Portugal's ANAC page explicitly offers ED-269/ED-318 downloads for pre-flight us
 For public ArcGIS maps without stated reuse terms, `arcgis_webmap_inventory.py` records the public item, operational-layer URLs, popups, opacity, renderer symbols and label definitions without downloading geometry or tracing pixels. The checked-in Slovenia report demonstrates this audit path and keeps the official map link-only until reuse terms are clear.
 
 `update-canada-open` downloads the official Transport Canada airport layer and NRCan national-park boundaries under the Open Government Licence. It deliberately does not inspect or export the NRC tool's NAV CANADA-derived shapes: the NRC FAQ says the licence prohibits redistribution. The live app combines those lawful open layers with a handoff to the complete official NRC tool.
+
+## Build your own zone map
+
+Install the pipeline dependencies once: `python -m pip install ./pipeline`.
+
+- `npm run zones:scan -- https://example.org/drone-zones --output private-data/source-report.json`
+  inventories public GeoJSON, WMS/WFS, ArcGIS and downloadable zone links. It also
+  inspects up to five linked scripts on the same host. Robots rules are checked;
+  protected sources are reported, and no authentication is bypassed. Discovery
+  does not invent boundaries from screenshots or automatically approve a source.
+- `python pipeline/zone_map_tool.py from-url https://example.org/zones.geojson --country XX --output private-data/example`
+  downloads a selected public JSON feed and generates your own map automatically.
+  It validates geometry, limits downloads to 50 MB and checks robots rules.
+- `npm run zones:refresh` refreshes the unmodified Swiss FOCA file and its dated
+  checksum metadata. The existing scheduled GitHub workflow runs this weekly.
+- `python pipeline/zone_map_tool.py germany --bbox 9.50 47.66 9.53 47.69 --layers kontrollzonen flughaefen --output private-data/germany`
+  downloads exact DIPUL WFS geometry for a chosen area. Omit `--layers` for all
+  published WFS layers. It refuses extracts that hit the feature limit; select a
+  smaller area. Hang-glider/model-airfield point layers remain WMS-only.
+- `npm run zones:build -- /path/to/zones.json --country AT --output private-data/austria`
+  converts a GeoJSON, ED-269 collection, or Austrian ED-269 array into
+  `zones.geojson`, a dated `manifest.json`, and a standalone `map.html`.
+  Geometry and original properties are preserved. The map contains its own zone
+  data; its basemap and pinned MapLibre assets still require internet.
+
+### Austria in the browser
+
+Download the latest package from Austro Control's geographical-zones page,
+extract its JSON file, and use **Map → Sources → Your own zone map**. The October
+2026 Austrian file is an array, containing 287 zones; both importers support this
+format. The browser stores it in IndexedDB and renders it on desktop, tablet and
+phone. Reimport replaces that country; Remove deletes it. No imported file is
+uploaded. German, Swiss and other country files can be imported the same way.
+Only valid Polygon/MultiPolygon WGS84 boundaries are accepted.
+
+`private-data/` is ignored by Git. Do not publish third-party datasets unless
+their terms permit it. Austria reserves dataset rights and is therefore provided
+as a local import, rather than a bundled public dataset. A generated map remains
+planning information; it cannot grant operational authorization or prove the
+absence of temporary restrictions. Not every website offers reusable geometry.
+
+### Border checks and dates
+
+DE/CH/AT/LI use Natural Earth country polygons, rather than overlapping bounding
+rectangles or stale place names. These polygons are indicative, especially on
+Lake Constance. Points around Bodensee query German and Swiss zone sources
+independently, plus the locally imported Austrian file. Each returned feature
+must intersect the coordinate; partial source failures remain visible. Swiss
+and locally imported features outside their start/end dates are excluded.
+Daily activation windows and NOTAMs still need a current source check.

@@ -19,6 +19,7 @@ jobs:
       - run: python pipeline/audit_registry.py > /dev/null
       - run: python pipeline/main.py update-luxembourg
       - run: python pipeline/main.py update-public-geozones
+      - run: npm run zones:refresh
       - run: npm run world:continue
       - run: npm run typecheck
       - run: npm run build

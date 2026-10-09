@@ -1,7 +1,10 @@
+import {zoneExplanation} from './zoneExplanation';
 import type { Location, ZoneDetail, ZoneInfo } from './types';
 import { latestPortugalEd269Url, normalizeEd269 } from './data/ed269';
 import { isUkDroneRelevant } from './zoneSemantics';
 import { localizeZoneInfo } from './zoneTranslations';
+import { dachCountry, inDachRegion, aroundBodensee, geometryContains, currentZones, zoneValidity } from './zoneGeometry';
+import {localZonesAt,localZonePacks} from './localZones';
 
 const DIPUL_LAYERS=['bahnanlagen','behoerden','binnenwasserstrassen','bundesautobahnen','bundesstrassen','diplomatische_vertretungen','ffh-gebiete','flugbeschraenkungsgebiete','flughaefen','flugplaetze','freibaeder','haengegleiter','industrieanlagen','internationale_organisationen','justizvollzugsanstalten','kontrollzonen','kraftwerke','krankenhaeuser','labore','militaerische_anlagen','modellflugplaetze','nationalparks','naturschutzgebiete','polizei','schifffahrtsanlagen','seewasserstrassen','sicherheitsbehoerden','stromleitungen','temporaere_betriebseinschraenkungen','umspannwerke','vogelschutzgebiete','windkraftanlagen','wohngrundstuecke'];
 const FAA_US_FACILITIES='https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0/query';
@@ -30,9 +33,9 @@ const COUNTRY_SOURCES={
  SE:{name:'Sweden',source:'LFV Dronechart',url:'https://dronechart.lfv.se/',warning:'Official LFV vectors render on the map with the published ground-level filters. Check LFV and current NOTAMs before flight.'},
  DK:{name:'Denmark',source:'Trafikstyrelsen Dronezoner',url:'https://www.droneregler.dk/dronezoner',warning:'Official static drone-zone data is loaded from Trafikstyrelsen. Check Dronezoner for temporary changes before flight.'},
  NO:{name:'Norway',source:'Avinor drone map',url:'https://experience.arcgis.com/experience/9d098dbc738e436f9525fdb4ef443f61',warning:'Avinor prohibits presenting its service data in another application, so Aeris links to the official map instead of copying its zones.'},
- CH:{name:'Switzerland',source:'FOCA / geo.admin.ch',url:'https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen',warning:'Complete public FOCA geographical UAS zones render live. Cantonal rules and temporary restrictions can still apply.'},
+ CH:{name:'Switzerland',source:'FOCA / geo.admin.ch',url:'https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen',warning:'FOCA UAS boundaries render from the dated local dataset, refreshed weekly. Cantonal rules and temporary restrictions can still apply.'},
  LI:{name:'Liechtenstein',source:'FOCA / geo.admin.ch',url:'https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen',warning:'FOCA publishes this UAS dataset for Switzerland and Liechtenstein. Check local rules and temporary restrictions before flight.'},
- AT:{name:'Austria',source:'Austro Control Dronespace',url:'https://utm.dronespace.at/avm/',warning:'Austro Control does not expose a verified reusable zone feed here. Open the official Dronespace map for the selected area.'},
+ AT:{name:'Austria',source:'Austro Control Dronespace',url:'https://utm.dronespace.at/avm/',warning:'Import the current Austro Control zone JSON in Sources to display Austrian boundaries on this device. No Austrian zone file is loaded yet.'},
  IT:{name:'Italy',source:'ENAC / d-flight',url:'https://www.d-flight.it/web-app/',warning:'ENAC requires a current d-flight map check before every operation. Registered operators may download ED-269 JSON for personal use, but d-flight terms do not permit Aeris to redistribute it without prior written consent.'},
  US:{name:'United States',source:'FAA UAS Facility Maps',url:'https://www.faa.gov/uas/getting_started/b4ufly',warning:'FAA UAS Facility Map grids render live and show pre-coordinated authorization altitudes, not permission or every restriction. Check B4UFLY and current TFRs.'},
  CA:{name:'Canada',source:'Transport Canada open data + NRC Drone Site Selection Tool',url:'https://cnrc.canada.ca/en/drone-tool-2/',warning:'Aeris renders Transport Canada airport-with-air-navigation-services points, 5.6 km orientation rings and national-park boundaries. This airport dataset is not a complete certified aerodrome/heliport list, and rings do not represent all legal zones. NRC confirms its NAV CANADA-derived airspace geometry cannot be redistributed; use the official Drone Site Selection Tool for complete airspace and current restrictions.'},
@@ -77,6 +80,10 @@ const COUNTRY_SOURCES={
 } as const;
 type CountryCode=keyof typeof COUNTRY_SOURCES|'DE'|'ES'|'LU'|'IE'|'GF'|'GP'|'MQ'|'RE'|'YT'|'PM'|'TF'|'XX';
 function countryAt(p:Location):CountryCode{
+ const precise=dachCountry(p);
+ if(precise)return precise as CountryCode;
+ // Never assign an overlapping European rectangle to a lake or border point.
+ if(inDachRegion(p)&&p.lat<49.2&&p.lng<17.2)return 'XX';
  const named=p.name.toLowerCase();
  const namedCountry:[CountryCode,string[]][]=[
   ['LU',['luxembourg']],['IE',['ireland','éire','irland']],['ES',['spain','españa','spanien']],['DK',['denmark','danmark','dänemark']],
@@ -139,9 +146,9 @@ const labels:Record<string,Record<string,string>>={
  it:{FLUGBESCHRAENKUNGSGEBIET:'Area con restrizioni di volo',KONTROLLZONE:'Zona di controllo',PROHIBITED:'Zona vietata',REQ_AUTHORIZATION:'Autorizzazione richiesta',CONDITIONAL:'Zona condizionata',COMMON:'Zona geografica'},
  pt:{FLUGBESCHRAENKUNGSGEBIET:'Área de restrição de voo',KONTROLLZONE:'Zona de controlo',PROHIBITED:'Zona proibida',REQ_AUTHORIZATION:'Autorização necessária',CONDITIONAL:'Zona condicionada',COMMON:'Zona geográfica'}
 };
-const translate=(value:string)=>{
+const translate=(value:string,requested=language())=>{
  const normalized=value==='REQ_AUTHORISATION'?'REQ_AUTHORIZATION':value;
- return labels[language()]?.[normalized]??labels.en[normalized]??normalized.replaceAll('_',' ').toLowerCase().replace(/^./,c=>c.toUpperCase());
+ return labels[requested]?.[normalized]??labels.en[normalized]??normalized.replaceAll('_',' ').toLowerCase().replace(/^./,c=>c.toUpperCase());
 };
 const cleanHtml=(value='')=>{const doc=new DOMParser().parseFromString(value,'text/html');return (doc.body.textContent??'').replace(/\s+/g,' ').trim()};
 const localizedOfficialText=(values:Record<string,string>)=>values[language()]??values.en;
@@ -275,25 +282,27 @@ const portugalLegalReference=()=>{
 };
 const base=(code:string,name:string,sourceName:string,sourceUrl:string):ZoneInfo=>({countryCode:code,countryName:name,sourceName,sourceUrl,status:'none',zones:[],checkedAt:new Date().toISOString(),warning:'This is planning information, not legal clearance. Check the official source before takeoff.'});
 const geoJsonCache=new Map<string,Promise<any>>();
-const fetchGeoJson=(url:string)=>{let pending=geoJsonCache.get(url);if(!pending){pending=fetch(url).then(response=>{if(!response.ok)throw new Error(`Zone file unavailable: ${response.status}`);return response.json()});geoJsonCache.set(url,pending)}return pending};
+const fetchGeoJson=(url:string)=>{let pending=geoJsonCache.get(url);if(!pending){pending=fetch(url).then(response=>{if(!response.ok)throw new Error(`Zone file unavailable: ${response.status}`);return response.json()}).catch(error=>{geoJsonCache.delete(url);throw error});geoJsonCache.set(url,pending)}return pending};
 const severityRank:Record<NonNullable<ZoneDetail['severity']>,number>={blocked:0,authorization:1,conditional:2,warning:3,information:4,unknown:5};
 const sortZones=(zones:ZoneDetail[])=>zones.sort((a,b)=>severityRank[a.severity??'unknown']-severityRank[b.severity??'unknown']||a.name.localeCompare(b.name));
 
-async function dipul(point:Location):Promise<ZoneInfo>{
- const directUrl=`https://maptool-dipul.dfs.de/geozones/@${point.lng.toFixed(7)},${point.lat.toFixed(7)}?language=${language()==='de'?'de':'en'}&zoom=11.0`,result=base('DE',language()==='de'?'Deutschland':'Germany','DIPUL',directUrl);
+async function dipul(point:Location,requestLanguage=language()):Promise<ZoneInfo>{
+ const directUrl=`https://maptool-dipul.dfs.de/geozones/@${point.lng.toFixed(7)},${point.lat.toFixed(7)}?language=${requestLanguage==='de'?'de':'en'}&zoom=11.0`,result=base('DE',requestLanguage==='de'?'Deutschland':'Germany','DIPUL',directUrl);
  // Keep the GetFeatureInfo pixel centered on the chosen coordinate at sub-metre scale.
  // A city-sized bbox made one 256px pixel cover ~30m and reported nearby features as hits.
  const d=.0005,bbox=`${point.lng-d},${point.lat-d},${point.lng+d},${point.lat+d}`,layers=DIPUL_LAYERS.map(x=>`dipul:${x}`).join(',');
  const params=new URLSearchParams({SERVICE:'WMS',VERSION:'1.1.1',REQUEST:'GetFeatureInfo',LAYERS:layers,QUERY_LAYERS:layers,STYLES:'',SRS:'EPSG:4326',BBOX:bbox,WIDTH:'256',HEIGHT:'256',X:'128',Y:'128',INFO_FORMAT:'text/plain',FEATURE_COUNT:'50'});
- const response=await fetch(`https://uas-betrieb.de/geoservices/dipul/wms?${params}`);if(!response.ok)throw new Error('DIPUL query failed');
- const text=await response.text(),blocks=text.split(/Results for FeatureType/).slice(1);
+ const response=await fetch(`https://uas-betrieb.de/geoservices/dipul/wms?${params}`,{signal:AbortSignal.timeout(18000)});if(!response.ok)throw new Error('DIPUL query failed');
+ const text=await response.text();
+ if(/ServiceException|ExceptionReport/i.test(text))throw new Error('DIPUL returned a service error');
+ const blocks=text.split(/Results for FeatureType/).slice(1).filter(block=>/^\s*[^=\n]+ = .+/m.test(block));
  result.zones=sortZones(blocks.map((block,index)=>{
   const attrs=Object.fromEntries(block.split('\n').map(line=>line.match(/^([^=]+) = (.*)$/)).filter(Boolean).map(match=>[match![1].trim(),match![2].trim()]));
   const attr=(key:string)=>Object.entries(attrs).find(([name])=>name.toLowerCase()===key.toLowerCase())?.[1];
-  const layer=(block.match(/'[^:]+:([^']+)'/)?.[1]??'zone'),rawType=attr('type_code')??layer.toUpperCase(),type=translate(rawType),localizedName=attr(`generated_name_${language()}`),englishName=attr('generated_name_en'),officialName=localizedName??englishName??attr('name');
+  const layer=(block.match(/'[^:]+:([^']+)'/)?.[1]??'zone'),rawType=attr('type_code')??layer.toUpperCase(),type=translate(rawType,requestLanguage),localizedName=attr(`generated_name_${requestLanguage}`),englishName=attr('generated_name_en'),officialName=localizedName??englishName??attr('name');
   const severe=/FLUGBESCHRAENK|TEMPORAERE/i.test(rawType),severity:ZoneDetail['severity']=severe?'blocked':attrs.legal_ref?'authorization':'warning';
   const originalMessage=attrs.message??attrs.description;
-  return{id:`DE-${index}-${attrs.external_reference??layer}`,name:officialName??`${type} · ${layer.replaceAll('_',' ')}`,originalName:attr('name')??officialName,nameLocalizedLanguage:localizedName?language():englishName?'en':undefined,type,categoryCode:rawType,severity,message:originalMessage??`Official DIPUL classification: ${type}.`,originalMessage,messageLocalizedLanguage:originalMessage?undefined:'en',lower:attrs.lower_limit_altitude?`${attrs.lower_limit_altitude} ${attrs.lower_limit_unit??''} ${attrs.lower_limit_alt_ref??''}`:undefined,upper:attrs.upper_limit_altitude?`${attrs.upper_limit_altitude} ${attrs.upper_limit_unit??''} ${attrs.upper_limit_alt_ref??''}`:undefined,legalReference:attrs.legal_ref,authority:'DIPUL / DFS',officialLayerName:layer.replaceAll('_',' '),layerCode:layer,source:'DIPUL',sourceUrl:directUrl} as ZoneDetail;
+  return{id:`DE-${index}-${attrs.external_reference??layer}`,name:officialName??`${type} · ${layer.replaceAll('_',' ')}`,originalName:attr('name')??officialName,nameLocalizedLanguage:localizedName?requestLanguage:englishName?'en':undefined,type,categoryCode:rawType,severity,explanation:zoneExplanation(layer,rawType,requestLanguage),message:originalMessage??`Official DIPUL classification: ${type}.`,originalMessage,messageLocalizedLanguage:originalMessage?undefined:'en',lower:attrs.lower_limit_altitude?`${attrs.lower_limit_altitude} ${attrs.lower_limit_unit??''} ${attrs.lower_limit_alt_ref??''}`:undefined,upper:attrs.upper_limit_altitude?`${attrs.upper_limit_altitude} ${attrs.upper_limit_unit??''} ${attrs.upper_limit_alt_ref??''}`:undefined,legalReference:attrs.legal_ref,authority:'DIPUL / DFS',officialLayerName:layer.replaceAll('_',' '),layerCode:layer,source:'DIPUL',sourceUrl:directUrl} as ZoneDetail;
  }));
  result.status=result.zones.length?'loaded':'none';return result;
 }
@@ -329,9 +338,7 @@ async function france(point:Location):Promise<ZoneInfo>{
  result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
 }
 
-const insideRing=(point:Location,ring:number[][])=>{let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const [xi,yi]=ring[i],[xj,yj]=ring[j];if(((yi>point.lat)!==(yj>point.lat))&&(point.lng<(xj-xi)*(point.lat-yi)/(yj-yi)+xi))inside=!inside}return inside};
-const insidePolygon=(point:Location,polygon:number[][][])=>insideRing(point,polygon[0])&&!polygon.slice(1).some(ring=>insideRing(point,ring));
-const contains=(point:Location,geometry:any)=>geometry.type==='Polygon'?insidePolygon(point,geometry.coordinates):geometry.type==='MultiPolygon'?geometry.coordinates.some((polygon:number[][][])=>insidePolygon(point,polygon)):false;
+const contains=geometryContains;
 async function luxembourg(point:Location):Promise<ZoneInfo>{const result=base('LU','Luxembourg','DAC Luxembourg','https://g-o.lu/uas');const response=await fetch(`${import.meta.env.BASE_URL}data/zones/LU.geojson`);if(!response.ok)throw new Error('Offline Luxembourg pack missing');const data=await response.json();result.zones=data.features.filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{const p=feature.properties;return{id:p.id??`LU-${index}`,name:p.name??'Luxembourg UAS zone',type:translate(p.restriction??p.type??'COMMON'),message:(p.reasons??[]).join(', '),lower:p.lowerLimit!=null?`${p.lowerLimit} ${p.unit??'M'} ${p.lowerReference??''}`:undefined,upper:p.upperLimit!=null?`${p.upperLimit} ${p.unit??'M'} ${p.upperReference??''}`:undefined,contact:p.authority,source:'DAC Luxembourg',updated:p.updated}});result.status=result.zones.length?'loaded':'none';return result}
 async function ireland(point:Location):Promise<ZoneInfo>{const result=base('IE','Ireland','Irish Aviation Authority','https://www.iaa.ie/general-aviation/drones/uas-geographic-zones');const response=await fetch(`${import.meta.env.BASE_URL}data/zones/IE.geojson`);if(!response.ok)throw new Error('Ireland zone file missing');const data=await response.json();result.zones=data.features.filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{const p=feature.properties,authority=(p.zoneAuthority??[])[0]??{};return{id:p.identifier??`IE-${index}`,name:p.name??'Ireland UAS geographical zone',type:translate(p.type??'COMMON'),message:[p.restrictionConditions,p.message].filter(Boolean).join(' · '),legalReference:p.regulationExemption??undefined,contact:[authority.name,authority.service,authority.email,authority.phone].filter(Boolean).join(' · ')||undefined,source:'Irish Aviation Authority'}});result.status=result.zones.length?'loaded':'none';return result}
 async function uk(point:Location):Promise<ZoneInfo>{const source=COUNTRY_SOURCES.GB,result=base('GB',source.name,source.source,source.url),data=await fetchGeoJson(`${import.meta.env.BASE_URL}data/zones/GB.geojson`);result.zones=(data.features??[]).filter((feature:any)=>isUkDroneRelevant(feature.properties??{})&&contains(point,feature.geometry)).map((feature:any,index:number)=>{const p=feature.properties??{};return{id:p.identifier??`GB-${index}`,name:p.name??'UK UAS restriction',type:p.category??'UAS restriction',message:p.description,lower:p.lower,upper:p.upper,source:source.source,updated:p.effective}});result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result}
@@ -409,21 +416,44 @@ async function resolvedCountryAt(point:Location):Promise<CountryCode>{
  return initial;
 }
 
-async function switzerland(point:Location,code:'CH'|'LI'='CH'):Promise<ZoneInfo>{
+async function switzerland(point:Location,code:'CH'|'LI'='CH',requestLanguage=language()):Promise<ZoneInfo>{
  const source=COUNTRY_SOURCES[code];
  const query=`${point.lng.toFixed(6)},${point.lat.toFixed(6)}`;
- const url=`https://map.geo.admin.ch/#/map?lang=${encodeURIComponent(['de','fr','it','rm','en'].includes(language())?language():'en')}&topic=ech&layers=ch.bazl.einschraenkungen-drohnen&swisssearch=${encodeURIComponent(query)}&swisssearch_autoselect=true&z=9`;
+ const url=`https://map.geo.admin.ch/#/map?lang=${encodeURIComponent(['de','fr','it','rm','en'].includes(requestLanguage)?requestLanguage:'en')}&topic=ech&layers=ch.bazl.einschraenkungen-drohnen&swisssearch=${encodeURIComponent(query)}&swisssearch_autoselect=true&z=9`;
  const result=base(code,source.name,source.source,url);
- const data=await fetchGeoJson('https://data.geo.admin.ch/ch.bazl.einschraenkungen-drohnen/einschraenkungen-drohnen/einschraenkungen-drohnen_4326.geojson');
- result.zones=(data.features??[]).filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{const p=feature.properties??{};return{id:p.identifier??`CH-${index}`,name:p.name||'Swiss UAS geographical zone',type:translate(p.restriction??p.type??'COMMON'),message:[p.restrictionConditions,p.message].filter(Boolean).join(' · '),lower:p.lowerLimit!=null?`${p.lowerLimit} ${p.uomDimensions??'M'} ${p.lowerVerticalReference??''}`:undefined,upper:p.upperLimit!=null?`${p.upperLimit} ${p.uomDimensions??'M'} ${p.upperVerticalReference??''}`:undefined,contact:[p.authorityName,p.service,p.email,p.phone].filter(Boolean).join(' · ')||undefined,source:source.source,updated:p.startDateTime}});result.status=result.zones.length?'loaded':'none';result.warning=source.warning;return result;
+ const [raw,metadata]=await Promise.all([fetchGeoJson(`${import.meta.env.BASE_URL}data/zones/CH.geojson`),fetchGeoJson(`${import.meta.env.BASE_URL}data/zones/CH.meta.json`).catch(()=>({}))]);
+ const data=currentZones(raw);
+ result.zones=(data.features??[]).filter((feature:any)=>contains(point,feature.geometry)).map((feature:any,index:number)=>{const p=feature.properties??{};return{id:p.identifier??`CH-${index}`,name:p.name||'Swiss UAS geographical zone',type:translate(p.restriction??p.type??'COMMON',requestLanguage),categoryCode:p.restriction,severity:severityFromRestriction(p.restriction??''),message:[p.reason,p.otherReasonInfo,p.restrictionConditions,p.message].filter(Boolean).join(' · '),explanation:zoneExplanation(p.restriction,p.reason,requestLanguage),messageLocalizedLanguage:'en',validFrom:p.startDateTime,validUntil:p.endDateTime,authority:p.authorityName,sourceUrl:p.siteURL||url,lower:p.lowerLimit!=null?`${p.lowerLimit} ${p.uomDimensions??'M'} ${p.lowerVerticalReference??''}`:undefined,upper:p.upperLimit!=null?`${p.upperLimit} ${p.uomDimensions??'M'} ${p.upperVerticalReference??''}`:undefined,contact:[p.authorityName,p.service,p.email,p.phone].filter(Boolean).join(' · ')||undefined,source:source.source,updated:metadata.checkedAt}});result.status=result.zones.length?'loaded':'none';result.warning=`${source.warning} Snapshot checked: ${metadata.checkedAt??'unknown'}.`;return result;
+}
+
+const importedDetails=(imported:any[],requestedLanguage:string):ZoneDetail[]=>imported.map((feature:any,index:number)=>{const p=feature.properties??{},validity=zoneValidity(p),authority=p.zoneAuthority?.[0]??{},localized=p.extendedProperties?.localizedMessages?.find((m:any)=>String(m.language).split('-')[0]===requestedLanguage.split('-')[0]),english=p.extendedProperties?.localizedMessages?.find((m:any)=>m.language==='en');return{id:`local-${feature.id??p.identifier??index}-${index}`,name:((localized?.message??english?.message)?.split(':')[0]??p.name??p.zoneName??'Imported UAS zone'),originalName:p.name,nameLocalizedLanguage:localized?requestedLanguage.split('-')[0]:english?'en':undefined,type:translate(p.restriction??p.type??p.category??'COMMON'),categoryCode:p.restriction,severity:severityFromRestriction(p.restriction??''),explanation:zoneExplanation(p.restriction,p.reason,requestedLanguage),message:localized?.message??english?.message??[p.reason,p.otherReasonInfo,p.restrictionConditions,p.message??p.description].filter(Boolean).join(' · '),messageLocalizedLanguage:localized?requestedLanguage.split('-')[0]:english?'en':undefined,legalReference:p.extendedProperties?.legalBasis,validFrom:validity.startDateTime,validUntil:validity.endDateTime,activation:validity.schedule?.map((schedule:any)=>`${(schedule.day??[]).join(', ')} ${schedule.startTime??''}–${schedule.endTime??''}`).join(' · '),lower:p.lowerLimit!=null?`${p.lowerLimit} ${p.uomDimensions??'M'} ${p.lowerVerticalReference??''}`:p.lower,upper:p.upperLimit!=null?`${p.upperLimit} ${p.uomDimensions??'M'} ${p.upperVerticalReference??''}`:p.upper,authority:p.authorityName??authority.name,contact:[p.email??authority.email,p.phone??authority.phone].filter(Boolean).join(' · '),source:`Local import · ${p._localName}`,updated:p._localImportedAt} as ZoneDetail});
+export async function getImportedZoneInfo(point:Location,requestedLanguage='en'):Promise<ZoneInfo|undefined>{
+ const code=dachCountry(point)??countryAt(point),packs=await localZonePacks();
+ const matches=await localZonesAt(point,aroundBodensee(point)||code==='XX'?undefined:code);
+ const pack=packs.find(pack=>pack.code===code)??packs.find(pack=>matches.some(f=>f.properties._localCountry===pack.code));
+ if(!pack)return undefined;
+ const zones=importedDetails(matches,requestedLanguage);
+ return localizeZoneInfo({...base(pack.code,pack.code,`Local import · ${pack.name}`,COUNTRY_SOURCES[pack.code as keyof typeof COUNTRY_SOURCES]?.url??'#'),zones,status:zones.length?'loaded':'none',warning:`Locally imported file, saved ${pack.importedAt}. Check source validity and temporary restrictions. Other live sources are unavailable offline.`},requestedLanguage);
 }
 
 export async function getOfficialZoneInfo(point:Location,requestedLanguage=language()):Promise<ZoneInfo>{
  selectedLanguage=requestedLanguage.toLowerCase().split('-')[0]||'en';
  const code=await resolvedCountryAt(point);
+ const hasAustriaPack=(await localZonePacks().catch(()=>[])).some(pack=>pack.code==='AT');
+ const imported=await localZonesAt(point,aroundBodensee(point)||code==='XX'?undefined:code).catch(()=>[]);
+ const localDetails=importedDetails(imported,requestedLanguage);
  try{
   let result:ZoneInfo;
-  if(code==='DE')result=await dipul(point);
+  if(aroundBodensee(point)){
+   const checks=await Promise.allSettled([dipul(point,requestedLanguage),switzerland(point,'CH',requestedLanguage)]);
+   const successful=checks.flatMap(check=>check.status==='fulfilled'?[check.value]:[]);
+   const zones=sortZones([...successful.flatMap(check=>check.zones),...localDetails]);
+   const incomplete=checks.some(check=>check.status==='rejected')||((code==='AT'||code==='XX')&&!hasAustriaPack);
+   const coverage=hasAustriaPack?'Germany · Switzerland · Austrian local file':'Germany · Switzerland; Austrian file not loaded';
+   result={...base(code,code==='XX'?'Bodensee / Lake Constance border area':COUNTRY_SOURCES[code as keyof typeof COUNTRY_SOURCES]?.name??code,'Germany · Switzerland · local imports',COUNTRY_SOURCES[code as keyof typeof COUNTRY_SOURCES]?.url??COUNTRY_SOURCES.CH.url),zones,status:zones.length?'loaded':incomplete?'error':'none',warning:`Border check (${coverage}): zone boundaries are tested against this exact coordinate. ${incomplete?'Some source coverage is unavailable. ':''}Lake boundaries are indicative; confirm jurisdiction and temporary restrictions before flight.`};
+  }
+  else if(code==='AT'&&hasAustriaPack)result={...base('AT','Austria','Local Austro Control import',COUNTRY_SOURCES.AT.url),zones:localDetails,status:localDetails.length?'loaded':'none',warning:'Locally imported Austrian zone file. Check its validity and current temporary restrictions.'};
+  else if(code==='DE')result=await dipul(point,requestedLanguage);
   else if(code==='ES')result=await enaire(point);
   else if(code==='FR'||['GF','GP','MQ','RE','YT','PM','TF'].includes(code))result=await france(point);
   else if(code==='LU')result=await luxembourg(point);
@@ -432,14 +462,16 @@ export async function getOfficialZoneInfo(point:Location,requestedLanguage=langu
   else if(code==='NL'||code==='FI'||code==='EE'||code==='AX')result=await bundledNationalGeozones(point,code);
   else if(code==='PT')result=await portugal(point);
   else if(code==='DK')result=await denmark(point);
-  else if(code==='CH'||code==='LI')result=await switzerland(point,code);
+  else if(code==='CH'||code==='LI')result=await switzerland(point,code,requestedLanguage);
   else if(code==='US'||code==='AS')result=await unitedStates(point,code);
   else if(code==='CA')result=await canada(point);
   else if(code in COUNTRY_SOURCES){const source=COUNTRY_SOURCES[code as keyof typeof COUNTRY_SOURCES];result={...base(code,source.name,source.source,source.url),status:'unsupported',warning:source.warning}}
   else result={...base(code,'Unknown','Official source directory','#'),status:'unsupported'};
-  return localizeZoneInfo(result,selectedLanguage);
+  if(!aroundBodensee(point)&&code!=='AT'&&localDetails.length){if(result.status==='unsupported'){result.sourceName='Local zone import';result.countryCode=imported[0].properties._localCountry;result.countryName=result.countryCode;result.warning='Locally imported zone file. Verify current source conditions.'}result.zones=sortZones([...result.zones,...localDetails]);result.status='loaded'}
+  return localizeZoneInfo(result,requestedLanguage);
  }catch{
   const source=code in COUNTRY_SOURCES?COUNTRY_SOURCES[code as keyof typeof COUNTRY_SOURCES]:undefined;
-  return localizeZoneInfo({...base(code,source?.name??code,source?.source??'Official source directory',source?.url??'#'),status:'error',warning:source?.warning??'The official source could not be reached. Check it directly before flight.'},selectedLanguage);
+  if(localDetails.length)return localizeZoneInfo({...base(code,source?.name??code,'Local zone import',source?.url??'#'),zones:localDetails,status:'loaded',warning:'Live source unavailable. Showing locally imported boundaries; check file validity and temporary restrictions.'},requestedLanguage);
+  return localizeZoneInfo({...base(code,source?.name??code,source?.source??'Official source directory',source?.url??'#'),status:'error',warning:source?.warning??'The official source could not be reached. Check it directly before flight.'},requestedLanguage);
  }
 }

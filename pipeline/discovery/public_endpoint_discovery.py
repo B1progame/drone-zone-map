@@ -84,6 +84,10 @@ def _kind(url: str) -> str | None:
         return "json_or_geojson"
     if "ogc" in lowered or "/collections" in lowered:
         return "ogc_api"
+    if lowered.endswith((".zip", ".kml", ".kmz")):
+        return "zone_download"
+    if "ed269" in lowered or "ed-269" in lowered:
+        return "ed269"
     if "ed318" in lowered or "ed-318" in lowered:
         return "ed318"
     return None
@@ -122,6 +126,23 @@ def discover(start_url: str, *, delay_seconds: float = 1.0, timeout_seconds: flo
         parser.feed(response.text)
         discovered: Iterable[str] = [urljoin(str(response.url), link) for link in parser.links]
         discovered = list(discovered) + URL_PATTERN.findall(response.text)
+        initial_kind = _kind(str(response.url))
+        if initial_kind:
+            discovered.append(str(response.url))
+        # Inspect a bounded number of same-origin script files linked by the page.
+        # This catches documented map endpoints without executing or logging in.
+        script_urls = [url for url in discovered if urlparse(url).netloc == urlparse(str(response.url)).netloc and urlparse(url).path.endswith('.js')]
+        for script_url in list(dict.fromkeys(script_urls))[:5]:
+            if not _robots_allowed(client, script_url):
+                continue
+            try:
+                script = client.get(script_url)
+                script.raise_for_status()
+                if len(script.content) <= 2_000_000:
+                    discovered.extend(URL_PATTERN.findall(script.text))
+                time.sleep(max(0.0, delay_seconds))
+            except httpx.HTTPError:
+                warnings.append(f"Could not inspect public script: {script_url}")
         for raw_url in discovered:
             clean_url = raw_url.rstrip(".,);]")
             kind = _kind(clean_url)
@@ -131,6 +152,9 @@ def discover(start_url: str, *, delay_seconds: float = 1.0, timeout_seconds: flo
             if candidate.kind != "wms":
                 continue
             try:
+                if not _robots_allowed(client, candidate.url):
+                    candidate.status = "robots_blocked"
+                    continue
                 capabilities = client.get(_wms_capabilities_url(candidate.url))
                 capabilities.raise_for_status()
                 candidate.layers = _parse_wms_layers(capabilities.text)

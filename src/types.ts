@@ -20,6 +20,7 @@ export type ZoneDetail = {
   categoryCode?:string;
   severity?:'blocked'|'authorization'|'conditional'|'warning'|'information'|'unknown';
   message?:string;
+  explanation?:string;
   originalMessage?:string;
   messageLocalizedLanguage?:string;
   pilotAction?:string;
@@ -33,6 +34,9 @@ export type ZoneDetail = {
   source:string;
   sourceUrl?:string;
   updated?:string;
+  validFrom?:string;
+  validUntil?:string;
+  activation?:string;
 };
 export type ZoneInfo = { countryCode:string; countryName:string; sourceName:string; sourceUrl:string; status:'loaded'|'none'|'unsupported'|'error'; zones:ZoneDetail[]; checkedAt:string; warning:string };
 export type SavedWeatherSummary = {

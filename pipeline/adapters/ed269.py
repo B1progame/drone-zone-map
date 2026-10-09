@@ -63,7 +63,7 @@ def _projection(volume: dict[str, Any]) -> tuple[dict, dict]:
 
 
 def normalize_ed269(payload: dict, *, attribution: str, source_url: str) -> list[dict]:
-    zones = payload.get("features")
+    zones = payload if isinstance(payload, list) else payload.get("features")
     if not isinstance(zones, list):
         raise ValueError("ED-269 response has no features array")
 

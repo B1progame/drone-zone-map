@@ -183,6 +183,6 @@ export function localizeZoneDetail(zone:ZoneDetail,language:string):ZoneDetail{
 
 export function localizeZoneInfo(info:ZoneInfo,language:string):ZoneInfo{
   let countryName=info.countryName;
-  try{countryName=new Intl.DisplayNames([zoneLanguage(language)],{type:'region'}).of(info.countryCode)??countryName}catch{}
+  try{if(info.countryCode!=='XX')countryName=new Intl.DisplayNames([zoneLanguage(language)],{type:'region'}).of(info.countryCode)??countryName}catch{}
   return{...info,countryName,zones:info.zones.map(zone=>localizeZoneDetail(zone,language))};
 }
