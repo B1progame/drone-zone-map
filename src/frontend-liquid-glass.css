@@ -162,6 +162,9 @@ button.danger, .delete { color: #ffb9b0; }
 .mapPage .reopenResult, .mapPage .exportDownloadProgress, .mapPage .mapWeatherControl { position: absolute; }
 .mapStyleControl button { color: #d2ded8; }
 .mapStyleControl button.active, .mapStyleControl button.weather.active { color: #10241b; background: #c2ead4; }
+@media (min-width: 681px) {
+  .mapStyleControl [data-map-control="weather"] { width: 148px; min-width: 148px; justify-content: center; white-space: nowrap; }
+}
 .mapPanel, .resultCard, .emptyCheck { border-radius: 22px; }
 .resultCard h2, .mapPanel > b { color: #edf5f0; }
 .resultCard > p, .mapPanel p, .emptyCheck span { color: #bdcec5; }
@@ -240,6 +243,7 @@ button.danger, .delete { color: #ffb9b0; }
 
 .modalShade { background: rgb(2 12 10 / 68%); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .settings { border-radius: 26px; }
+.settings > .close { position: absolute; right: 14px; top: 14px; }
 .settings select, .settings input:not([type="checkbox"]):not([type="range"]), .sourceSearch {
   color: #edf4f0; background: rgb(6 18 16 / 72%); border-color: rgb(237 255 246 / 17%);
 }

@@ -836,12 +836,14 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   const [revealedMapControl,setRevealedMapControl]=useState<string|null>(null);
   const [mapControlRevealVersion,setMapControlRevealVersion]=useState(0);
   const mapControlTimerRef=useRef<number|undefined>(undefined);
-  const lastAnimatedMapControlRef=useRef<string|null>(null);
+  const mapControlStartWidthRef=useRef(44);
   const scheduleMapControlCollapse=()=>{
     if(mapControlTimerRef.current!==undefined)window.clearTimeout(mapControlTimerRef.current);
     mapControlTimerRef.current=window.setTimeout(()=>{setRevealedMapControl(null);mapControlTimerRef.current=undefined},4000);
   };
   const revealMapControl=(control:string)=>{
+    const button=hostRef.current?.querySelector<HTMLButtonElement>(`[data-map-control="${control}"]`);
+    mapControlStartWidthRef.current=button?.getBoundingClientRect().width??44;
     setRevealedMapControl(control);
     setMapControlRevealVersion(version=>version+1);
     if(mapControlTimerRef.current!==undefined)window.clearTimeout(mapControlTimerRef.current);
@@ -849,19 +851,22 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   useLayoutEffect(()=>{
     if(!revealedMapControl)return;
     if(window.innerWidth>680||settings.reducedMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches){scheduleMapControlCollapse();return}
-    const button=document.querySelector<HTMLButtonElement>(`.mapStyleControl [data-map-control="${revealedMapControl}"]`);
+    const button=hostRef.current?.querySelector<HTMLButtonElement>(`[data-map-control="${revealedMapControl}"]`);
     const label=button?.querySelector<HTMLElement>('span');
     if(!button||!label){scheduleMapControlCollapse();return}
-    const targetWidth=button.getBoundingClientRect().width;
-    const targetLabelWidth=Math.max(48,targetWidth-52);
-    const collapsedWidth=window.matchMedia('(max-width: 380px)').matches?42:44;
-    const alreadyExpanded=lastAnimatedMapControlRef.current===revealedMapControl;
-    lastAnimatedMapControlRef.current=revealedMapControl;
+    const collapsedWidth=parseFloat(getComputedStyle(button).minWidth)||44;
+    const targetWidth=Math.min(label.scrollWidth+collapsedWidth+8,parseFloat(getComputedStyle(button).maxWidth)||window.innerWidth-32);
+    const targetLabelWidth=targetWidth-collapsedWidth-8;
+    const startWidth=mapControlStartWidthRef.current;
+    const alreadyExpanded=startWidth>collapsedWidth+1;
+    button.style.setProperty('--map-reveal-width',`${targetWidth}px`);
     button.classList.add('gsapOpening');
-    const opening=gsap.timeline({onComplete:()=>{button.classList.remove('gsapOpening');scheduleMapControlCollapse()}});
-    opening.fromTo(button,{width:alreadyExpanded?targetWidth:collapsedWidth,x:alreadyExpanded?0:9,scale:alreadyExpanded?.98:.96},{width:targetWidth,x:0,scale:1,duration:.46,ease:'back.out(1.55)',clearProps:'width,x,scale'});
-    opening.fromTo(label,{maxWidth:alreadyExpanded?targetLabelWidth:0,opacity:alreadyExpanded?1:0,x:alreadyExpanded?0:-5},{maxWidth:targetLabelWidth,opacity:1,x:0,duration:.27,ease:'power2.out',clearProps:'maxWidth,opacity,x'},'<0.1');
-    return()=>{opening.kill();button.classList.remove('gsapOpening')};
+    const context=gsap.context(()=>{
+      const opening=gsap.timeline({onComplete:()=>{button.classList.remove('gsapOpening');scheduleMapControlCollapse()}});
+      opening.fromTo(button,{width:startWidth},{width:targetWidth,duration:.36,ease:'power3.out',clearProps:'width'});
+      opening.fromTo(label,{maxWidth:alreadyExpanded?Math.max(0,startWidth-collapsedWidth-8):0,opacity:alreadyExpanded?.7:0},{maxWidth:targetLabelWidth,opacity:1,duration:.24,ease:'power2.out',clearProps:'maxWidth,opacity'},'<0.04');
+    },button);
+    return()=>{context.revert();button.classList.remove('gsapOpening')};
   },[revealedMapControl,mapControlRevealVersion,settings.reducedMotion]);
   useEffect(()=>()=>{if(mapControlTimerRef.current!==undefined)window.clearTimeout(mapControlTimerRef.current)},[]);
   const [zonesVisible, setZonesVisible] = useState(true);
@@ -1142,14 +1147,14 @@ export const MapCanvas=forwardRef<MapCanvasHandle,{ location?: Location; weather
   return <div className={`mapHost${settings.terrain3d?' terrain3d':''}`} data-terrain={settings.terrain3d?'enabled':'disabled'} ref={hostRef}>
     {!loaded && !error && <div className="mapLoading"><span />Loading globe and satellite map…<i><b style={{width:'34%'}}/></i></div>}
     {loaded&&overlayProgress&&<div className="overlayProgress" role="status"><div><Layers3/><span>Loading {overlayProgress.label}…</span><b>{Math.round(overlayProgress.done/Math.max(1,overlayProgress.total)*100)}%</b></div><i><b style={{width:`${Math.max(8,overlayProgress.done/Math.max(1,overlayProgress.total)*100)}%`}}/></i></div>}
-    {error && <div className="mapError">{error} Try the Streets basemap.</div>}
+    {error && <div className="mapError" role="status"><span>Map imagery is temporarily unavailable.</span>{baseMap==='satellite'?<button onClick={()=>setBaseMap('streets')}>Use Streets</button>:<span>Check your connection.</span>}</div>}
     {weatherVisible&&hasWeatherLayer(weatherLayers,'wind')&&<div className={`windFieldOverlay${settings.reducedMotion?' reduced':''}`} aria-hidden="true">{windGlyphs.map(glyph=><i className="windFieldArrow" key={glyph.id} style={{left:glyph.x,top:glyph.y,'--wind-angle':`${glyph.angle}deg`,'--wind-duration':`${glyph.duration}s`,'--wind-delay':`${glyph.delay}s`,'--wind-color':glyph.speed<20?'#a8efff':glyph.speed<40?'#ffe08a':'#ff9583'} as React.CSSProperties}/>)}</div>}
     <div className="mapHint">Click or tap anywhere · pinch to zoom · zoom out for globe</div>
     {weatherVisible&&location&&!weather&&!weatherError&&<div className="mapWeatherStatus loading"><span/> Loading live weather…</div>}
     {weatherVisible&&weatherError&&<div className="mapWeatherStatus error"><CloudRain/> {weatherError}</div>}
     {weatherVisible&&radarNotice&&<div className="mapWeatherStatus warning"><CloudRain/> {radarNotice}</div>}
     {offlineNotice&&<div className="mapOfflineStatus"><WifiOff/> {offlineNotice}{navigator.onLine&&isOfflineTestMode()&&<button onClick={()=>setOfflineTestMode(false)}>Exit test</button>}</div>}
-    <div className="mapStyleControl" aria-label="Map display controls">
+    <div className="mapStyleControl" role="toolbar" aria-label="Map display controls">
       <button data-map-control="satellite" className={`${baseMap === 'satellite' ? 'active ' : ''}${revealedMapControl==='satellite'?'revealed':''}`} onClick={() => {setBaseMap('satellite');revealMapControl('satellite')}} aria-label="Satellite map"><Satellite size={16}/><span>Satellite</span></button>
       <button data-map-control="streets" className={`${baseMap === 'streets' ? 'active ' : ''}${revealedMapControl==='streets'?'revealed':''}`} onClick={() => {setBaseMap('streets');revealMapControl('streets')}} aria-label="Street map"><MapIcon size={16}/><span>Streets</span></button>
       <button data-map-control="zones" className={`${zonesVisible ? 'active zones ' : ''}${revealedMapControl==='zones'?'revealed':''}`} onClick={() => {setZonesVisible(value => !value);revealMapControl('zones')}} aria-pressed={zonesVisible} aria-label="Toggle verified official drone zones"><Layers3 size={16}/><span>Zones</span></button>
