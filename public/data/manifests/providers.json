@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-05T10:32:30.285011+00:00",
+  "generatedAt": "2026-10-12T10:57:12.585472+00:00",
   "providers": [
     {
       "providerId": "bs-civil-aviation-authority-bahamas-caa-b",
@@ -377,7 +377,7 @@
       "lastCheckedAt": "2026-07-19",
       "lastSuccessfulUpdateAt": null,
       "warnings": [
-        "Use the official interactive Dronespace planning map; no verified reusable zone feed is copied by Aeris."
+        "Import the current Austro Control zone JSON in Sources; files stay on this device."
       ]
     },
     {
@@ -432,7 +432,7 @@
       "lastCheckedAt": "2026-07-19",
       "lastSuccessfulUpdateAt": null,
       "warnings": [
-        "Complete federal UAS geozones render live. Confirm cantonal and temporary restrictions before flight."
+        "FOCA UAS zones render from the dated local snapshot, refreshed weekly."
       ]
     },
     {

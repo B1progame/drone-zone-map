@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-05T10:32:30.978449+00:00",
+  "generatedAt": "2026-10-12T10:57:13.644718+00:00",
   "isoEntryCount": 249,
   "providerCount": 68,
   "completenessCounts": {
@@ -147,8 +147,8 @@
       "source": "DAC Geoportal UAS Geozones",
       "officialMap": "https://data.public.lu/en/datasets/uas-geographical-zones-grand-duchy-of-luxembourg-zones-geographiques-uas-grand-duche-de-luxembourg/",
       "offline": true,
-      "featureCount": 44,
-      "geometryChecksum": "ddab4c848de96884bcac455a9eaa6a2f99380f766fb024ae3515deb052bae68d",
+      "featureCount": 43,
+      "geometryChecksum": "60ec93943792fff49612bead350c760634fcbbd3259837b879ca8d4ca1f20617",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 100.0,
@@ -181,7 +181,14 @@
       "source": "FOCA / geo.admin.ch",
       "officialMap": "https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen",
       "offline": false,
-      "featureCount": 0
+      "featureCount": 1222,
+      "geometryChecksum": "0fdd66154a4c19567fc8a0548855afd9ceb189c5757a9bea8b5a2847abe98791",
+      "metadataCoverage": {
+        "namesPercent": 100.0,
+        "descriptionsPercent": 100.0,
+        "identifiersPercent": 100.0,
+        "originalPropertiesPercent": 100.0
+      }
     },
     {
       "countryCode": "LI",
@@ -260,8 +267,8 @@
       "source": "Traficom",
       "officialMap": "https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa",
       "offline": true,
-      "featureCount": 733,
-      "geometryChecksum": "86f881636d0b97c96ad55057b6b9d02018dea69dd19c463dcec4891f3c635ad8",
+      "featureCount": 735,
+      "geometryChecksum": "03238dda9154b0d2d01168cb5712cdc7d8e980663cac316188dd5d0ac84fa5af",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 0.0,

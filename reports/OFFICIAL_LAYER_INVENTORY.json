@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-05T10:32:31.051339+00:00",
+  "generatedAt": "2026-10-12T10:57:13.645989+00:00",
   "providers": [
     {
       "countryCode": "BS",
@@ -157,7 +157,7 @@
       "importedLayers": 0,
       "liveOnly": false,
       "warnings": [
-        "Use the official interactive Dronespace planning map; no verified reusable zone feed is copied by Aeris."
+        "Import the current Austro Control zone JSON in Sources; files stay on this device."
       ]
     },
     {
@@ -176,11 +176,11 @@
       "countryCode": "CH",
       "providerId": "ch-foca-geo-admin-ch",
       "sourceType": "json",
-      "discoveredLayers": 0,
-      "importedLayers": 0,
+      "discoveredLayers": 1,
+      "importedLayers": 1,
       "liveOnly": true,
       "warnings": [
-        "Complete federal UAS geozones render live. Confirm cantonal and temporary restrictions before flight."
+        "FOCA UAS zones render from the dated local snapshot, refreshed weekly."
       ]
     },
     {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-05T10:32:30.342199+00:00",
+  "generatedAt": "2026-10-12T10:57:12.587408+00:00",
   "standard": "ISO 3166 via pycountry",
   "entryCount": 249,
   "countriesAndTerritories": [
@@ -770,12 +770,12 @@
       "provider": "ch-foca-geo-admin-ch",
       "authentication": "none",
       "discoveredLayerCount": 0,
-      "importedLayerCount": 0,
+      "importedLayerCount": 1,
       "missingLayerCount": null,
       "lastCheck": "2026-07-19",
       "lastUpdate": null,
       "completenessStatus": "partial-missing-layers",
-      "featureCount": 0
+      "featureCount": 1222
     },
     {
       "countryCode": "CI",
@@ -1262,7 +1262,7 @@
       "lastCheck": "2026-07-19",
       "lastUpdate": null,
       "completenessStatus": "partial-missing-layers",
-      "featureCount": 733
+      "featureCount": 735
     },
     {
       "countryCode": "FJ",
@@ -2415,7 +2415,7 @@
       "lastCheck": "2026-07-19",
       "lastUpdate": null,
       "completenessStatus": "partial-missing-layers",
-      "featureCount": 44
+      "featureCount": 43
     },
     {
       "countryCode": "LV",
