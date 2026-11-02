@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-26T09:01:31.556139+00:00",
+  "generatedAt": "2026-11-02T11:16:44.981645+00:00",
   "standard": "ISO 3166 via pycountry",
   "entryCount": 249,
   "countriesAndTerritories": [
@@ -775,7 +775,7 @@
       "lastCheck": "2026-07-19",
       "lastUpdate": null,
       "completenessStatus": "partial-missing-layers",
-      "featureCount": 1254
+      "featureCount": 1256
     },
     {
       "countryCode": "CI",
