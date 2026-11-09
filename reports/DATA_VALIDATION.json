@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-02T11:16:44.060954+00:00",
+  "generatedAt": "2026-11-09T11:40:24.392213+00:00",
   "valid": true,
   "datasets": [
     {
       "countryCode": "CH",
       "path": "public/data/zones/CH.geojson",
       "valid": true,
-      "featureCount": 1256,
-      "geometryChecksum": "e4d21ad6136e9dc52b640e0563e9503fa3af4c21bcac68a33090017295d59594",
+      "featureCount": 1288,
+      "geometryChecksum": "68cac71720ec3d046af683a5e40800ca8d4f924509240a7667a6c5a7541c5b52",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 100.0,

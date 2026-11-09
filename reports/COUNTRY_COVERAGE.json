@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T11:16:46.100573+00:00",
+  "generatedAt": "2026-11-09T11:40:25.628058+00:00",
   "isoEntryCount": 249,
   "providerCount": 68,
   "completenessCounts": {
@@ -181,8 +181,8 @@
       "source": "FOCA / geo.admin.ch",
       "officialMap": "https://map.geo.admin.ch/#/map?lang=en&topic=ech&layers=ch.bazl.einschraenkungen-drohnen",
       "offline": false,
-      "featureCount": 1256,
-      "geometryChecksum": "e4d21ad6136e9dc52b640e0563e9503fa3af4c21bcac68a33090017295d59594",
+      "featureCount": 1288,
+      "geometryChecksum": "68cac71720ec3d046af683a5e40800ca8d4f924509240a7667a6c5a7541c5b52",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 100.0,
