@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-09T11:40:24.392213+00:00",
+  "generatedAt": "2026-11-16T11:30:41.614076+00:00",
   "valid": true,
   "datasets": [
     {
@@ -19,8 +19,8 @@
       "countryCode": "FI",
       "path": "public/data/zones/FI.geojson",
       "valid": true,
-      "featureCount": 737,
-      "geometryChecksum": "bb3f6c8933c6c20383a71fdd7001f9c323c6e0c3c9ae93a9dfcf1e4153051044",
+      "featureCount": 739,
+      "geometryChecksum": "82a63155de77dff3c6d259f77797323dea2c020a09f2a44b3fcaa565b636b6ca",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 0.0,
@@ -59,7 +59,7 @@
       "path": "public/data/zones/LU.geojson",
       "valid": true,
       "featureCount": 43,
-      "geometryChecksum": "60ec93943792fff49612bead350c760634fcbbd3259837b879ca8d4ca1f20617",
+      "geometryChecksum": "1ff40655e68af6a719b8241cc9724115f9c8afcae085d9b767a8a3f499cdaada",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 100.0,
