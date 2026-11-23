@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-16T11:30:43.208070+00:00",
+  "generatedAt": "2026-11-23T12:56:25.832860+00:00",
   "isoEntryCount": 249,
   "providerCount": 68,
   "completenessCounts": {
@@ -267,8 +267,8 @@
       "source": "Traficom",
       "officialMap": "https://www.traficom.fi/fi/miehittamaton-ilmailu/uas-ilmatilavyohykkeet-koneluettavassa-muodossa",
       "offline": true,
-      "featureCount": 739,
-      "geometryChecksum": "82a63155de77dff3c6d259f77797323dea2c020a09f2a44b3fcaa565b636b6ca",
+      "featureCount": 742,
+      "geometryChecksum": "13d21f6a713c1feb4629112b16227dd54ca5fc2b8573e8dabe03c5a4bf11ed46",
       "metadataCoverage": {
         "namesPercent": 100.0,
         "descriptionsPercent": 0.0,
